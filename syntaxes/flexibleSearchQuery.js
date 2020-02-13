@@ -154,25 +154,31 @@ var grammar = {
     {"name": "type_join$ebnf$1$subexpression$1$ebnf$1", "symbols": ["type_join$ebnf$1$subexpression$1$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "type_join$ebnf$1$subexpression$1$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
     {"name": "type_join$ebnf$1$subexpression$1$subexpression$1", "symbols": [/[jJ]/, /[oO]/, /[iI]/, /[nN]/], "postprocess": function(d) {return d.join(""); }},
-    {"name": "type_join$ebnf$1$subexpression$1$subexpression$2", "symbols": [/[oO]/, /[nN]/], "postprocess": function(d) {return d.join(""); }},
-    {"name": "type_join$ebnf$1$subexpression$1", "symbols": ["type_join$ebnf$1$subexpression$1$ebnf$1", "__", "type_join$ebnf$1$subexpression$1$subexpression$1", "__", "single_type_cluase", "__", "type_join$ebnf$1$subexpression$1$subexpression$2", "__", "expression"]},
+    {"name": "type_join$ebnf$1$subexpression$1$ebnf$2$subexpression$1$subexpression$1", "symbols": [/[oO]/, /[nN]/], "postprocess": function(d) {return d.join(""); }},
+    {"name": "type_join$ebnf$1$subexpression$1$ebnf$2$subexpression$1", "symbols": ["__", "type_join$ebnf$1$subexpression$1$ebnf$2$subexpression$1$subexpression$1", "__", "expression"]},
+    {"name": "type_join$ebnf$1$subexpression$1$ebnf$2", "symbols": ["type_join$ebnf$1$subexpression$1$ebnf$2$subexpression$1"], "postprocess": id},
+    {"name": "type_join$ebnf$1$subexpression$1$ebnf$2", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "type_join$ebnf$1$subexpression$1", "symbols": ["type_join$ebnf$1$subexpression$1$ebnf$1", "__", "type_join$ebnf$1$subexpression$1$subexpression$1", "__", "single_type_cluase", "type_join$ebnf$1$subexpression$1$ebnf$2"]},
     {"name": "type_join$ebnf$1", "symbols": ["type_join$ebnf$1$subexpression$1"]},
     {"name": "type_join$ebnf$1$subexpression$2$ebnf$1$subexpression$1$subexpression$1", "symbols": [/[lL]/, /[eE]/, /[fF]/, /[tT]/], "postprocess": function(d) {return d.join(""); }},
     {"name": "type_join$ebnf$1$subexpression$2$ebnf$1$subexpression$1", "symbols": ["__", "type_join$ebnf$1$subexpression$2$ebnf$1$subexpression$1$subexpression$1"]},
     {"name": "type_join$ebnf$1$subexpression$2$ebnf$1", "symbols": ["type_join$ebnf$1$subexpression$2$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "type_join$ebnf$1$subexpression$2$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
     {"name": "type_join$ebnf$1$subexpression$2$subexpression$1", "symbols": [/[jJ]/, /[oO]/, /[iI]/, /[nN]/], "postprocess": function(d) {return d.join(""); }},
-    {"name": "type_join$ebnf$1$subexpression$2$subexpression$2", "symbols": [/[oO]/, /[nN]/], "postprocess": function(d) {return d.join(""); }},
-    {"name": "type_join$ebnf$1$subexpression$2", "symbols": ["type_join$ebnf$1$subexpression$2$ebnf$1", "__", "type_join$ebnf$1$subexpression$2$subexpression$1", "__", "single_type_cluase", "__", "type_join$ebnf$1$subexpression$2$subexpression$2", "__", "expression"]},
+    {"name": "type_join$ebnf$1$subexpression$2$ebnf$2$subexpression$1$subexpression$1", "symbols": [/[oO]/, /[nN]/], "postprocess": function(d) {return d.join(""); }},
+    {"name": "type_join$ebnf$1$subexpression$2$ebnf$2$subexpression$1", "symbols": ["__", "type_join$ebnf$1$subexpression$2$ebnf$2$subexpression$1$subexpression$1", "__", "expression"]},
+    {"name": "type_join$ebnf$1$subexpression$2$ebnf$2", "symbols": ["type_join$ebnf$1$subexpression$2$ebnf$2$subexpression$1"], "postprocess": id},
+    {"name": "type_join$ebnf$1$subexpression$2$ebnf$2", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "type_join$ebnf$1$subexpression$2", "symbols": ["type_join$ebnf$1$subexpression$2$ebnf$1", "__", "type_join$ebnf$1$subexpression$2$subexpression$1", "__", "single_type_cluase", "type_join$ebnf$1$subexpression$2$ebnf$2"]},
     {"name": "type_join$ebnf$1", "symbols": ["type_join$ebnf$1", "type_join$ebnf$1$subexpression$2"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "type_join", "symbols": [{"literal":"{"}, "_", "single_type_cluase", "type_join$ebnf$1", "_", {"literal":"}"}], "postprocess": 
         (elems) => ({
         	type: elems[2],
-        	typeJoin: elems[3].map((joinelems) => {
+        	typeJoin: elems[3].map((joinElems) => {
         		return {
-        			isLeft: joinelems[0] != null ,
-        			type: joinelems[4],
-        			on: joinelems[8]
+        			isLeft: joinElems[0] != null ,
+        			type: joinElems[4],
+        			on: joinElems[5] == null ? null : joinElems[5][3]
         		}
         	})
         })

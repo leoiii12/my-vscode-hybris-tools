@@ -46,12 +46,12 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
+    "compile:fsql": "nearleyc ./syntaxes/flexibleSearchQuery.ne -o ./syntaxes/flexibleSearchQuery.js",
     "lint": "eslint src --ext ts",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "test": "node ./out/test/runTest.js",
-    "format": "prettier --write \"src/**/*.{js,css,json,md,ts}\"",
-    "fsql:compile": "nearleyc ./syntaxes/flexibleSearchQuery.ne -o ./syntaxes/flexibleSearchQuery.js"
+    "format": "prettier --write \"src/**/*.{js,css,json,md,ts}\""
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.16",

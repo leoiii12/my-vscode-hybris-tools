@@ -1,40 +1,11 @@
 import * as vscode from 'vscode'
 import { CompletionContext } from 'vscode'
-import { Parser, Grammar } from 'nearley'
+import { Parser, Grammar, LexerState } from 'nearley'
 import { HacUtils } from '../hac-utils'
 
 export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider {
-  private characterTokens = [
-    'a',
-    'b',
-    'c',
-    'd',
-    'e',
-    'f',
-    'g',
-    'h',
-    'i',
-    'j',
-    'k',
-    'l',
-    'm',
-    'n',
-    'o',
-    'p',
-    'q',
-    'r',
-    's',
-    't',
-    'u',
-    'v',
-    'w',
-    'x',
-    'y',
-    'z',
-  ]
-
-  private numericTokens = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
-
+  private characterTokens = ['a']
+  private numericTokens = ['0']
   private keywordTokens = [
     'SELECT',
     'FROM',
@@ -75,7 +46,15 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
     'FALSE',
   ]
 
-  constructor(private grammar: Grammar, private hacUtils: HacUtils) {}
+  private types: string[] = []
+
+  constructor(private grammar: Grammar, hacUtils: HacUtils) {
+    hacUtils
+      .executeFlexibleSearch(3000, `SELECT DISTINCT { code } AS InternalCode FROM { composedtype }`)
+      .then(execResult => {
+        this.types = execResult.resultList.map(rl => rl[0])
+      })
+  }
 
   private static getTokens(text: string): string[] {
     return text.split(/[ \t\n\v\f]/).filter(c => c !== '')
@@ -105,23 +84,24 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
     console.log(afterTokens)
 
     const start = new Date().getTime()
-    const acceptedTokens = this.getNewTokensIncrementally(beforeTokens, afterTokens)
+
+    const tokens = this.getNewTokensIncrementally(beforeTokens, tokenText, afterTokens)
+
     const end = new Date().getTime()
+    console.log(`Completed in ${end - start}ms.`)
 
-    console.log(end - start + 'ms')
-
-    return acceptedTokens.map(at => new vscode.CompletionItem(at))
+    return tokens.map(at => new vscode.CompletionItem(at))
   }
 
-  private getNewTokensIncrementally(beforeTokens: string[], afterTokens: string[]) {
+  private getNewTokensIncrementally(beforeTokens: string[], token: string, afterTokens: string[]) {
     let acceptedTokens = FsqlCompletionItemProvider.tryTokens(
       this.grammar,
       this.characterTokens,
       beforeTokens,
       afterTokens,
     )
-    if (acceptedTokens.length > 0) {
-      return acceptedTokens
+    if (acceptedTokens.length > 0 && /[a-zA-Z]+/.test(token)) {
+      return this.types
     }
 
     acceptedTokens = FsqlCompletionItemProvider.tryTokens(this.grammar, this.numericTokens, beforeTokens, afterTokens)
@@ -138,19 +118,20 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
   }
 
   private static tryTokens(grammar: Grammar, trialTokens: string[], beforeTokens: string[], afterTokens: string[]) {
-    return trialTokens.filter(tt => {
-      const parser = new Parser(grammar)
+    const parser = new Parser(grammar)
 
+    for (let beforeToken of beforeTokens) {
+      parser.feed(beforeToken)
+      parser.feed(' ')
+    }
+    const state = parser.save()
+
+    return trialTokens.filter(tt => {
       try {
-        for (let beforeToken of beforeTokens) {
-          parser.feed(beforeToken)
-          parser.feed(' ')
-        }
+        parser.restore(state)
 
         parser.feed(tt)
         parser.feed(' ')
-
-        console.log(parser.current)
 
         for (let afterToken of afterTokens) {
           parser.feed(afterToken)

@@ -88,14 +88,14 @@ type ->
 		(elems) => ({ type: elems[2] })
 	%}
 type_join ->
-    "{" _ single_type_cluase ( ( __ "LEFT"i ):? __ "JOIN"i __ single_type_cluase __ "ON"i __ expression ):+ _ "}"  {%
+    "{" _ single_type_cluase ( ( __ "LEFT"i ):? __ "JOIN"i __ single_type_cluase ( __ "ON"i __ expression ):?  ):+ _ "}"  {%
 		(elems) => ({
 			type: elems[2],
-			typeJoin: elems[3].map((joinelems) => {
+			typeJoin: elems[3].map((joinElems) => {
 				return {
-					isLeft: joinelems[0] != null ,
-					type: joinelems[4],
-					on: joinelems[8]
+					isLeft: joinElems[0] != null ,
+					type: joinElems[4],
+					on: joinElems[5] == null ? null : joinElems[5][3]
 				}
 			})
 		})
