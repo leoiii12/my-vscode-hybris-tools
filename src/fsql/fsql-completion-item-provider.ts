@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import { CompletionContext } from 'vscode'
-import { Parser, Grammar, LexerState } from 'nearley'
+import { Parser, Grammar } from 'nearley'
 import { HacUtils } from '../hac-utils'
 
 export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider {
