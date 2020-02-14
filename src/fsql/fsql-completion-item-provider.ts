@@ -93,7 +93,7 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
     return tokens.map(at => new vscode.CompletionItem(at))
   }
 
-  private getNewTokensIncrementally(beforeTokens: string[], token: string, afterTokens: string[]) {
+  private getNewTokensIncrementally(beforeTokens: string[], token: string, afterTokens: string[]): string[] {
     let acceptedTokens = FsqlCompletionItemProvider.tryTokens(
       this.grammar,
       this.characterTokens,
@@ -104,11 +104,16 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
       const results = FsqlCompletionItemProvider.tryParseWithPlaceholder(this.grammar, beforeTokens, afterTokens)
 
       if (results.length > 0) {
-        const isAlias = FsqlGrammarUtils.isAlias(results[0])
-        const aliases = FsqlGrammarUtils.getReferencedTypes(results[0])
+        const isAliasing = FsqlGrammarUtils.isAlias(results[0])
+        const typeNames = FsqlGrammarUtils.getReferencedTypeNames(results[0])
 
-        console.log(isAlias)
-        console.log(aliases)
+        if (isAliasing) {
+          return typeNames.reduce((acc: string[], v: string) => {
+            acc.push(FsqlCompletionItemProvider.getSuggestedAliasNames(v))
+
+            return acc
+          }, [] as string[])
+        }
       }
 
       return this.types
@@ -125,6 +130,15 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
     }
 
     return []
+  }
+
+  private static getSuggestedAliasNames(name: string): string {
+    const regExp = /[A-Z]/g
+
+    return name
+      .match(regExp)
+      ?.join('')
+      .toLowerCase()
   }
 
   private static tryParseWithPlaceholder(grammar: Grammar, beforeTokens: string[], afterTokens: string[]) {
