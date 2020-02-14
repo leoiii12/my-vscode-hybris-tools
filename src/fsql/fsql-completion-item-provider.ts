@@ -2,6 +2,9 @@ import * as vscode from 'vscode'
 import { CompletionContext } from 'vscode'
 import { Parser, Grammar } from 'nearley'
 import { HacUtils } from '../hac-utils'
+import { FsqlGrammarUtils } from './fsql-grammar-utils'
+
+export const FSQL_PLACEHOLDER = 'FsqlPlaceholder'
 
 export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider {
   private characterTokens = ['a']
@@ -80,15 +83,12 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
     const beforeTokens = FsqlCompletionItemProvider.getTokens(beforeText)
     const afterTokens = FsqlCompletionItemProvider.getTokens(afterText)
 
-    console.log(beforeTokens)
-    console.log(afterTokens)
-
+    // Parse and Get new tokens
     const start = new Date().getTime()
-
     const tokens = this.getNewTokensIncrementally(beforeTokens, tokenText, afterTokens)
-
     const end = new Date().getTime()
-    console.log(`Completed in ${end - start}ms.`)
+
+    console.log(`[provideCompletionItems] - Completed in ${end - start}ms.`)
 
     return tokens.map(at => new vscode.CompletionItem(at))
   }
@@ -101,6 +101,16 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
       afterTokens,
     )
     if (acceptedTokens.length > 0 && /[a-zA-Z]+/.test(token)) {
+      const results = FsqlCompletionItemProvider.tryParseWithPlaceholder(this.grammar, beforeTokens, afterTokens)
+
+      if (results.length > 0) {
+        const isAlias = FsqlGrammarUtils.isAlias(results[0])
+        const aliases = FsqlGrammarUtils.getReferencedTypes(results[0])
+
+        console.log(isAlias)
+        console.log(aliases)
+      }
+
       return this.types
     }
 
@@ -115,6 +125,27 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
     }
 
     return []
+  }
+
+  private static tryParseWithPlaceholder(grammar: Grammar, beforeTokens: string[], afterTokens: string[]) {
+    const parser = new Parser(grammar)
+
+    for (let beforeToken of beforeTokens) {
+      parser.feed(beforeToken)
+      parser.feed(' ')
+    }
+
+    parser.feed(FSQL_PLACEHOLDER)
+    parser.feed(' ')
+
+    for (let afterToken of afterTokens) {
+      parser.feed(afterToken)
+      parser.feed(' ')
+    }
+
+    parser.finish()
+
+    return parser.results
   }
 
   private static tryTokens(grammar: Grammar, trialTokens: string[], beforeTokens: string[], afterTokens: string[]) {
