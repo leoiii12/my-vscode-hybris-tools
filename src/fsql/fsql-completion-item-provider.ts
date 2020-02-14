@@ -12,7 +12,7 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
   private keywordTokens = [
     'SELECT',
     'FROM',
-    'WHERE',
+    'WHERE 1 = 1',
     'GROUP BY',
     'UNION',
     'ALL',
@@ -109,9 +109,9 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
 
         if (isAliasing) {
           return typeNames.reduce((acc: string[], v: string) => {
-            acc.push(FsqlCompletionItemProvider.getSuggestedAliasNames(v))
+            const names = FsqlCompletionItemProvider.getSuggestedAliasNames(v)
 
-            return acc
+            return acc.concat(names)
           }, [] as string[])
         }
       }
@@ -132,13 +132,17 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
     return []
   }
 
-  private static getSuggestedAliasNames(name: string): string {
+  private static getSuggestedAliasNames(name: string): string[] {
     const regExp = /[A-Z]/g
+    const matches = name.match(regExp)
 
-    return name
-      .match(regExp)
-      ?.join('')
-      .toLowerCase()
+    if (matches) {
+      return [
+        matches.join('').toLowerCase()
+      ]
+    }
+
+    return []
   }
 
   private static tryParseWithPlaceholder(grammar: Grammar, beforeTokens: string[], afterTokens: string[]) {
