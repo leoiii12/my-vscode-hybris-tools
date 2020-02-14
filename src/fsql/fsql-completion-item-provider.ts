@@ -3,7 +3,7 @@ import { CompletionContext } from 'vscode'
 import { Parser, Grammar } from 'nearley'
 import { HacUtils } from '../hac-utils'
 import { FsqlGrammarUtils } from './fsql-grammar-utils'
-
+import { FsqlParseUtils } from './fsql-parse-utils'
 export const FSQL_PLACEHOLDER = 'FsqlPlaceholder'
 
 export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider {
@@ -59,10 +59,6 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
       })
   }
 
-  private static getTokens(text: string): string[] {
-    return text.split(/[ \t\n\v\f]/).filter(c => c !== '')
-  }
-
   public provideCompletionItems(
     document: vscode.TextDocument,
     position: vscode.Position,
@@ -80,8 +76,8 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
     const beforeText = document.getText(beforeRange)
     const afterText = document.getText(afterRange)
 
-    const beforeTokens = FsqlCompletionItemProvider.getTokens(beforeText)
-    const afterTokens = FsqlCompletionItemProvider.getTokens(afterText)
+    const beforeTokens = FsqlParseUtils.getTokens(beforeText)
+    const afterTokens = FsqlParseUtils.getTokens(afterText)
 
     // Parse and Get new tokens
     const start = new Date().getTime()
@@ -137,9 +133,7 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
     const matches = name.match(regExp)
 
     if (matches) {
-      return [
-        matches.join('').toLowerCase()
-      ]
+      return [matches.join('').toLowerCase()]
     }
 
     return []

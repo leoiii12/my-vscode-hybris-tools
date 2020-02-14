@@ -11,10 +11,6 @@
    e.g. SELECT  lp_t0.p_name  FROM hktvvariantproductlp lp_t0 WHERE ((lp_t0.LANGPK =? )) AND (lp_t0.ITEMTYPEPK=? )
 5. Relation source and targe suggestions and completion
 
-### Syntax Checking
-
-1. Incorrect syntax should be underlined red
-
 ## Misc
 
 1. Convert fsql to sql and Fill in params
