@@ -12,30 +12,108 @@
   ],
   "activationEvents": [
     "onCommand:extension.helloWorld",
-    "onLanguage:flexibleSearchQuery"
+    "onLanguage:flexibleSearchQuery",
+    "onLanguage:groovy"
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": [
+      {
+        "title": "Hybris Tools",
+        "properties": {
+          "vscode-hybris-tools.hac.url": {
+            "type": "string",
+            "default": "https://localhost:9012/hac",
+            "description": "The URL to the hybris HAC extension"
+          },
+          "vscode-hybris-tools.hac.username": {
+            "type": "string",
+            "default": "admin",
+            "description": "The username used for logging in the HAC"
+          },
+          "vscode-hybris-tools.hac.password": {
+            "type": "string",
+            "default": "philipsspilihp",
+            "description": "The password used for logging in the HAC"
+          },
+          "vscode-hybris-tools.hac.http.timeout": {
+            "type": "integer",
+            "default": 10000,
+            "description": "The HTTP socket timeout."
+          },
+          "vscode-hybris-tools.hac.http.useStrictSSL": {
+            "type": "boolean",
+            "default": true,
+            "description": "Use strict SSL."
+          }
+        }
+      }
+    ],
     "commands": [
       {
-        "command": "extension.helloWorld",
-        "title": "Hello World"
+        "command": "vscode-hybris-tools.flexibleSearchQuery.execute",
+        "title": "Hybris: Execute FSQL"
+      },
+      {
+        "command": "vscode-hybris-tools.flexibleSearchQuery.executeRawSQL",
+        "title": "Hybris: Execute Raw SQL"
+      },
+      {
+        "command": "vscode-hybris-tools.groovy.execute",
+        "title": "Hybris: Execute Groovy"
+      },
+      {
+        "command": "vscode-hybris-tools.groovy.executeAndCommit",
+        "title": "Hybris: Execute Groovy And Commit"
+      },
+      {
+        "command": "vscode-hybris-tools.clearCache",
+        "title": "Hybris: Clear Cache"
       }
     ],
     "languages": [
       {
         "id": "flexibleSearchQuery",
-        "extensions": [
-          ".sql",
-          ".fsql"
-        ],
         "aliases": [
           "fsql",
           "flexQuery"
         ],
+        "extensions": [
+          ".sql",
+          ".fsql"
+        ],
         "configuration": "./syntaxes/flexibleSearchQuery.language-configuration.json"
+      },
+      {
+        "id": "groovy",
+        "aliases": [
+          "Groovy"
+        ],
+        "extensions": [
+          ".grovvy"
+        ]
       }
     ],
+    "menus": {
+      "commandPalette": [
+        {
+          "when": "resourceExtname == .sql",
+          "command": "vscode-hybris-tools.flexibleSearchQuery.executeRawSQL"
+        },
+        {
+          "when": "resourceExtname == .fsql",
+          "command": "vscode-hybris-tools.flexibleSearchQuery.execute"
+        },
+        {
+          "when": "resourceExtname == .groovy",
+          "command": "vscode-hybris-tools.groovy.execute"
+        },
+        {
+          "when": "resourceExtname == .groovy",
+          "command": "vscode-hybris-tools.groovy.executeAndCommit"
+        }
+      ]
+    },
     "grammars": [
       {
         "language": "flexibleSearchQuery",

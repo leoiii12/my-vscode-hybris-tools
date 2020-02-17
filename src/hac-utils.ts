@@ -31,6 +31,12 @@ export interface FlexQueryExecResult {
   parametersAsString: string
 }
 
+export interface GroovyExecResult {
+  stacktraceText: string
+  executionResult: string
+  outputText: string
+}
+
 export class HacUtils {
   private axiosInstance: AxiosInstance | undefined
   private initTimestamp: number | undefined
@@ -153,6 +159,47 @@ export class HacUtils {
     }
 
     const res = await this.axiosInstance!.post('/console/flexsearch/execute', qs.stringify(executeForm), {
+      headers: {
+        Cookie: sessionId,
+      },
+    })
+
+    return res.data
+  }
+
+  public async executeGroovy(commit: boolean, script: string): Promise<GroovyExecResult> {
+    await this.logIn()
+
+    const csrf = this.csrf
+    const sessionId = this.sessionId
+
+    const executeForm = {
+      _csrf: csrf,
+      commit: commit,
+      scriptType: 'groovy',
+      script: script,
+    }
+
+    const res = await this.axiosInstance!.post('/console/scripting/execute', qs.stringify(executeForm), {
+      headers: {
+        Cookie: sessionId,
+      },
+    })
+
+    return res.data
+  }
+
+  public async clearCache(): Promise<any> {
+    await this.logIn()
+
+    const csrf = this.csrf
+    const sessionId = this.sessionId
+
+    const executeForm = {
+      _csrf: csrf,
+    }
+
+    const res = await this.axiosInstance!.post('/monitoring/cache/regionCache/clear', qs.stringify(executeForm), {
       headers: {
         Cookie: sessionId,
       },

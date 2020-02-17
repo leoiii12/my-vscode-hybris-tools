@@ -24,7 +24,7 @@ export namespace Config {
 
   export function getHttpTimeout(): number {
     // if (vscode)
-    //   return vscode.workspace.getConfiguration().get('vscode-hybris-tools.http.timeout') || 60 * 1000
+    //   return vscode.workspace.getConfiguration().get('vscode-hybris-tools.http.timeout') || 10 * 1000
 
     return 60 * 1000
   }
