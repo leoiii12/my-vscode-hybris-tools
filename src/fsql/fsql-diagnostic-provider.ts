@@ -5,6 +5,10 @@ export class FsqlDiagnosticProvider {
   constructor(private grammar: Grammar) {}
 
   public getDiagnostics(document: vscode.TextDocument): vscode.Diagnostic[] {
+    if (document.languageId !== 'flexibleSearchQuery') {
+      return []
+    }
+
     const text = document.getText()
 
     const parser = new Parser(this.grammar)
@@ -14,7 +18,10 @@ export class FsqlDiagnosticProvider {
       const position = document.positionAt(e.token.offset)
       const range = new vscode.Range(
         position,
-        new vscode.Position(position.line, position.character + e.token.value.length),
+        new vscode.Position(
+          position.line,
+          position.character + e.token.value.length,
+        ),
       )
       if (range === undefined) {
         return []

@@ -6,7 +6,8 @@ import { FsqlGrammarUtils } from './fsql-grammar-utils'
 
 export const FSQL_PLACEHOLDER = 'FsqlPlaceholder'
 
-export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider {
+export class FsqlCompletionItemProvider
+  implements vscode.CompletionItemProvider {
   private characterTokens = ['a']
   private numericTokens = ['0']
   private keywordTokens = [
@@ -54,7 +55,10 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
 
   constructor(private grammar: Grammar, hacUtils: HacUtils) {
     hacUtils
-      .executeFlexibleSearch(3000, `SELECT DISTINCT { code } AS InternalCode FROM { composedtype }`)
+      .executeFlexibleSearch(
+        3000,
+        `SELECT DISTINCT { code } AS InternalCode FROM { composedtype }`,
+      )
       .then(execResult => {
         this.types = execResult.resultList.map(rl => rl[0])
       })
@@ -66,20 +70,34 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
     cancellationToken: vscode.CancellationToken,
     context: CompletionContext,
   ): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
+    if (document.languageId !== 'flexibleSearchQuery') {
+      return []
+    }
+
     const text = document.getText()
 
     const tokenRange = document.getWordRangeAtPosition(position) as vscode.Range
     const tokenText = document.getText(tokenRange)
 
-    const beforeRange = new vscode.Range(document.positionAt(0), tokenRange.start)
-    const afterRange = new vscode.Range(tokenRange.end, document.positionAt(text.length))
+    const beforeRange = new vscode.Range(
+      document.positionAt(0),
+      tokenRange.start,
+    )
+    const afterRange = new vscode.Range(
+      tokenRange.end,
+      document.positionAt(text.length),
+    )
 
     const beforeText = document.getText(beforeRange)
     const afterText = document.getText(afterRange)
 
     // Parse and Get new tokens
     const start = new Date().getTime()
-    const tokens = this.getNewTokensIncrementally(beforeText, tokenText, afterText)
+    const tokens = this.getNewTokensIncrementally(
+      beforeText,
+      tokenText,
+      afterText,
+    )
     const end = new Date().getTime()
 
     console.log(`[provideCompletionItems] - Completed in ${end - start}ms.`)
@@ -87,10 +105,23 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
     return tokens.map(at => new vscode.CompletionItem(at))
   }
 
-  private getNewTokensIncrementally(beforeText: string, token: string, afterText: string): string[] {
-    let acceptedTokens = FsqlCompletionItemProvider.tryTokens(this.grammar, this.characterTokens, beforeText, afterText)
+  private getNewTokensIncrementally(
+    beforeText: string,
+    token: string,
+    afterText: string,
+  ): string[] {
+    let acceptedTokens = FsqlCompletionItemProvider.tryTokens(
+      this.grammar,
+      this.characterTokens,
+      beforeText,
+      afterText,
+    )
     if (acceptedTokens.length > 0 && /[a-zA-Z]+/.test(token)) {
-      const results = FsqlCompletionItemProvider.tryParseWithPlaceholder(this.grammar, beforeText, afterText)
+      const results = FsqlCompletionItemProvider.tryParseWithPlaceholder(
+        this.grammar,
+        beforeText,
+        afterText,
+      )
 
       if (results.length > 0) {
         const isAliasing = FsqlGrammarUtils.isAlias(results[0])
@@ -108,12 +139,22 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
       return this.types
     }
 
-    acceptedTokens = FsqlCompletionItemProvider.tryTokens(this.grammar, this.numericTokens, beforeText, afterText)
+    acceptedTokens = FsqlCompletionItemProvider.tryTokens(
+      this.grammar,
+      this.numericTokens,
+      beforeText,
+      afterText,
+    )
     if (acceptedTokens.length > 0) {
       return acceptedTokens
     }
 
-    acceptedTokens = FsqlCompletionItemProvider.tryTokens(this.grammar, this.keywordTokens, beforeText, afterText)
+    acceptedTokens = FsqlCompletionItemProvider.tryTokens(
+      this.grammar,
+      this.keywordTokens,
+      beforeText,
+      afterText,
+    )
     if (acceptedTokens.length > 0) {
       return acceptedTokens
     }
@@ -126,13 +167,20 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
     const matches = name.match(regExp)
 
     if (matches) {
-      return [`AS ${matches.join('').toLowerCase()}`, matches.join('').toLowerCase()]
+      return [
+        `AS ${matches.join('').toLowerCase()}`,
+        matches.join('').toLowerCase(),
+      ]
     }
 
     return []
   }
 
-  private static tryParseWithPlaceholder(grammar: Grammar, beforeText: string, afterText: string) {
+  private static tryParseWithPlaceholder(
+    grammar: Grammar,
+    beforeText: string,
+    afterText: string,
+  ) {
     const parser = new Parser(grammar)
 
     parser.feed(beforeText)
@@ -149,7 +197,12 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
     return parser.results
   }
 
-  private static tryTokens(grammar: Grammar, trialTokens: string[], beforeText: string, afterText: string) {
+  private static tryTokens(
+    grammar: Grammar,
+    trialTokens: string[],
+    beforeText: string,
+    afterText: string,
+  ) {
     const parser = new Parser(grammar)
 
     parser.feed(beforeText)

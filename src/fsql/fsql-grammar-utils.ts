@@ -6,7 +6,12 @@ export namespace FsqlGrammarUtils {
     let is = false
 
     traverse(parsingResult).forEach(function(v) {
-      if (this.key === 'as' && v !== null && 'value' in v && v.value === FSQL_PLACEHOLDER) {
+      if (
+        this.key === 'as' &&
+        v !== null &&
+        'value' in v &&
+        v.value === FSQL_PLACEHOLDER
+      ) {
         is = true
       }
     })

@@ -67,7 +67,10 @@ export class HacUtils {
   constructor() {}
 
   private async initSession() {
-    if (this.initTimestamp !== undefined && new Date().getTime() - this.initTimestamp < 1000 * 60 * 5) {
+    if (
+      this.initTimestamp !== undefined &&
+      new Date().getTime() - this.initTimestamp < 1000 * 60 * 5
+    ) {
       return
     }
 
@@ -119,15 +122,22 @@ export class HacUtils {
       'X-CSRF-TOKEN': logInCsrf,
     }
 
-    const logInRes = await this.axiosInstance!.post('/j_spring_security_check', qs.stringify(logInForm), {
-      headers,
-    })
-
-    const consoleImpexImportRes = await this.axiosInstance!.get('/console/impex/import', {
-      headers: {
-        Cookie: this.sessionId,
+    const logInRes = await this.axiosInstance!.post(
+      '/j_spring_security_check',
+      qs.stringify(logInForm),
+      {
+        headers,
       },
-    })
+    )
+
+    const consoleImpexImportRes = await this.axiosInstance!.get(
+      '/console/impex/import',
+      {
+        headers: {
+          Cookie: this.sessionId,
+        },
+      },
+    )
 
     const consoleImpexImportCsrf = cheerio
       .load(consoleImpexImportRes.data)('input[name=_csrf]')
@@ -138,7 +148,11 @@ export class HacUtils {
     return this.credentials
   }
 
-  public async executeFlexibleSearch(maxCount: number, fsql?: string, sql?: string): Promise<FlexQueryExecResult> {
+  public async executeFlexibleSearch(
+    maxCount: number,
+    fsql?: string,
+    sql?: string,
+  ): Promise<FlexQueryExecResult> {
     if (fsql === undefined && sql === undefined) {
       throw new Error()
     }
@@ -158,16 +172,23 @@ export class HacUtils {
       user: 'admin',
     }
 
-    const res = await this.axiosInstance!.post('/console/flexsearch/execute', qs.stringify(executeForm), {
-      headers: {
-        Cookie: sessionId,
+    const res = await this.axiosInstance!.post(
+      '/console/flexsearch/execute',
+      qs.stringify(executeForm),
+      {
+        headers: {
+          Cookie: sessionId,
+        },
       },
-    })
+    )
 
     return res.data
   }
 
-  public async executeGroovy(commit: boolean, script: string): Promise<GroovyExecResult> {
+  public async executeGroovy(
+    commit: boolean,
+    script: string,
+  ): Promise<GroovyExecResult> {
     await this.logIn()
 
     const csrf = this.csrf
@@ -180,11 +201,15 @@ export class HacUtils {
       script: script,
     }
 
-    const res = await this.axiosInstance!.post('/console/scripting/execute', qs.stringify(executeForm), {
-      headers: {
-        Cookie: sessionId,
+    const res = await this.axiosInstance!.post(
+      '/console/scripting/execute',
+      qs.stringify(executeForm),
+      {
+        headers: {
+          Cookie: sessionId,
+        },
       },
-    })
+    )
 
     return res.data
   }
@@ -199,11 +224,15 @@ export class HacUtils {
       _csrf: csrf,
     }
 
-    const res = await this.axiosInstance!.post('/monitoring/cache/regionCache/clear', qs.stringify(executeForm), {
-      headers: {
-        Cookie: sessionId,
+    const res = await this.axiosInstance!.post(
+      '/monitoring/cache/regionCache/clear',
+      qs.stringify(executeForm),
+      {
+        headers: {
+          Cookie: sessionId,
+        },
       },
-    })
+    )
 
     return res.data
   }
