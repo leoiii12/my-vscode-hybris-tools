@@ -1,9 +1,6 @@
 @{%
   const moo = require('moo')
 
-  const LETTER_REGEXP = /[a-zA-Z]/;
-  const isCharLetter = (char) => LETTER_REGEXP.test(char);
-
   function ci(text) {
     return [text.toLowerCase(), text.toUpperCase()];
   };

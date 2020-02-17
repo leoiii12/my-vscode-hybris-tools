@@ -1,16 +1,35 @@
 import * as traverse from 'traverse'
-import { FSQL_PLACEHOLDER } from './fsql-completion-item-provider'
+import { FsqlUtils } from './fsql-utils'
 
 export namespace FsqlGrammarUtils {
-  export function isAlias(parsingResult: any) {
+  export function getType(parsingResultWithPlaceholder: any) {
+    let type: string | undefined = undefined
+
+    traverse(parsingResultWithPlaceholder).forEach(function(v) {
+      if (
+        v !== null &&
+        'value' in v &&
+        v.value === FsqlUtils.FSQL_PLACEHOLDER
+      ) {
+        let parentNode = this.parent
+
+        // TODO
+        type = 'identifier'
+      }
+    })
+
+    return type
+  }
+
+  export function isAlias(parsingResultWithPlaceholder: any) {
     let is = false
 
-    traverse(parsingResult).forEach(function(v) {
+    traverse(parsingResultWithPlaceholder).forEach(function(v) {
       if (
         this.key === 'as' &&
         v !== null &&
         'value' in v &&
-        v.value === FSQL_PLACEHOLDER
+        v.value === FsqlUtils.FSQL_PLACEHOLDER
       ) {
         is = true
       }

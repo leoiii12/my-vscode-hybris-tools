@@ -5,9 +5,6 @@ function id(x) { return x[0]; }
 
   const moo = require('moo')
 
-  const LETTER_REGEXP = /[a-zA-Z]/;
-  const isCharLetter = (char) => LETTER_REGEXP.test(char);
-
   function ci(text) {
     return [text.toLowerCase(), text.toUpperCase()];
   };

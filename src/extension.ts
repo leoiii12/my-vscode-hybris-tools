@@ -7,6 +7,7 @@ import { HacUtils } from './hac-utils'
 import { FsqlDiagnosticProvider } from './fsql/fsql-diagnostic-provider'
 import { MemFS } from './memfs'
 import * as Papa from 'papaparse'
+import { FsqlSignatureHelpProvider } from './fsql/fsql-signature-help-provider'
 
 const grammar = require('../syntaxes/flexibleSearchQuery.js')
 
@@ -71,6 +72,17 @@ export function activate(context: vscode.ExtensionContext) {
   )
 
   /**
+   * Help With Function and Method Signatures
+   */
+  context.subscriptions.push(
+    vscode.languages.registerSignatureHelpProvider(
+      'flexibleSearchQuery',
+      new FsqlSignatureHelpProvider(Grammar.fromCompiled(grammar), hacUtils),
+      ...['.', ':'],
+    ),
+  )
+
+  /**
    * Commands
    */
   context.subscriptions.push(
@@ -87,7 +99,10 @@ export function activate(context: vscode.ExtensionContext) {
           getSelectedTextOrDocumentText(editor),
         )
 
-        await openCsvWindow(flexQueryExecResult.headers, flexQueryExecResult.resultList)
+        await openCsvWindow(
+          flexQueryExecResult.headers,
+          flexQueryExecResult.resultList,
+        )
       },
     ),
     vscode.commands.registerCommand(
@@ -104,7 +119,10 @@ export function activate(context: vscode.ExtensionContext) {
           getSelectedTextOrDocumentText(editor),
         )
 
-        await openCsvWindow(flexQueryExecResult.headers, flexQueryExecResult.resultList)
+        await openCsvWindow(
+          flexQueryExecResult.headers,
+          flexQueryExecResult.resultList,
+        )
       },
     ),
     vscode.commands.registerCommand(
@@ -147,7 +165,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() { }
+export function deactivate() {}
 
 function getSelectedTextOrDocumentText(editor: vscode.TextEditor) {
   let selection = editor.selection
@@ -159,12 +177,12 @@ function getSelectedTextOrDocumentText(editor: vscode.TextEditor) {
 }
 
 function ncrDecode(str: string) {
-  str = str.replace(/(&#)(\d{1,6});/gi, function ($0) {
+  str = str.replace(/(&#)(\d{1,6});/gi, function($0) {
     return String.fromCharCode(
       parseInt(escape($0).replace(/(%26%23)(\d{1,6})(%3B)/g, '$2')),
     )
   })
-  str = str.replace(/(&#x)(\w{1,4});/gi, function ($0) {
+  str = str.replace(/(&#x)(\w{1,4});/gi, function($0) {
     return String.fromCharCode(
       parseInt(escape($0).replace(/(%26%23x)(\w{1,4})(%3B)/g, '$2'), 16),
     )

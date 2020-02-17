@@ -3,8 +3,7 @@ import { CompletionContext } from 'vscode'
 import { Parser, Grammar } from 'nearley'
 import { HacUtils } from '../hac-utils'
 import { FsqlGrammarUtils } from './fsql-grammar-utils'
-
-export const FSQL_PLACEHOLDER = 'FsqlPlaceholder'
+import { FsqlUtils } from './fsql-utils'
 
 export class FsqlCompletionItemProvider
   implements vscode.CompletionItemProvider {
@@ -74,32 +73,21 @@ export class FsqlCompletionItemProvider
       return []
     }
 
-    const text = document.getText()
+    const start = new Date().getTime()
 
-    const tokenRange = document.getWordRangeAtPosition(position) as vscode.Range
-    const tokenText = document.getText(tokenRange)
-
-    const beforeRange = new vscode.Range(
-      document.positionAt(0),
-      tokenRange.start,
+    const { beforeText, tokenText, afterText } = FsqlUtils.getBeforeAfterText(
+      document,
+      position,
     )
-    const afterRange = new vscode.Range(
-      tokenRange.end,
-      document.positionAt(text.length),
-    )
-
-    const beforeText = document.getText(beforeRange)
-    const afterText = document.getText(afterRange)
 
     // Parse and Get new tokens
-    const start = new Date().getTime()
     const tokens = this.getNewTokensIncrementally(
       beforeText,
       tokenText,
       afterText,
     )
-    const end = new Date().getTime()
 
+    const end = new Date().getTime()
     console.log(`[provideCompletionItems] - Completed in ${end - start}ms.`)
 
     return tokens.map(at => new vscode.CompletionItem(at))
@@ -107,7 +95,7 @@ export class FsqlCompletionItemProvider
 
   private getNewTokensIncrementally(
     beforeText: string,
-    token: string,
+    tokenText: string,
     afterText: string,
   ): string[] {
     let acceptedTokens = FsqlCompletionItemProvider.tryTokens(
@@ -116,8 +104,8 @@ export class FsqlCompletionItemProvider
       beforeText,
       afterText,
     )
-    if (acceptedTokens.length > 0 && /[a-zA-Z]+/.test(token)) {
-      const results = FsqlCompletionItemProvider.tryParseWithPlaceholder(
+    if (acceptedTokens.length > 0 && /[a-zA-Z]+/.test(tokenText)) {
+      const results = FsqlUtils.tryParseWithPlaceholder(
         this.grammar,
         beforeText,
         afterText,
@@ -162,41 +150,6 @@ export class FsqlCompletionItemProvider
     return []
   }
 
-  private static getSuggestedAliasNames(name: string): string[] {
-    const regExp = /[A-Z]/g
-    const matches = name.match(regExp)
-
-    if (matches) {
-      return [
-        `AS ${matches.join('').toLowerCase()}`,
-        matches.join('').toLowerCase(),
-      ]
-    }
-
-    return []
-  }
-
-  private static tryParseWithPlaceholder(
-    grammar: Grammar,
-    beforeText: string,
-    afterText: string,
-  ) {
-    const parser = new Parser(grammar)
-
-    parser.feed(beforeText)
-    parser.feed(' ')
-
-    parser.feed(FSQL_PLACEHOLDER)
-    parser.feed(' ')
-
-    parser.feed(afterText)
-    parser.feed(' ')
-
-    parser.finish()
-
-    return parser.results
-  }
-
   private static tryTokens(
     grammar: Grammar,
     trialTokens: string[],
@@ -228,5 +181,19 @@ export class FsqlCompletionItemProvider
 
       return true
     })
+  }
+
+  private static getSuggestedAliasNames(name: string): string[] {
+    const regExp = /[A-Z]/g
+    const matches = name.match(regExp)
+
+    if (matches) {
+      return [
+        `AS ${matches.join('').toLowerCase()}`,
+        matches.join('').toLowerCase(),
+      ]
+    }
+
+    return []
   }
 }
