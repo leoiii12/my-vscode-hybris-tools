@@ -14,6 +14,7 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
     'FROM',
     'WHERE 1 = 1',
     'GROUP BY',
+    'ORDER BY',
     'UNION',
     'ALL',
     'EXCEPT',
@@ -26,8 +27,8 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
     'FIRST',
     'LAST',
 
-    'LEFT',
-    'JOIN',
+    'LEFT JOIN placeholder',
+    'JOIN placeholder',
     'ON 1 = 1',
     'AS placeholder',
 
@@ -35,7 +36,7 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
     'OR',
 
     'IS NULL',
-    'IS',
+    'IS NOT NULL',
     'NOT',
     'NULL',
 
@@ -125,7 +126,7 @@ export class FsqlCompletionItemProvider implements vscode.CompletionItemProvider
     const matches = name.match(regExp)
 
     if (matches) {
-      return [matches.join('').toLowerCase()]
+      return [`AS ${matches.join('').toLowerCase()}`, matches.join('').toLowerCase()]
     }
 
     return []
