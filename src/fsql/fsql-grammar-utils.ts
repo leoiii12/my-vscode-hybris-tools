@@ -2,40 +2,23 @@ import * as traverse from 'traverse'
 import { FsqlUtils } from './fsql-utils'
 
 export namespace FsqlGrammarUtils {
-  export function getType(parsingResultWithPlaceholder: any) {
+  export function getPlaceholderType(parsingResultWithPlaceholder: any) {
     let type: string | undefined = undefined
 
     traverse(parsingResultWithPlaceholder).forEach(function(v) {
       if (
         v !== null &&
+        typeof v === 'object' &&
         'value' in v &&
         v.value === FsqlUtils.FSQL_PLACEHOLDER
       ) {
-        let parentNode = this.parent
+        type = `${this.key}`
 
-        // TODO
-        type = 'identifier'
+        this.stop()
       }
     })
 
     return type
-  }
-
-  export function isAlias(parsingResultWithPlaceholder: any) {
-    let is = false
-
-    traverse(parsingResultWithPlaceholder).forEach(function(v) {
-      if (
-        this.key === 'as' &&
-        v !== null &&
-        'value' in v &&
-        v.value === FsqlUtils.FSQL_PLACEHOLDER
-      ) {
-        is = true
-      }
-    })
-
-    return is
   }
 
   export function getReferencedTypeNames(parsingResult: any): string[] {

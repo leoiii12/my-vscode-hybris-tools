@@ -52,7 +52,7 @@ export class FsqlCompletionItemProvider
 
   private types: string[] = []
 
-  constructor(private grammar: Grammar, hacUtils: HacUtils) {
+  constructor(private grammar: Grammar, private hacUtils: HacUtils) {
     hacUtils
       .executeFlexibleSearch(
         3000,
@@ -87,9 +87,7 @@ export class FsqlCompletionItemProvider
       afterText,
     )
 
-    const end = new Date().getTime()
-    console.log(`[provideCompletionItems] - Completed in ${end - start}ms.`)
-
+    console.log(`[FsqlCompletionItemProvider] - Completed in ${new Date().getTime() - start}ms.`)
     return tokens.map(at => new vscode.CompletionItem(at))
   }
 
@@ -112,15 +110,18 @@ export class FsqlCompletionItemProvider
       )
 
       if (results.length > 0) {
-        const isAliasing = FsqlGrammarUtils.isAlias(results[0])
-        const typeNames = FsqlGrammarUtils.getReferencedTypeNames(results[0])
+        const type = FsqlGrammarUtils.getPlaceholderType(results[0])!
+        switch (type) {
+          case 'attribute':
+            return []
+          case 'as':
+            const typeNames = FsqlGrammarUtils.getReferencedTypeNames(results[0])
 
-        if (isAliasing) {
-          return typeNames.reduce((acc: string[], v: string) => {
-            const names = FsqlCompletionItemProvider.getSuggestedAliasNames(v)
+            return typeNames.reduce((acc: string[], v: string) => {
+              const names = FsqlCompletionItemProvider.getSuggestedAliasNames(v)
 
-            return acc.concat(names)
-          }, [] as string[])
+              return acc.concat(names)
+            }, [] as string[])
         }
       }
 
@@ -196,4 +197,5 @@ export class FsqlCompletionItemProvider
 
     return []
   }
+
 }

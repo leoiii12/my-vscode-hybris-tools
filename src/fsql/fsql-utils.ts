@@ -63,18 +63,24 @@ export namespace FsqlUtils {
   ) {
     const parser = new Parser(grammar)
 
-    parser.feed(beforeText)
-    parser.feed(' ')
+    try {
+      parser.feed(beforeText)
+      parser.feed(' ')
 
-    parser.feed(FSQL_PLACEHOLDER)
-    parser.feed(' ')
+      parser.feed(FSQL_PLACEHOLDER)
+      parser.feed(' ')
 
-    parser.feed(afterText)
-    parser.feed(' ')
+      parser.feed(afterText)
+      parser.feed(' ')
 
-    parser.finish()
+      parser.finish()
 
-    return parser.results
+      return parser.results
+    } catch (e) {
+      // console.log(e)
+    }
+
+    return []
   }
 
   export function getPositionType(
@@ -82,18 +88,20 @@ export namespace FsqlUtils {
     position: vscode.Position,
     grammar: Grammar,
   ) {
-    const { beforeText, tokenText, afterText } = FsqlUtils.getBeforeAfterText(
+    const { beforeText, afterText } = FsqlUtils.getBeforeAfterText(
       document,
       position,
     )
 
-    const results = tryParseWithPlaceholder(grammar, beforeText, afterText)
+    const results = tryParseWithPlaceholder(
+      grammar,
+      beforeText + '.',
+      afterText,
+    )
     if (results.length === 0) {
       return undefined
     }
 
-    const type = FsqlGrammarUtils.getType(results[0])
-
-    return type
+    return FsqlGrammarUtils.getPlaceholderType(results[0])
   }
 }

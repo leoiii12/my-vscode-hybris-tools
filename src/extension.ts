@@ -7,7 +7,7 @@ import { HacUtils } from './hac-utils'
 import { FsqlDiagnosticProvider } from './fsql/fsql-diagnostic-provider'
 import { MemFS } from './memfs'
 import * as Papa from 'papaparse'
-import { FsqlSignatureHelpProvider } from './fsql/fsql-signature-help-provider'
+import { FsqlCompletionAttributeItemProvider } from './fsql/fsql-completion-attribute-item-provider'
 
 const grammar = require('../syntaxes/flexibleSearchQuery.js')
 
@@ -67,18 +67,14 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
       'flexibleSearchQuery',
-      new FsqlCompletionItemProvider(Grammar.fromCompiled(grammar), hacUtils),
+      new FsqlCompletionItemProvider(Grammar.fromCompiled(grammar), new HacUtils()),
     ),
   )
-
-  /**
-   * Help With Function and Method Signatures
-   */
   context.subscriptions.push(
-    vscode.languages.registerSignatureHelpProvider(
+    vscode.languages.registerCompletionItemProvider(
       'flexibleSearchQuery',
-      new FsqlSignatureHelpProvider(Grammar.fromCompiled(grammar), hacUtils),
-      ...['.', ':'],
+      new FsqlCompletionAttributeItemProvider(Grammar.fromCompiled(grammar), new HacUtils()),
+      ...['.'],
     ),
   )
 
