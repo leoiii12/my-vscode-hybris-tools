@@ -11,14 +11,16 @@ export class FsqlDiagnosticProvider {
     try {
       parser.feed(text)
     } catch (e) {
-      const position = document.positionAt(e.offset)
-      const wordPosition = document.getWordRangeAtPosition(position)
-      if (wordPosition === undefined) {
+      const position = document.positionAt(e.token.offset)
+      const range = new vscode.Range(
+        position,
+        new vscode.Position(position.line, position.character + e.token.value.length),
+      )
+      if (range === undefined) {
         return []
       }
 
-      const diagnostic = new vscode.Diagnostic(wordPosition, e.message)
-      return [diagnostic]
+      return [new vscode.Diagnostic(range, e.message)]
     }
 
     return []

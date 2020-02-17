@@ -1,24 +1,131 @@
-main -> query _ {% (elems) => (elems[0]) %}
+@{%
+  const moo = require('moo')
+
+  const LETTER_REGEXP = /[a-zA-Z]/;
+  const isCharLetter = (char) => LETTER_REGEXP.test(char);
+
+  function ci(text) {
+    return [text.toLowerCase(), text.toUpperCase()];
+  };
+
+  const lexer = moo.compile({
+    ws: /[ \t\v\f]+/,
+    nl: { match: /[\r\n]+/, lineBreaks: true },
+
+    plus: '+',
+    minus: '-',
+    times: '*',
+    obelus: '/',
+
+    not_equal: /<>|!=/,
+    less_than_and_equal: '<=',
+    greater_than_and_equal: '>=',
+    less_than: '<',
+    greater_than: '>',
+    equal: '=',
+
+    lcbrac: '{',
+    rcbrac: '}',
+    lparen: '(',
+    rparen: ')',
+    lsbrac: '[',
+    rsbrac: ']',
+
+    dot: '.',
+    colon: ':',
+    comma: ',',
+    question_mark: '?',
+    exclamation_mark: '!',
+
+    quoted_identifier: /\".*?\"/,
+
+    identifier: {
+      match: /[a-zA-Z\_][a-zA-Z\_0-9]*/,
+      type: moo.keywords({
+        true: ci('true'),
+        false: ci('false'),
+        null: ci('null'),
+
+        select: ci('select'),
+        from: ci('from'),
+        where: ci('where'),
+        group: ci('group'),
+        having: ci('having'),
+        order: ci('order'),
+        by: ci('by'),
+
+        asc: ci('asc'),
+        desc: ci('desc'),
+        nulls: ci('nulls'),
+        first: ci('first'),
+        last: ci('last'),
+
+        left: ci('left'),
+        join: ci('join'),
+        on: ci('on'),
+
+        or: ci('or'),
+        or_: ci('||'),
+        and: ci('and'),
+        not: ci('not'),
+        like: ci('like'),
+        between: ci('between'),
+        is: ci('is'),
+        in_: ci('in'),
+
+        union: ci('union'),
+        all: ci('all'),
+        except: ci('except'),
+        minus: ci('minus'),
+        intersect: ci('intersect'),
+      
+        count: ci('count'),
+        distinct: ci('distinct'),
+      
+        case_: ci('case'),
+        when: ci('when'),
+        then: ci('then'),
+        else_: ci('else'),
+        end: ci('end'),
+      
+        as: ci('as'),
+      }),
+    },
+
+    number_literal: /[0-9]+/,
+    string_literal: /\'.*?\'/,
+    any: /.+?/
+  });
+%}
+
+@lexer lexer
+
+main ->
+  query _ {% (elems) => (elems[0]) %}
 
 query ->
-  "SELECT"i __ select_expression ( _ "," _ select_expression ):* __
-  "FROM"i __ table_expression
-  ( __ "WHERE"i __ expression ):?
-  ( __ "GROUP"i __ "BY"i __ column_ref ( _ "," _ column_ref ):* ( __ "HAVING"i __ expression ):? ):?
-  ( __ "ORDER"i __ "BY"i __ order ( _ "," _ order ):* ):?
-  ( __ "UNION"i ( __ "ALL"i ):? __ query ):?
-  ( __ "EXCEPT"i __ query ):?
-  ( __ "MINUS"i __ query ):?
-  ( __ "INTERSECT"i __ query ):? {%
+  %select __ select_expression ( _ %comma _ select_expression ):* _
+  %from __ from
+  ( __ %where __ expression ):?
+  ( __ %group __ %by __ ( column_ref ( _ %comma _ column_ref ):* ) ( __ %having __ expression):? ):?
+  ( __ %order __ %by __ ( order_expression ( _ %comma _ order_expression ):* ) ):?
+  ( __ %union __ ( %all _ ):? query ):?
+  ( __ %except __ query ):?
+  ( __ %minus __ query ):?
+  ( __ %intersect __ query ):? {%
     (elems) => {
       return {
         select: [elems[2], ...elems[3].map(subElements => subElements[3])],
         from: elems[7],
         where: elems[8] == null ? null : elems[8][3],
-        // TODO
-        groupBy: elems[9],
-        // TODO
-        orderBy: elems[10],
+        groupBy: elems[9] == null ? null : {
+          type: 'group_by',
+          columns: [elems[9][5][0], ...elems[9][5][1].map((elem) => elem[3])],
+          having: elems[9][6] == null ? null : elems[9][6][3],
+        },
+        orderBy: elems[10] == null ? null : [
+          elems[10][5][0], ...elems[10][5][1].map((elem) => elem[3])
+        ],
         union: elems[11] == null ? null : { isAll: elems[11][2] != null, query: elems[11][4] },
         except: elems[12] == null ? null : { query: elems[12][3] },
         minus: elems[13] == null ? null : { query: elems[13][3] },
@@ -28,81 +135,79 @@ query ->
   %}
 
 select_expression ->
-  "*" {%
+  %times {%
     (elems) => {
-      return { columnName: "*" }
+      return { type: 'select_expression', column: "*" }
     }
   %}
-  | name _ "." _ "*" {%
+  | identifier _ %dot _ %times {%
     (elems) => {
-      return { tableAlias: elems[0], columnName: "*" }
+      return { type: 'select_expression', tableAlias: elems[0], column: "*" }
     }
   %}
-  | "{" _ name _ "." _ "*" _  "}" {%
+  | %lcbrac _ identifier _ %dot _ %times _  %rcbrac {%
     (elems) => {
-      return { typeAlias: elems[2], columnName: "*" }
+      return { type: 'select_expression', typeAlias: elems[2], column: "*" }
     }
   %}
-  | term ( ( __ "AS"i ):? __ name ):? {%
+  | term ( ( __ %as ):? __ identifier ):? {%
     (elems) => {
-      return { term: elems[0], as: elems[1] == null ? null : elems[1][2] }
+      return { type: 'select_expression', term: elems[0], as: elems[1] == null ? null : elems[1][2] }
     }
+  %}
+
+from ->
+  table_expression ( _ %comma _ table_expression ):* {%
+    (elems) => ([elems[0], ...elems[1].map((elem) => elem[3])])
   %}
 
 table_expression ->
-  (
-    subquery                    {% (elems) => { return { subquery: elems[0] } } %}
-    | "(" __ subquery __ ")" ( __ "AS" ):? __ name  {% (elems) => { return { subquery: elems[2], as: elems[7] } } %}
-    | types                     {% (elems) => { return { types: elems[0] } } %}
-  ) ( _ "," _ table_expression ):? {%
-    (elems) => {
-      if (elems[1] === null) {
-        return elems[0]
-      }
+  subquery {% (elems) => { return { type: 'table_expression', subquery: elems[0] } } %}
+  | %lparen __ subquery __ %rparen ( __ %as ):? __ identifier {% (elems) => { return { type: 'table_expression', subquery: elems[2], as: elems[7] } } %}
+  | types {% (elems) => { return { type: 'table_expression', types: elems[0] } } %}
 
-      return [elems[0], elems[1][3]]
-    }
-  %}
-
-order ->
-  column_ref ( __ ( "ASC"i | "DESC"i ) ):? ( __ "NULLS"i __ ( "FIRST"i | "LAST"i ) ):? {%
+order_expression ->
+  column_ref ( __ ( %asc | %desc ) ):? ( __ %nulls __ ( %first | %last ) ):? {%
     (elems) => {
       return {
+        type: 'order_expression',
         column: elems[0],
-        ascDesc: elems[1] === null || elems[1][1] === null  ? null : elems[1][1][0].toLowerCase(),
-        nullsFirstLast: elems[2] === null || elems[2][3] === null ? null : elems[2][3][0].toLowerCase()
+        ascDesc: elems[1] === null || elems[1][1] === null ? null : elems[1][1][0],
+        nullsFirstLast: elems[2] === null || elems[2][3] === null ? null : elems[2][3][0]
       }
     }
   %}
 
 # ####################
-# Types
+# Types (htype = `Hybris Type`)
 # ####################
 
 types ->
-  type | type_join {%
-  (elems) => (elems[0])
+  ( type | type_join ) {%
+    (elems) => (elems[0][0])
   %}
 type ->
-  "{" _ single_type_cluase _ "}" {%
-    (elems) => ({ type: elems[2] })
+  %lcbrac _ single_type_clause _ %rcbrac {%
+    (elems) => ({ type: 'htype', htype: elems[2] })
   %}
 type_join ->
-  "{" _ single_type_cluase ( ( __ "LEFT"i ):? __ "JOIN"i __ single_type_cluase ( __ "ON"i __ expression ):?  ):+ _ "}"  {%
+  %lcbrac _ single_type_clause ( ( __ %left ):? __ %join __ single_type_clause ( __ %on __ expression ):?  ):+ _ %rcbrac {%
     (elems) => ({
-      type: elems[2],
-      typeJoin: elems[3].map((joinElems) => {
+      type: 'htype',
+      htype: elems[2],
+      htypeJoin: elems[3].map((joinElems) => {
         return {
-          isLeft: joinElems[0] != null ,
-          type: joinElems[4],
+          type: 'htype_join',
+          isLeft: joinElems[0] != null,
+          htype: joinElems[4],
           on: joinElems[5] == null ? null : joinElems[5][3]
         }
       })
     })
   %}
-single_type_cluase ->
-  name (_ "!"):? ( ( __ "AS"i ):? __ name):? {%
-    (elems) => ({ typeName: elems[0], isSolid: elems[1] !== null, as: elems[2] == null ? null : elems[2][2] })
+single_type_clause ->
+  identifier ( _ %exclamation_mark):? ( ( __ %as ):? __ identifier ):? {%
+    (elems) => ({ type: 'single_type_clause', typeName: elems[0], isSolid: elems[1] != null, as: elems[2] == null ? null : elems[2][2] })
   %}
 
 # ####################
@@ -110,107 +215,132 @@ single_type_cluase ->
 # ####################
 
 expression ->
-  and_condition ( __ "OR"i __ and_condition):* {%
+  and_condition ( __ %or __ and_condition):*  {%
     (elems) => {
       if (elems[1].length == 0) {
         return elems[0]
       }
       return {
-        operand_1: elems[0],
-        operands: elems[1].map(subElements => ({ operator: subElements[1], operand: subElements[3] }))
+        type: 'or_condition',
+        operands: [elems[0], ...elems[1].map(elem => (elem[3]))]
       }
     }
   %}
 
 and_condition ->
-  condition ( __ "AND"i __ condition ):* {%
+  condition ( __ %and __ condition ):* {%
     (elems) => {
       if (elems[1].length == 0) {
         return elems[0]
       }
       return {
-        operand_1: elems[0],
-        operands: elems[1].map(subElements => ({ operator: subElements[1], operand: subElements[3] }))
+        type: 'and_condition',
+        operands: [elems[0], ...elems[1].map(elem => (elem[3]))]
       }
     }
   %}
 
 condition ->
   operand _ compare _ operand {%
-    (elems) => ({ operand_1: elems[0], comparator: elems[2], operand_2: elems[4] })
+    (elems) => ({ type: 'condition', operand_1: elems[0], comparator: elems[2], operand_2: elems[4] })
   %}
-  | operand __ ( "NOT"i __ ):? "IN"i __ "(" _ operand _ ")"
-  | operand __ ( "NOT"i __ ):? "LIKE"i __ operand {%
+  | operand __ ( %not __ ):? %in_ __ %lparen _ operand _ %rparen {%
     (elems) => {
       if (elems[2] == null) {
-        return { operand_1: elems[0], comparator: 'like', operand_2: elems[5] }
+        return { type: 'condition', operand_1: elems[0], comparator: 'IN', operand_2: elems[7] }
       }
-      return {
-        not: { operand_1: elems[0], comparator: 'like', operand_2: elems[5] }
-      }
+      return { type: 'condition', operand_1: elems[0], comparator: 'NOT IN', operand_2: elems[7] }
     }
   %}
-  | operand __ ( "NOT"i __ ):? "BETWEEN"i __ operand __ "AND"i __ operand {%
+  | operand __ ( %not __ ):? %like __ operand {%
     (elems) => {
       if (elems[2] == null) {
-        return { operand_1: elems[0], comparator: 'between', operand_2: elems[6], operand_3: elems[10] }
+        return { type: 'condition', operand_1: elems[0], comparator: 'LIKE', operand_2: elems[5] }
       }
-      return {
-        not: { operand_1: elems[0], comparator: 'between', operand_2: elems[6], operand_3: elems[10] }
-      }
+      return { type: 'condition', operand_1: elems[0], comparator: 'NOT LIKE', operand_2: elems[5] }
     }
   %}
-  | operand __ "IS"i __ ("NOT"i __):? type_null {%
+  | operand __ ( %not __ ):? %between __ operand __ %and __ operand {%
+    (elems) => {
+      if (elems[2] == null) {
+        return { type: 'condition', operand_1: elems[0], comparator: 'BETWEEN', operand_2: elems[6], operand_3: elems[10] }
+      }
+      return { type: 'condition', operand_1: elems[0], comparator: 'NOT BETWEEN', operand_2: elems[6], operand_3: elems[10] }
+    }
+  %}
+  | operand __ %is __ (%not __):? type_null {%
     (elems) => {
       if (elems[4] == null) {
-        return { operand_1: elems[0], comparator: 'is', operand_2: elems[5] }
+        return { type: 'condition', operand_1: elems[0], comparator: 'IS', operand_2: elems[5] }
       }
+      return { type: 'condition', operand_1: elems[0], comparator: 'IS NOT', operand_2: elems[5] }
+    }
+  %}
+  | %not __ expression {%
+    (elems) => ({ type: 'condition', expression: elems[2], isNot: true })
+  %}
+  | %lparen _ expression _ %rparen {%
+    (elems) => ({ type: 'condition', expression: elems[2] })
+  %}
+
+column_ref ->
+  %lcbrac _ identifier ( _ language ):? _ %rcbrac {%
+    (elems) => {
       return {
-        not: { operand_1: elems[0], comparator: 'is', operand_2: elems[5] }
+        type: 'column_ref',
+        typeAlias: null,
+        attribute: elems[2],
+        language: elems[3] == null ? null : elems[3][1],
+        modifiers: null
       }
     }
   %}
-  | "NOT"i __ expression      {% (elems) => ({ not: elems[2] }) %}
-  | "(" _ expression _ ")"    {% (elems) => (elems[1]) %}
-
-column_ref ->
-  "{" _ ( name _ [.:] _ ):? name ( _ language ):? ( _ [.:] _ modifiers ):? _ "}" {%
+  | %lcbrac _ ( identifier _ ( %dot | %colon ) _ ) identifier ( _ language ):? (_ ( %dot | %colon ) _ modifiers ):? _ %rcbrac {%
     (elems) => {
       return {
-        attributeName: elems[3],
+        type: 'column_ref',
         typeAlias: elems[2] == null ? null : elems[2][0],
+        attribute: elems[3],
         language: elems[4] == null ? null : elems[4][1],
         modifiers: elems[5] == null ? null : elems[5][3]
       }
     }
   %}
-  | name _ [.:] _ name {%
+  | identifier _ ( %dot | %colon ) _ identifier {%
     (elems) => {
       return {
+        type: 'column_ref',
         tableAlias: elems[0],
-        columnName: elems[4]
+        column: elems[4]
       }
     }
   %}
 language ->
-  "[" _ name _ "]"      {% (elems) => (elems[2]) %}
+  %lsbrac _ %identifier _ %rsbrac {%
+    (elems) => (elems[2])
+  %}
 modifiers ->
-  [clo]:+               {% (elems) => (elems.join("")) %}
+  %identifier {%
+    (elems) => (elems[0])
+  %}
 
 compare ->
-  ( "<>" | "<=" | ">=" | "=" | "<" | ">" | "!=" ) {% (elems) => { return elems[0][0]; } %}
+  ( %not_equal | %less_than_and_equal | %greater_than_and_equal | %equal | %less_than | %greater_than ) {%
+    (elems) => { return elems[0][0]; }
+  %}
 
 # ####################
 # Operand
 # ####################
 
 operand ->
-  summand ( __ "||" __ summand ):* {%
+  summand ( __ %or_ __ summand ):* {%
     (elems) => {
       if (elems[1].length == 0) {
         return elems[0]
       }
       return {
+        type: 'or_operand',
         operand_1: elems[0],
         operands: elems[1].map(subElements => ({ operator: subElements[1], operand: subElements[3] }))
       }
@@ -218,12 +348,13 @@ operand ->
   %}
 
 summand ->
-  factor ( __ ( "+" | "-" ) __ factor ):* {%
+  factor ( __ ( %plus | %minus ) __ factor ):* {%
     (elems) => {
       if (elems[1].length == 0) {
         return elems[0]
       }
       return {
+        type: 'pm_operand',
         operand_1: elems[0],
         operands: elems[1].map(subElements => ({ operator: subElements[1], operand: subElements[3] }))
       }
@@ -231,12 +362,13 @@ summand ->
   %}
 
 factor ->
-  term ( __ ( "*" | "/" ) __ term ):* {%
+  term ( __ ( %times | %obelus ) __ term ):* {%
     (elems) => {
       if (elems[1].length == 0) {
         return elems[0]
       }
       return {
+        type: 'to_operand',
         operand_1: elems[0],
         operands: elems[1].map(subElements => ({ operator: subElements[1], operand: subElements[3] }))
       }
@@ -248,154 +380,104 @@ factor ->
 # ####################
 
 term ->
-  value                   {% (elems) => { return elems[0]; } %}
-  | bind_parameter        {% (elems) => { return elems[0]; } %}
-  | function              {% (elems) => { return elems[0]; } %}
-  | case                  {% (elems) => { return elems[0]; } %}
-  | case_when             {% (elems) => { return elems[0]; } %}
-  | "(" _ operand _ ")"   {% (elems) => { return elems[2]; } %}
-  | ( ( "DISTINCT"i | "ALL"i ) __ ):? column_ref {%
-    (elems) => {
-      return {
-        isDistinct: elems[0] != null ? elems[0][0][0].toLowerCase() === 'distinct': false,
-        column: elems[1]
-      };
+  value {% (elems) => (elems[0]) %}
+  | bind_parameter {% (elems) => (elems[0]) %}
+  | function {% (elems) => (elems[0]) %}
+  | case {% (elems) => (elems[0]) %}
+  | case_when {% (elems) => (elems[0]) %}
+  | %lparen _ operand _ %rparen  {% (elems) => (elems[2]) %}
+  | ( ( %distinct | %all ) __ ):? column_ref {%
+    (elems) => { 
+      const columnRef = elems[1]
+      columnRef['isDistinct']  = elems[0] == null ? false : true
+
+      return columnRef
     }
   %}
-  | row_value_constructor {% (elems) => { return elems[0]; } %}
-  | subquery              {% (elems) => { return elems[0]; } %}
+  | row_value_constructor {% (elems) => (elems[0]) %}
+  | subquery {% (elems) => (elems[0]) %}
 
 value ->
-  ( 
-    type_numeric
-    | type_boolean
-    | type_null
-    | type_string
-  )                         {% (elems) => { return elems[0][0]; } %}
+  ( type_numeric | type_boolean | type_null | type_string ) {%
+    (elems) => (elems[0][0])
+  %}
 
 bind_parameter ->
-  ( "?" number | "?" name ) {%
-    (elems) => ({ bindName: elems[0][1] })
+  ( %question_mark %number_literal | %question_mark %identifier ) {%
+    (elems) => ({ type: 'bind_parameter', parameter_name: elems[0][1] })
   %}
 
 function ->
-  "COUNT"i _ "(" (_ "DISTINCT"i __):? ("*" | term) ")"  {%
-    // TODO
-    (elems) => ({ func: 'count', args: [ { isDistinct: elems[3] == null, column: elems[4][0] } ] })
+  %count _ ( %lparen ( _ %distinct _ ):? ( %times | term ) %rparen ) {%
+    (elems) => ({ type: 'function', function: 'COUNT', args: [elems[2][1] == null, elems[2][2][0]] })
   %}
-  | name _ "(" (_ term):? ( _ "," _ term ):* _ ")"      {%
+  | %identifier _ ( %lparen ( _ term ):? ( _ %comma _ term ):* _ %rparen ) {%
     (elems) => {
-      if (elems[2] == null) {
-        return { func: elems[0], args: [] }
+      if (elems[2][1] === null) {
+        return ({ type: 'function', function: elems[0], args: [] })
       }
 
-      return { func: elems[0], args: [elems[3][1], ...elems[4].map(subElems => subElems[3])] }
+      return ({ type: 'function', function: elems[0], args: [elems[2][1][1], ...elems[2][2].map(elem => elem[3])] })
     }
   %}
 
 case ->
-  "CASE"i __ term ( __ "WHEN"i __ expression __ "THEN"i __ term ):+ ( __ "ELSE"i __ term ):? __ "END"i {%
-    (elems) => {
-      // TODO
-      return { case: elems[2], when: elems[3], else: elems[4] }
-    }
+  %case_ __ term ( __ %when __ expression __ %then __ term ):+ ( __ %else_ __ term ):? __ %end {%
+    (elems) => ({ 
+      type: 'case',
+      case: elems[2], 
+      when: elems[3].map(whenElem => ({ when: whenElem[3], then: whenElem[7] })),
+      else: elems[4] === null ? null : elems[4][3],
+    })
   %}
 
 case_when ->
-  "CASE"i ( __ "WHEN"i __ expression  __ "THEN"i __ term ):+ ( __ "ELSE"i __ term ):? __ "END"i {%
-    (elems) => {
-      // TODO
-      return { when: elems[1], else: elems[2] }
-    }
+  %case_ ( __ %when __ expression  __ %then __ term ):+ ( __ %else_ __ term ):? __ %end {%
+    (elems) => ({
+      type: 'case_when',
+      when: elems[1].map(whenElem => ({ when: whenElem[3], then: whenElem[7] })),
+      else: elems[2] === null ? null : elems[2][3],
+    })
   %}
 
 row_value_constructor ->
-  "(" ( _ term ) (_ "," _ term ):* _ ")" {%
-    (elems) => ([elems[1][1], ...elems[2].map(subElements => subElements[3])])
+  %lparen ( _ term ) ( _ %comma _ term ):* _ %rparen {%
+    (elems) => ({ type: 'row_value_constructor', terms: [elems[1][1], ...elems[2].map((elem) => elem[3])] })
   %}
 
 subquery ->
-   "{{" _ query _ "}}" {%
-    (elems) => (elems[2])
+  ( %lcbrac _ %lcbrac ) _ query _ ( %rcbrac _ %rcbrac ) {%
+    (elems) => ({ type: 'subquery', query: elems[2]})
   %}
 
 # ####################
-# Name
+# Identifier
 # ####################
 
-name ->
-  [a-zA-Z_] [a-zA-Z_0-9]:*  {% (elems) => ([elems[0], ...elems[1]].join("")) %}
-  | quoted_name           {% (elems) => (elems[0]) %}
-
-quoted_name ->
-  dqstring                {% (elems) => (elems[0]) %}
+identifier ->
+  %identifier                               {% (elems) => (elems[0]) %}
+  | %quoted_identifier                      {% (elems) => (elems[0]) %}
 
 # ####################
-# Types
+# Type
 # ####################
 
-type_null -> "NULL"i      {% (elems) => (null) %}
+type_null -> %null                          {% (elems) => (elems[0]) %}
 
-type_boolean ->
-  ( "TRUE"i | "FALSE"i )  {% (elems) => (elems[0][0].toLowerCase() === "true") %}
+type_boolean -> ( %true | %false )          {% (elems) => (elems[0][0]) %}
 
-type_numeric ->
-  ( 
-    type_int
-    | type_decimal
-  )                       {% (elems) => (elems[0][0]) %}
-
+type_numeric -> ( type_int | type_decimal ) {% (elems) => (elems[0][0]) %}
 type_int ->
-  "-":? number            {% (elems) => (JSON.parse(elems.join(""))) %}
+  %minus:? %number_literal                  {% (elems) => (JSON.parse(elems.join(""))) %}
 type_decimal ->
-  "-":? number "." number {% (elems) => (JSON.parse(elems.join(""))) %}
+  %minus:? %number_literal
+  %dot %number_literal                      {% (elems) => (JSON.parse(elems.join(""))) %}
 
-type_string ->
-  sqstring                {% (elems) => (elems[0]) %}
-
-# ####################
-# Number
-# ####################
-
-number ->
-  [0-9]:+                 {% (elems) => (elems[0].join("")) %}
+type_string -> %string_literal              {% (elems) => (elems[0]) %}
 
 # ####################
-# String
+# Misc
 # ####################
 
-dqstring ->
-  "\"" dstrchar:* "\""    {% function(d) { return d[1].join(""); } %}
-sqstring ->
-  "'"  sstrchar:* "'"     {% function(d) { return d[1].join(""); } %}
-
-dstrchar -> [^\\"\n] {% id %}
-  | "\\" strescape {%
-  function(d) {
-    return JSON.parse("\""+d.join("")+"\"");
-  }
-%}
-
-sstrchar -> [^\\'\n] {% id %}
-  | "\\" strescape {%
-    function(d) { return JSON.parse("\"" + d.join("") + "\""); }
-  %}
-  | "\\'" {%
-    function(d) { return "'"; }
-  %}
-
-strescape -> ["\\/bfnrt] {% id %}
-  | "u" [a-fA-F0-9] [a-fA-F0-9] [a-fA-F0-9] [a-fA-F0-9] {%
-    function(d) {
-      return d.join("");
-    }
-  %}
-
-# ####################
-# Whitespace `builtin/whitespace.ne`
-# ####################
-
-_  -> wschar:* {% function(d) {return null;} %}
-__ -> wschar:+ {% function(d) {return null;} %}
-
-wschar -> [ \t\n\v\f] {% id %}
+_ ->  ( %ws | %nl ):*                       {% function(d) { return null; } %}
+__ -> ( %ws | %nl ):+                       {% function(d) { return null; } %}

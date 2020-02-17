@@ -6,7 +6,7 @@ export namespace FsqlGrammarUtils {
     let is = false
 
     traverse(parsingResult).forEach(function(v) {
-      if (v === FSQL_PLACEHOLDER && this.key === 'as') {
+      if (this.key === 'as' && v !== null && 'value' in v && v.value === FSQL_PLACEHOLDER) {
         is = true
       }
     })
@@ -17,7 +17,7 @@ export namespace FsqlGrammarUtils {
   export function getReferencedTypeNames(parsingResult: any): string[] {
     const types = traverse(parsingResult).reduce(function(acc, v) {
       if (this.key === 'typeName') {
-        acc.push(v)
+        acc.push(v.value)
       }
 
       return acc
