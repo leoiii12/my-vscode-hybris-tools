@@ -9,6 +9,9 @@
   };
 
   const lexer = moo.compile({
+    group_by: ['group by', 'GROUP BY'],
+    order_by: ['order by', 'ORDER BY'],
+
     ws: /[ \t\v\f]+/,
     nl: { match: /[\r\n]+/, lineBreaks: true },
 
@@ -49,10 +52,7 @@
         select: ci('select'),
         from: ci('from'),
         where: ci('where'),
-        group: ci('group'),
         having: ci('having'),
-        order: ci('order'),
-        by: ci('by'),
 
         asc: ci('asc'),
         desc: ci('desc'),
@@ -79,6 +79,8 @@
         minus: ci('minus'),
         intersect: ci('intersect'),
       
+        group_concat: ci('group_concat'),
+        separator: ci('separator'),
         count: ci('count'),
         distinct: ci('distinct'),
       
@@ -107,8 +109,8 @@ query ->
   %select __ select_expression ( _ %comma _ select_expression ):* _
   %from __ from
   ( __ %where __ expression ):?
-  ( __ %group __ %by __ ( column_ref ( _ %comma _ column_ref ):* ) ( __ %having __ expression):? ):?
-  ( __ %order __ %by __ ( order_expression ( _ %comma _ order_expression ):* ) ):?
+  ( __ %group_by __ ( column_ref ( _ %comma _ column_ref ):* ) ( __ %having __ expression):? ):?
+  ( __ %order_by __ ( order_expression ( _ %comma _ order_expression ):* ) ):?
   ( __ %union __ ( %all _ ):? query ):?
   ( __ %except __ query ):?
   ( __ %minus __ query ):?
@@ -120,11 +122,11 @@ query ->
         where: elems[8] == null ? null : elems[8][3],
         groupBy: elems[9] == null ? null : {
           type: 'group_by',
-          columns: [elems[9][5][0], ...elems[9][5][1].map((elem) => elem[3])],
-          having: elems[9][6] == null ? null : elems[9][6][3],
+          columns: [elems[9][3][0], ...elems[9][3][1].map((elem) => elem[3])],
+          having: elems[9][4] == null ? null : elems[9][4][3],
         },
         orderBy: elems[10] == null ? null : [
-          elems[10][5][0], ...elems[10][5][1].map((elem) => elem[3])
+          elems[10][3][0], ...elems[10][3][1].map((elem) => elem[3])
         ],
         union: elems[11] == null ? null : { isAll: elems[11][2] != null, query: elems[11][4] },
         except: elems[12] == null ? null : { query: elems[12][3] },
@@ -244,7 +246,7 @@ condition ->
   operand _ compare _ operand {%
     (elems) => ({ type: 'condition', operand_1: elems[0], comparator: elems[2], operand_2: elems[4] })
   %}
-  | operand __ ( %not __ ):? %in_ __ %lparen _ operand _ %rparen {%
+  | operand __ ( %not __ ):? %in_ __ _ operand _ {%
     (elems) => {
       if (elems[2] == null) {
         return { type: 'condition', operand_1: elems[0], comparator: 'IN', operand_2: elems[7] }
@@ -312,6 +314,14 @@ column_ref ->
         type: 'column_ref',
         tableAlias: elems[0],
         column: elems[4]
+      }
+    }
+  %}
+  | identifier {%
+    (elems) => {
+      return {
+        type: 'column_ref',
+        column: elems[0]
       }
     }
   %}
@@ -408,8 +418,22 @@ bind_parameter ->
   %}
 
 function ->
-  %count _ ( %lparen ( _ %distinct _ ):? ( %times | term ) %rparen ) {%
-    (elems) => ({ type: 'function', function: 'COUNT', args: [elems[2][1] == null, elems[2][2][0]] })
+  %count _ (
+    %lparen _ (
+      ( %distinct __ ):? %times {% (elems) => (elems[1]) %}
+      | term {% (elems) => (elems[0]) %}
+    ) _ %rparen
+  ) {%
+    (elems) => ({ type: 'function', function: 'COUNT', args: [elems[2][3]] })
+  %}
+  | %group_concat _ ( %lparen _ term ( _ %separator _ type_string ):? _ %rparen ) {%
+    (elems) => ({
+      type: 'function',
+      function: 'GROUP_CONCAT',
+      args: elems[2][3] === null ?
+        [elems[2][2]]:
+        [elems[2][2], elems[2][3][3]]
+    })
   %}
   | %identifier _ ( %lparen ( _ term ):? ( _ %comma _ term ):* _ %rparen ) {%
     (elems) => {

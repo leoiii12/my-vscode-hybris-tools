@@ -13,6 +13,9 @@ function id(x) { return x[0]; }
   };
 
   const lexer = moo.compile({
+    group_by: ['group by', 'GROUP BY'],
+    order_by: ['order by', 'ORDER BY'],
+
     ws: /[ \t\v\f]+/,
     nl: { match: /[\r\n]+/, lineBreaks: true },
 
@@ -53,10 +56,7 @@ function id(x) { return x[0]; }
         select: ci('select'),
         from: ci('from'),
         where: ci('where'),
-        group: ci('group'),
         having: ci('having'),
-        order: ci('order'),
-        by: ci('by'),
 
         asc: ci('asc'),
         desc: ci('desc'),
@@ -83,6 +83,8 @@ function id(x) { return x[0]; }
         minus: ci('minus'),
         intersect: ci('intersect'),
       
+        group_concat: ci('group_concat'),
+        separator: ci('separator'),
         count: ci('count'),
         distinct: ci('distinct'),
       
@@ -117,14 +119,14 @@ var grammar = {
     {"name": "query$ebnf$3$subexpression$1$ebnf$1$subexpression$1", "symbols": ["__", (lexer.has("having") ? {type: "having"} : having), "__", "expression"]},
     {"name": "query$ebnf$3$subexpression$1$ebnf$1", "symbols": ["query$ebnf$3$subexpression$1$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "query$ebnf$3$subexpression$1$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "query$ebnf$3$subexpression$1", "symbols": ["__", (lexer.has("group") ? {type: "group"} : group), "__", (lexer.has("by") ? {type: "by"} : by), "__", "query$ebnf$3$subexpression$1$subexpression$1", "query$ebnf$3$subexpression$1$ebnf$1"]},
+    {"name": "query$ebnf$3$subexpression$1", "symbols": ["__", (lexer.has("group_by") ? {type: "group_by"} : group_by), "__", "query$ebnf$3$subexpression$1$subexpression$1", "query$ebnf$3$subexpression$1$ebnf$1"]},
     {"name": "query$ebnf$3", "symbols": ["query$ebnf$3$subexpression$1"], "postprocess": id},
     {"name": "query$ebnf$3", "symbols": [], "postprocess": function(d) {return null;}},
     {"name": "query$ebnf$4$subexpression$1$subexpression$1$ebnf$1", "symbols": []},
     {"name": "query$ebnf$4$subexpression$1$subexpression$1$ebnf$1$subexpression$1", "symbols": ["_", (lexer.has("comma") ? {type: "comma"} : comma), "_", "order_expression"]},
     {"name": "query$ebnf$4$subexpression$1$subexpression$1$ebnf$1", "symbols": ["query$ebnf$4$subexpression$1$subexpression$1$ebnf$1", "query$ebnf$4$subexpression$1$subexpression$1$ebnf$1$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "query$ebnf$4$subexpression$1$subexpression$1", "symbols": ["order_expression", "query$ebnf$4$subexpression$1$subexpression$1$ebnf$1"]},
-    {"name": "query$ebnf$4$subexpression$1", "symbols": ["__", (lexer.has("order") ? {type: "order"} : order), "__", (lexer.has("by") ? {type: "by"} : by), "__", "query$ebnf$4$subexpression$1$subexpression$1"]},
+    {"name": "query$ebnf$4$subexpression$1", "symbols": ["__", (lexer.has("order_by") ? {type: "order_by"} : order_by), "__", "query$ebnf$4$subexpression$1$subexpression$1"]},
     {"name": "query$ebnf$4", "symbols": ["query$ebnf$4$subexpression$1"], "postprocess": id},
     {"name": "query$ebnf$4", "symbols": [], "postprocess": function(d) {return null;}},
     {"name": "query$ebnf$5$subexpression$1$ebnf$1$subexpression$1", "symbols": [(lexer.has("all") ? {type: "all"} : all), "_"]},
@@ -150,11 +152,11 @@ var grammar = {
             where: elems[8] == null ? null : elems[8][3],
             groupBy: elems[9] == null ? null : {
               type: 'group_by',
-              columns: [elems[9][5][0], ...elems[9][5][1].map((elem) => elem[3])],
-              having: elems[9][6] == null ? null : elems[9][6][3],
+              columns: [elems[9][3][0], ...elems[9][3][1].map((elem) => elem[3])],
+              having: elems[9][4] == null ? null : elems[9][4][3],
             },
             orderBy: elems[10] == null ? null : [
-              elems[10][5][0], ...elems[10][5][1].map((elem) => elem[3])
+              elems[10][3][0], ...elems[10][3][1].map((elem) => elem[3])
             ],
             union: elems[11] == null ? null : { isAll: elems[11][2] != null, query: elems[11][4] },
             except: elems[12] == null ? null : { query: elems[12][3] },
@@ -305,7 +307,7 @@ var grammar = {
     {"name": "condition$ebnf$1$subexpression$1", "symbols": [(lexer.has("not") ? {type: "not"} : not), "__"]},
     {"name": "condition$ebnf$1", "symbols": ["condition$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "condition$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "condition", "symbols": ["operand", "__", "condition$ebnf$1", (lexer.has("in_") ? {type: "in_"} : in_), "__", (lexer.has("lparen") ? {type: "lparen"} : lparen), "_", "operand", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)], "postprocess": 
+    {"name": "condition", "symbols": ["operand", "__", "condition$ebnf$1", (lexer.has("in_") ? {type: "in_"} : in_), "__", "_", "operand", "_"], "postprocess": 
         (elems) => {
           if (elems[2] == null) {
             return { type: 'condition', operand_1: elems[0], comparator: 'IN', operand_2: elems[7] }
@@ -396,6 +398,14 @@ var grammar = {
             type: 'column_ref',
             tableAlias: elems[0],
             column: elems[4]
+          }
+        }
+          },
+    {"name": "column_ref", "symbols": ["identifier"], "postprocess": 
+        (elems) => {
+          return {
+            type: 'column_ref',
+            column: elems[0]
           }
         }
           },
@@ -496,23 +506,36 @@ var grammar = {
     {"name": "bind_parameter", "symbols": ["bind_parameter$subexpression$1"], "postprocess": 
         (elems) => ({ type: 'bind_parameter', parameter_name: elems[0][1] })
           },
-    {"name": "function$subexpression$1$ebnf$1$subexpression$1", "symbols": ["_", (lexer.has("distinct") ? {type: "distinct"} : distinct), "_"]},
-    {"name": "function$subexpression$1$ebnf$1", "symbols": ["function$subexpression$1$ebnf$1$subexpression$1"], "postprocess": id},
-    {"name": "function$subexpression$1$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "function$subexpression$1$subexpression$1", "symbols": [(lexer.has("times") ? {type: "times"} : times)]},
-    {"name": "function$subexpression$1$subexpression$1", "symbols": ["term"]},
-    {"name": "function$subexpression$1", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "function$subexpression$1$ebnf$1", "function$subexpression$1$subexpression$1", (lexer.has("rparen") ? {type: "rparen"} : rparen)]},
+    {"name": "function$subexpression$1$subexpression$1$ebnf$1$subexpression$1", "symbols": [(lexer.has("distinct") ? {type: "distinct"} : distinct), "__"]},
+    {"name": "function$subexpression$1$subexpression$1$ebnf$1", "symbols": ["function$subexpression$1$subexpression$1$ebnf$1$subexpression$1"], "postprocess": id},
+    {"name": "function$subexpression$1$subexpression$1$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "function$subexpression$1$subexpression$1", "symbols": ["function$subexpression$1$subexpression$1$ebnf$1", (lexer.has("times") ? {type: "times"} : times)], "postprocess": (elems) => (elems[1])},
+    {"name": "function$subexpression$1$subexpression$1", "symbols": ["term"], "postprocess": (elems) => (elems[0])},
+    {"name": "function$subexpression$1", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "_", "function$subexpression$1$subexpression$1", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)]},
     {"name": "function", "symbols": [(lexer.has("count") ? {type: "count"} : count), "_", "function$subexpression$1"], "postprocess": 
-        (elems) => ({ type: 'function', function: 'COUNT', args: [elems[2][1] == null, elems[2][2][0]] })
+        (elems) => ({ type: 'function', function: 'COUNT', args: [elems[2][3]] })
           },
-    {"name": "function$subexpression$2$ebnf$1$subexpression$1", "symbols": ["_", "term"]},
+    {"name": "function$subexpression$2$ebnf$1$subexpression$1", "symbols": ["_", (lexer.has("separator") ? {type: "separator"} : separator), "_", "type_string"]},
     {"name": "function$subexpression$2$ebnf$1", "symbols": ["function$subexpression$2$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "function$subexpression$2$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "function$subexpression$2$ebnf$2", "symbols": []},
-    {"name": "function$subexpression$2$ebnf$2$subexpression$1", "symbols": ["_", (lexer.has("comma") ? {type: "comma"} : comma), "_", "term"]},
-    {"name": "function$subexpression$2$ebnf$2", "symbols": ["function$subexpression$2$ebnf$2", "function$subexpression$2$ebnf$2$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
-    {"name": "function$subexpression$2", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "function$subexpression$2$ebnf$1", "function$subexpression$2$ebnf$2", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)]},
-    {"name": "function", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "function$subexpression$2"], "postprocess": 
+    {"name": "function$subexpression$2", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "_", "term", "function$subexpression$2$ebnf$1", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)]},
+    {"name": "function", "symbols": [(lexer.has("group_concat") ? {type: "group_concat"} : group_concat), "_", "function$subexpression$2"], "postprocess": 
+        (elems) => ({
+          type: 'function',
+          function: 'GROUP_CONCAT',
+          args: elems[2][3] === null ?
+            [elems[2][2]]:
+            [elems[2][2], elems[2][3][3]]
+        })
+          },
+    {"name": "function$subexpression$3$ebnf$1$subexpression$1", "symbols": ["_", "term"]},
+    {"name": "function$subexpression$3$ebnf$1", "symbols": ["function$subexpression$3$ebnf$1$subexpression$1"], "postprocess": id},
+    {"name": "function$subexpression$3$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "function$subexpression$3$ebnf$2", "symbols": []},
+    {"name": "function$subexpression$3$ebnf$2$subexpression$1", "symbols": ["_", (lexer.has("comma") ? {type: "comma"} : comma), "_", "term"]},
+    {"name": "function$subexpression$3$ebnf$2", "symbols": ["function$subexpression$3$ebnf$2", "function$subexpression$3$ebnf$2$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "function$subexpression$3", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "function$subexpression$3$ebnf$1", "function$subexpression$3$ebnf$2", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)]},
+    {"name": "function", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "function$subexpression$3"], "postprocess": 
         (elems) => {
           if (elems[2][1] === null) {
             return ({ type: 'function', function: elems[0], args: [] })

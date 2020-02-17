@@ -1,10 +1,9 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode'
-import { Grammar, Parser } from 'nearley'
+import { Grammar } from 'nearley'
 import { FsqlCompletionItemProvider } from './fsql/fsql-completion-item-provider'
 import { HacUtils } from './hac-utils'
-import { FsqlParseUtils } from './fsql/fsql-parse-utils'
 import { FsqlDiagnosticProvider } from './fsql/fsql-diagnostic-provider'
 
 const grammar = require('../syntaxes/flexibleSearchQuery.js')
