@@ -4,9 +4,13 @@ All notable changes to the "my-vscode-hybris-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.0.5
+
+- Implement internal caches clearing
+
 ## 0.0.4
 
-- Implement attributes autocomplete
+- Implement attributes autocompletion
 
 ## 0.0.3
 
