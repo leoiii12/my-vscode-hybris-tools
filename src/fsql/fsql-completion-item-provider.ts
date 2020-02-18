@@ -104,7 +104,8 @@ export class FsqlCompletionItemProvider
         afterText,
       )
       if (results.length === 0) {
-        throw new Error(`[getNewTokensIncrementally] - Unexpected.`)
+        console.log('The syntax of the fsql may be wrong. Not able to parse.')
+        return []
       }
 
       const type = FsqlGrammarUtils.getPlaceholderType(results[0])!

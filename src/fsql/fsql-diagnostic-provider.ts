@@ -10,6 +10,25 @@ export class FsqlDiagnosticProvider {
     const parser = new Parser(this.grammar)
     try {
       parser.feed(text)
+      parser.finish()
+
+      if (parser.results.length === 0) {
+        const range = new vscode.Range(
+          document.positionAt(0),
+          document.positionAt(document.getText().length),
+        )
+        if (range === undefined) {
+          return []
+        }
+
+        return [
+          new vscode.Diagnostic(
+            range,
+            'Not complete.',
+            vscode.DiagnosticSeverity.Information,
+          ),
+        ]
+      }
     } catch (e) {
       const position = document.positionAt(e.token.offset)
       const range = new vscode.Range(
@@ -23,7 +42,13 @@ export class FsqlDiagnosticProvider {
         return []
       }
 
-      return [new vscode.Diagnostic(range, e.message)]
+      return [
+        new vscode.Diagnostic(
+          range,
+          e.message,
+          vscode.DiagnosticSeverity.Error,
+        ),
+      ]
     }
 
     return []

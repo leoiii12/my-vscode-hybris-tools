@@ -114,6 +114,13 @@ export function activate(context: vscode.ExtensionContext) {
       'flexibleSearchQuery',
     )
     context.subscriptions.push(
+      vscode.workspace.onDidOpenTextDocument(document => {
+        diagnosticCollection.set(document.uri, [])
+        diagnosticCollection.set(
+          document.uri,
+          fsqlDiagnosticProvider.getDiagnostics(document),
+        )
+      }),
       vscode.workspace.onDidChangeTextDocument(event => {
         diagnosticCollection.set(event.document.uri, [])
         diagnosticCollection.set(
