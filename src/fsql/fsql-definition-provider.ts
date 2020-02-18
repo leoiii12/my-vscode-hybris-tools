@@ -1,9 +1,10 @@
-import * as vscode from 'vscode'
-import { FsqlUtils } from './fsql-utils'
-import { InternalCaches } from '../internal-caches'
 import { Grammar, Parser } from 'nearley'
-import { FsqlGrammarUtils } from './fsql-grammar-utils'
+import * as vscode from 'vscode'
+
 import { HacUtils } from '../hac-utils'
+import { InternalCaches } from '../internal-caches'
+import { FsqlGrammarUtils } from './fsql-grammar-utils'
+import { FsqlUtils } from './fsql-utils'
 
 export class FsqlDefinitionProvider implements vscode.DefinitionProvider {
   constructor(
@@ -17,7 +18,7 @@ export class FsqlDefinitionProvider implements vscode.DefinitionProvider {
     position: vscode.Position,
     token: vscode.CancellationToken,
   ): Promise<vscode.Location | vscode.Location[] | vscode.LocationLink[]> {
-    const { beforeText, afterText, tokenText } = FsqlUtils.getBeforeAfterText(
+    const { beforeText, afterText, tokenText } = FsqlUtils.getBeforeAfterTexts(
       document,
       position,
     )
@@ -38,7 +39,10 @@ export class FsqlDefinitionProvider implements vscode.DefinitionProvider {
 
     switch (type) {
       case 'typeName':
-        if (this.caches.fsqlComposedTypeCodes.includes(tokenText) === false) {
+        const typeCode = this.caches.fsqlComposedTypeCodes.find(
+          c => c.toLowerCase() === tokenText.toLowerCase(),
+        )
+        if (typeCode === undefined) {
           return []
         }
 

@@ -1,17 +1,18 @@
 import { Grammar } from 'nearley'
 import * as vscode from 'vscode'
 
+import { FsqlCodeActionProvider } from './fsql/fsql-code-action-provider'
 import { FsqlCommands } from './fsql/fsql-commands'
 import { FsqlCompletionAttributeItemProvider } from './fsql/fsql-completion-attribute-item-provider'
 import { FsqlCompletionItemProvider } from './fsql/fsql-completion-item-provider'
+import { FsqlDefinitionProvider } from './fsql/fsql-definition-provider'
 import { FsqlDiagnosticProvider } from './fsql/fsql-diagnostic-provider'
+import { FsqlDocumentFormattingEditProvider } from './fsql/fsql-document-formatting-edit-provider'
 import { GroovyCommands } from './groovy/groovy-commands'
 import { HacUtils } from './hac-utils'
 import { InternalCaches } from './internal-caches'
 import { MemFS } from './memfs'
 import { VscodeUtils } from './vscode-utils'
-import { FsqlDocumentFormattingEditProvider } from './fsql/fsql-document-formatting-edit-provider'
-import { FsqlDefinitionProvider } from './fsql/fsql-definition-provider'
 
 const grammar = require('../syntaxes/flexibleSearchQuery.js')
 
@@ -164,6 +165,14 @@ export function activate(context: vscode.ExtensionContext) {
           language: 'flexibleSearchQuery',
         },
         new FsqlDefinitionProvider(grammar, internalCaches, hacUtils),
+      ),
+    )
+    context.subscriptions.push(
+      vscode.languages.registerCodeActionsProvider(
+        {
+          language: 'flexibleSearchQuery',
+        },
+        new FsqlCodeActionProvider(grammar),
       ),
     )
   }

@@ -58,13 +58,9 @@ export class FsqlCompletionItemProvider
     cancellationToken: vscode.CancellationToken,
     context: vscode.CompletionContext,
   ): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
-    if (document.languageId !== 'flexibleSearchQuery') {
-      return []
-    }
-
     const start = new Date().getTime()
 
-    const { beforeText, tokenText, afterText } = FsqlUtils.getBeforeAfterText(
+    const { beforeText, tokenText, afterText } = FsqlUtils.getBeforeAfterTexts(
       document,
       position,
     )

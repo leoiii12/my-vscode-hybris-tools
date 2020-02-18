@@ -12,7 +12,9 @@
 1. Autocompletion for hybris types
 2. Autocompletion for hybris type attributes
 3. fsql Formatter
-4. Definition of a hybris type
+4. See the definition of a hybris type
+5. See the definition of a alias
+6. Auto fix actions for `1` as conditions instead of `1 = 1`
 
 ## Requirements
 

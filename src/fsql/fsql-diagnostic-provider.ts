@@ -5,10 +5,6 @@ export class FsqlDiagnosticProvider {
   constructor(private grammar: Grammar) {}
 
   public getDiagnostics(document: vscode.TextDocument): vscode.Diagnostic[] {
-    if (document.languageId !== 'flexibleSearchQuery') {
-      return []
-    }
-
     const text = document.getText()
 
     const parser = new Parser(this.grammar)

@@ -2,13 +2,12 @@ import * as moo from 'moo'
 import { Grammar, Parser } from 'nearley'
 import * as vscode from 'vscode'
 
-import { FsqlGrammarUtils } from './fsql-grammar-utils'
 import { lexerRules } from './fsql-lexer'
 
 export namespace FsqlUtils {
   export const FSQL_PLACEHOLDER = 'FsqlPlaceholder'
 
-  export function getBeforeAfterText(
+  export function getBeforeAfterTexts(
     document: vscode.TextDocument,
     position: vscode.Position,
   ) {
@@ -36,8 +35,6 @@ export namespace FsqlUtils {
       document.positionAt(offsetObj.start),
       document.positionAt(offsetObj.end),
     )
-    const tokenText = document.getText(tokenRange)
-
     const beforeRange = new vscode.Range(
       document.positionAt(0),
       tokenRange.start,
@@ -48,15 +45,26 @@ export namespace FsqlUtils {
     )
 
     const beforeText = document.getText(beforeRange)
+    const tokenText = document.getText(tokenRange)
     const afterText = document.getText(afterRange)
 
     return {
+      beforeRange,
+      tokenRange,
+      afterRange,
+
       beforeText,
       afterText,
       tokenText,
     }
   }
 
+  /**
+   * The identifier positions of the returned results are different from the original document.
+   * @param grammar
+   * @param beforeText
+   * @param afterText
+   */
   export function tryParseWithPlaceholder(
     grammar: Grammar,
     beforeText: string,
@@ -82,6 +90,38 @@ export namespace FsqlUtils {
     }
 
     return []
+  }
+
+  export function findLatestTokenByValue(
+    lexerRules: moo.Rules,
+    text: string,
+    tokenValue: string,
+    before?: { line: number; col: number },
+  ) {
+    const lexer = moo.compile(lexerRules)
+    lexer.reset(text)
+
+    let matchedToken: moo.Token | undefined
+    let currToken: moo.Token | undefined
+    while (true) {
+      currToken = lexer.next()
+      if (currToken === undefined) {
+        break
+      }
+      if (
+        before &&
+        currToken.line >= before.line &&
+        currToken.col >= before.col
+      ) {
+        break
+      }
+
+      if (currToken.text === tokenValue) {
+        matchedToken = currToken
+      }
+    }
+
+    return matchedToken
   }
 
   export function includesAllKeys(obj: any, keys: string[]) {
