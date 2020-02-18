@@ -4,12 +4,10 @@
 
 ### Autocompletion
 
-1. Type Attribute Suggestions
-2. A command to refresh cached types
-3. Cache types in local storage
-4. i18n remind [zh], [en] by checking whether the generated sql have `lp`
+1. Cache types in local storage
+2. i18n remind [zh], [en] by checking whether the generated sql have `lp`
    e.g. SELECT  lp_t0.p_name  FROM hktvvariantproductlp lp_t0 WHERE ((lp_t0.LANGPK =? )) AND (lp_t0.ITEMTYPEPK=? )
-5. Relation source and targe suggestions and completion
+3. Relation source and target suggestions and completion
 
 ## Misc
 

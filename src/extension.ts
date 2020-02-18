@@ -10,6 +10,7 @@ import { HacUtils } from './hac-utils'
 import { InternalCaches } from './internal-caches'
 import { MemFS } from './memfs'
 import { VscodeUtils } from './vscode-utils'
+import { FsqlDocumentFormattingEditProvider } from './fsql/fsql-document-formatting-edit-provider'
 
 const grammar = require('../syntaxes/flexibleSearchQuery.js')
 
@@ -142,6 +143,12 @@ export function activate(context: vscode.ExtensionContext) {
           internalCaches,
         ),
         ...['.', ':'],
+      ),
+    )
+    context.subscriptions.push(
+      vscode.languages.registerDocumentFormattingEditProvider(
+        'flexibleSearchQuery',
+        new FsqlDocumentFormattingEditProvider(),
       ),
     )
   }

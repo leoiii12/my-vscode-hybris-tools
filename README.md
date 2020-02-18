@@ -2,12 +2,16 @@
 
 ## Features
 
+1. Validate fsql syntax
+2. Execute fsql (`F5`)
+3. Execute groovy (`F5`)
+4. Execute and Commit groovy (`Shift + F5`)
+
+### Beta
+
 1. Autocomplete hybris types
-2. Autocomplete hybris types' attributes
-3. Validate fsql syntax
-4. Execute fsql (`F5`)
-5. Execute groovy (`F5`)
-6. Execute and Commit groovy (`Shift + F5`)
+2. Autocomplete hybris attributes
+3. fsql Formatter
 
 ## Requirements
 

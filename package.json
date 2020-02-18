@@ -186,6 +186,7 @@
     "vscode-test": "^1.3.0"
   },
   "dependencies": {
+    "@leoiii12/sql-formatter": "^2.4.0",
     "axios": "^0.19.2",
     "axios-cookiejar-support": "^0.5.1",
     "cheerio": "^1.0.0-rc.3",
