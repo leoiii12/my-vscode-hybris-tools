@@ -1,5 +1,5 @@
+import { Grammar, Parser } from 'nearley'
 import * as vscode from 'vscode'
-import { Parser, Grammar } from 'nearley'
 
 export class FsqlDiagnosticProvider {
   constructor(private grammar: Grammar) {}

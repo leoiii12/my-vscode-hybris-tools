@@ -1,7 +1,7 @@
+import { Grammar, Parser } from 'nearley'
 import * as vscode from 'vscode'
-import { CompletionContext } from 'vscode'
-import { Parser, Grammar } from 'nearley'
-import { HacUtils } from '../hac-utils'
+
+import { InternalCaches } from '../internal-caches'
 import { FsqlGrammarUtils } from './fsql-grammar-utils'
 import { FsqlUtils } from './fsql-utils'
 
@@ -50,24 +50,13 @@ export class FsqlCompletionItemProvider
     'FALSE',
   ]
 
-  private types: string[] = []
-
-  constructor(private grammar: Grammar, private hacUtils: HacUtils) {
-    hacUtils
-      .executeFlexibleSearch(
-        3000,
-        `SELECT DISTINCT { code } AS InternalCode FROM { composedtype }`,
-      )
-      .then(execResult => {
-        this.types = execResult.resultList.map(rl => rl[0])
-      })
-  }
+  constructor(private grammar: Grammar, private caches: InternalCaches) {}
 
   public provideCompletionItems(
     document: vscode.TextDocument,
     position: vscode.Position,
     cancellationToken: vscode.CancellationToken,
-    context: CompletionContext,
+    context: vscode.CompletionContext,
   ): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
     if (document.languageId !== 'flexibleSearchQuery') {
       return []
@@ -135,7 +124,7 @@ export class FsqlCompletionItemProvider
             return acc.concat(names)
           }, [] as string[])
         default:
-          return this.types
+          return this.caches.fsqlComposedTypeCodes
       }
     }
 

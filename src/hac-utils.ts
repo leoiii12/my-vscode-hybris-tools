@@ -1,9 +1,10 @@
-import { Config } from './config'
 import axios, { AxiosInstance } from 'axios'
-import { Agent } from 'https'
 import * as cheerio from 'cheerio'
+import { Agent } from 'https'
 import * as qs from 'querystring'
 import { CookieJar } from 'tough-cookie'
+
+import { Config } from './config'
 
 const axiosCookiejarSupport = require('axios-cookiejar-support').default
 

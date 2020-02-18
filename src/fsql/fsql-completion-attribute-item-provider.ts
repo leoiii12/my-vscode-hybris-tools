@@ -1,23 +1,24 @@
-import * as vscode from 'vscode'
-import { CompletionContext } from 'vscode'
 import { Grammar } from 'nearley'
+import * as vscode from 'vscode'
+
 import { HacUtils } from '../hac-utils'
+import { InternalCaches } from '../internal-caches'
 import { FsqlGrammarUtils } from './fsql-grammar-utils'
 import { FsqlUtils } from './fsql-utils'
 
 export class FsqlCompletionAttributeItemProvider
   implements vscode.CompletionItemProvider {
-  private cachedTypes: {
-    [compoedTypeCode: string]: { qualifier: string; typeCode: string }[]
-  } = {}
-
-  constructor(private grammar: Grammar, private hacUtils: HacUtils) {}
+  constructor(
+    private grammar: Grammar,
+    private hacUtils: HacUtils,
+    private caches: InternalCaches,
+  ) {}
 
   public async provideCompletionItems(
     document: vscode.TextDocument,
     position: vscode.Position,
     cancellationToken: vscode.CancellationToken,
-    context: CompletionContext,
+    context: vscode.CompletionContext,
   ): Promise<vscode.CompletionItem[]> {
     if (document.languageId !== 'flexibleSearchQuery') {
       return []
@@ -98,8 +99,8 @@ export class FsqlCompletionAttributeItemProvider
   private async getComposedTypeAttributes(
     composedTypeCode: string,
   ): Promise<{ qualifier: string; typeCode: string }[]> {
-    if (composedTypeCode in this.cachedTypes) {
-      return this.cachedTypes[composedTypeCode]
+    if (composedTypeCode in this.caches.fsqlComposedTypeAttributes) {
+      return this.caches.fsqlComposedTypeAttributes[composedTypeCode]
     }
 
     const getAttributesGroovy: string = `
@@ -142,7 +143,7 @@ export class FsqlCompletionAttributeItemProvider
     const execResult = await this.hacUtils.executeGroovy(false, groovy)
     const attributes = JSON.parse(execResult.executionResult)
 
-    this.cachedTypes[composedTypeCode] = attributes
+    this.caches.fsqlComposedTypeAttributes[composedTypeCode] = attributes
 
     return attributes
   }

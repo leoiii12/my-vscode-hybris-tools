@@ -67,8 +67,12 @@
         "title": "Hybris: Execute Groovy And Commit"
       },
       {
-        "command": "vscode-hybris-tools.clearCache",
+        "command": "vscode-hybris-tools.hybris.clearCache",
         "title": "Hybris: Clear Cache"
+      },
+      {
+        "command": "vscode-hybris-tools.clearCache",
+        "title": "Hybris: Clear Extension Cache"
       }
     ],
     "languages": [
@@ -157,7 +161,7 @@
     "lint": "eslint src --ext ts",
     "pretest": "npm run compile && npm run lint",
     "test": "node ./out/test/runTest.js",
-    "test-install": "vsce package && code --install-extension my-vscode-hybris-tools-0.0.3.vsix --force"
+    "test-install": "vsce package && code --install-extension my-vscode-hybris-tools-0.0.4.vsix --force"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.16",

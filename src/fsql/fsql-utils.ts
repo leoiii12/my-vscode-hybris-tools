@@ -1,7 +1,8 @@
-import * as vscode from 'vscode'
-import { Parser, Grammar } from 'nearley'
-import { FsqlGrammarUtils } from './fsql-grammar-utils'
 import * as moo from 'moo'
+import { Grammar, Parser } from 'nearley'
+import * as vscode from 'vscode'
+
+import { FsqlGrammarUtils } from './fsql-grammar-utils'
 import { lexerRules } from './fsql-lexer'
 
 export namespace FsqlUtils {

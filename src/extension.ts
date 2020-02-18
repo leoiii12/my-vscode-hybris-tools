@@ -1,13 +1,14 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode'
 import { Grammar } from 'nearley'
-import { FsqlCompletionItemProvider } from './fsql/fsql-completion-item-provider'
-import { HacUtils } from './hac-utils'
-import { FsqlDiagnosticProvider } from './fsql/fsql-diagnostic-provider'
-import { MemFS } from './memfs'
-import * as Papa from 'papaparse'
+import * as vscode from 'vscode'
+
+import { FsqlCommands } from './fsql/fsql-commands'
 import { FsqlCompletionAttributeItemProvider } from './fsql/fsql-completion-attribute-item-provider'
+import { FsqlCompletionItemProvider } from './fsql/fsql-completion-item-provider'
+import { FsqlDiagnosticProvider } from './fsql/fsql-diagnostic-provider'
+import { GroovyCommands } from './groovy/groovy-commands'
+import { HacUtils } from './hac-utils'
+import { InternalCaches } from './internal-caches'
+import { MemFS } from './memfs'
 
 const grammar = require('../syntaxes/flexibleSearchQuery.js')
 
@@ -32,9 +33,12 @@ export function activate(context: vscode.ExtensionContext) {
   )
 
   const hacUtils = new HacUtils()
+  const internalCaches = new InternalCaches()
+
+  initCachesWithProgress(hacUtils)
 
   /**
-   * File System Provider
+   * MemFS - File System Provider
    */
   const memFs = new MemFS()
   context.subscriptions.push(
@@ -44,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
   )
 
   /**
-   * Provide Diagnostics
+   * Fsql - Provide Diagnostics
    */
   const fsqlDiagnosticProvider = new FsqlDiagnosticProvider(grammar)
   diagnosticCollection = vscode.languages.createDiagnosticCollection(
@@ -62,14 +66,14 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(diagnosticCollection)
 
   /**
-   * Show Code Completion Proposals
+   * Fsql - Show Code Completion Proposals
    */
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
       'flexibleSearchQuery',
       new FsqlCompletionItemProvider(
         Grammar.fromCompiled(grammar),
-        new HacUtils(),
+        internalCaches,
       ),
     ),
   )
@@ -79,6 +83,7 @@ export function activate(context: vscode.ExtensionContext) {
       new FsqlCompletionAttributeItemProvider(
         Grammar.fromCompiled(grammar),
         new HacUtils(),
+        internalCaches,
       ),
       ...['.', ':'],
     ),
@@ -91,196 +96,69 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'vscode-hybris-tools.flexibleSearchQuery.execute',
       async () => {
-        const editor = vscode.window.activeTextEditor
-        if (editor === undefined) {
-          return
-        }
-
-        const flexQueryExecResult = await hacUtils.executeFlexibleSearch(
-          100000,
-          getSelectedTextOrDocumentText(editor),
-        )
-
-        if (
-          flexQueryExecResult.exception ||
-          flexQueryExecResult.exceptionStackTrace
-        ) {
-          console.log(flexQueryExecResult)
-
-          openTxtWindow(
-            JSON.stringify(flexQueryExecResult.exception, null, 2),
-            `${new Date().toISOString()}.exception.json`,
-          )
-          openTxtWindow(
-            flexQueryExecResult.exceptionStackTrace,
-            `${new Date().toISOString()}.exceptionStackTrace.txt`,
-          )
-
-          return
-        }
-
-        await openCsvWindow(
-          flexQueryExecResult.headers,
-          flexQueryExecResult.resultList,
-        )
+        FsqlCommands.execute(hacUtils)
       },
     ),
     vscode.commands.registerCommand(
       'vscode-hybris-tools.flexibleSearchQuery.executeRawSQL',
       async () => {
-        const editor = vscode.window.activeTextEditor
-        if (editor === undefined) {
-          return
-        }
-
-        const flexQueryExecResult = await hacUtils.executeFlexibleSearch(
-          100000,
-          undefined,
-          getSelectedTextOrDocumentText(editor),
-        )
-
-        if (
-          flexQueryExecResult.exception ||
-          flexQueryExecResult.exceptionStackTrace
-        ) {
-          console.log(flexQueryExecResult)
-
-          openTxtWindow(
-            JSON.stringify(flexQueryExecResult.exception, null, 2),
-            `${new Date().toISOString()}.exception.json`,
-          )
-          openTxtWindow(
-            flexQueryExecResult.exceptionStackTrace,
-            `${new Date().toISOString()}.exceptionStackTrace.txt`,
-          )
-
-          return
-        }
-
-        await openCsvWindow(
-          flexQueryExecResult.headers,
-          flexQueryExecResult.resultList,
-        )
+        FsqlCommands.executeRawSql(hacUtils)
       },
     ),
     vscode.commands.registerCommand(
       'vscode-hybris-tools.groovy.execute',
       async () => {
-        const editor = vscode.window.activeTextEditor
-        if (editor === undefined) {
-          return
-        }
-
-        const groovyScriptExecResult = await hacUtils.executeGroovy(
-          false,
-          getSelectedTextOrDocumentText(editor),
-        )
-
-        openTxtWindow(
-          groovyScriptExecResult.outputText,
-          `${new Date().toISOString()}.output.txt`,
-        )
-        openTxtWindow(
-          groovyScriptExecResult.executionResult,
-          `${new Date().toISOString()}.executionResult.txt`,
-        )
-        if (groovyScriptExecResult.stacktraceText !== '') {
-          openTxtWindow(
-            groovyScriptExecResult.stacktraceText,
-            `${new Date().toISOString()}.stacktraceText.txt`,
-          )
-        }
+        GroovyCommands.execute(hacUtils)
       },
     ),
     vscode.commands.registerCommand(
       'vscode-hybris-tools.groovy.executeAndCommit',
       async () => {
-        const editor = vscode.window.activeTextEditor
-        if (editor === undefined) {
-          return
-        }
-
-        const groovyScriptExecResult = await hacUtils.executeGroovy(
-          true,
-          getSelectedTextOrDocumentText(editor),
-        )
-
-        openTxtWindow(
-          groovyScriptExecResult.outputText,
-          `${new Date().toISOString()}.output.txt`,
-        )
-        openTxtWindow(
-          groovyScriptExecResult.executionResult,
-          `${new Date().toISOString()}.executionResult.txt`,
-        )
-        if (groovyScriptExecResult.stacktraceText !== '') {
-          openTxtWindow(
-            groovyScriptExecResult.stacktraceText,
-            `${new Date().toISOString()}.stacktraceText.txt`,
-          )
-        }
+        GroovyCommands.executeAndCommit(hacUtils)
+      },
+    ),
+    vscode.commands.registerCommand(
+      'vscode-hybris-tools.hybris.clearCache',
+      async () => {
+        await hacUtils.clearCache()
       },
     ),
     vscode.commands.registerCommand(
       'vscode-hybris-tools.clearCache',
       async () => {
-        await hacUtils.clearCache()
+        initCachesWithProgress(hacUtils)
       },
     ),
   )
+
+  // *********************
+  //
+  // Internal Functions
+  //
+  // *********************
+
+  function initCachesWithProgress(hacUtils: HacUtils) {
+    vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Started retrieve types from Hybris.',
+        cancellable: false,
+      },
+      progress => {
+        progress.report({
+          increment: 20,
+          message: 'Retrieving types from Hybris...',
+        })
+
+        return internalCaches.init(hacUtils).catch(() => {
+          vscode.window.showErrorMessage(
+            "Can't retrieve types from Hybris. Please make sure hybris is running.",
+          )
+        })
+      },
+    )
+  }
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
-
-function getSelectedTextOrDocumentText(editor: vscode.TextEditor) {
-  let selection = editor.selection
-  if (selection.isEmpty) {
-    return editor.document.getText()
-  }
-
-  return editor.document.getText(selection)
-}
-
-function ncrDecode(str: string) {
-  str = str.replace(/(&#)(\d{1,6});/gi, function($0) {
-    return String.fromCharCode(
-      parseInt(escape($0).replace(/(%26%23)(\d{1,6})(%3B)/g, '$2')),
-    )
-  })
-  str = str.replace(/(&#x)(\w{1,4});/gi, function($0) {
-    return String.fromCharCode(
-      parseInt(escape($0).replace(/(%26%23x)(\w{1,4})(%3B)/g, '$2'), 16),
-    )
-  })
-  return str
-}
-
-async function openCsvWindow(
-  headers: string[],
-  resultList: string[][],
-  fileName?: string,
-) {
-  const uri = vscode.Uri.parse(
-    `memfs:/${fileName ? fileName : new Date().toISOString() + '.csv'}`,
-  )
-
-  const csv = Papa.unparse([headers, ...resultList])
-  const decodedCsv = ncrDecode(csv)
-
-  await vscode.workspace.fs.writeFile(uri, Buffer.from(decodedCsv))
-  const document = await vscode.workspace.openTextDocument(uri)
-
-  await vscode.window.showTextDocument(document, vscode.ViewColumn.Beside)
-}
-
-async function openTxtWindow(txt: string, fileName?: string) {
-  const uri = vscode.Uri.parse(
-    `memfs:/${fileName ? fileName : new Date().toISOString() + '.txt'}`,
-  )
-
-  await vscode.workspace.fs.writeFile(uri, Buffer.from(txt))
-  const document = await vscode.workspace.openTextDocument(uri)
-
-  await vscode.window.showTextDocument(document, vscode.ViewColumn.Beside)
-}

@@ -1,4 +1,5 @@
 import * as traverse from 'traverse'
+
 import { FsqlUtils } from './fsql-utils'
 
 export namespace FsqlGrammarUtils {
