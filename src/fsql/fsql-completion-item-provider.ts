@@ -121,7 +121,7 @@ export class FsqlCompletionItemProvider
 
           return types.reduce((acc: string[], v) => {
             const names = FsqlCompletionItemProvider.getSuggestedAliasNames(
-              v.typeName,
+              v.typeName.value,
             )
 
             return acc.concat(names)

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import { FsqlUtils } from './fsql-utils'
 import { InternalCaches } from '../internal-caches'
-import { Grammar } from 'nearley'
+import { Grammar, Parser } from 'nearley'
 import { FsqlGrammarUtils } from './fsql-grammar-utils'
 import { HacUtils } from '../hac-utils'
 
@@ -56,6 +56,36 @@ export class FsqlDefinitionProvider implements vscode.DefinitionProvider {
             new vscode.Range(
               new vscode.Position(0, 0),
               new vscode.Position(numOfLines, 0),
+            ),
+          ),
+        ]
+      case 'typeAlias':
+        const parser = new Parser(this.grammar)
+        parser.feed(document.getText())
+        parser.finish()
+
+        const referencedTypes = FsqlGrammarUtils.getReferencedTypes(
+          parser.results[0],
+        )
+
+        const selectedType = referencedTypes.find(
+          rt =>
+            rt.typeName.value === tokenText ||
+            (rt.as && rt.as.value === tokenText),
+        )
+        if (selectedType === undefined) {
+          return []
+        }
+
+        return [
+          new vscode.Location(
+            document.uri,
+            new vscode.Range(
+              document.positionAt(selectedType.typeName.offset),
+              document.positionAt(
+                selectedType.typeName.offset +
+                  selectedType.typeName.text.length,
+              ),
             ),
           ),
         ]

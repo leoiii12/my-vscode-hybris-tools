@@ -70,7 +70,9 @@ export class FsqlCompletionAttributeItemProvider
           return []
         }
 
-        const attributes = await this.getComposedTypeAttributes(type.typeName)
+        const attributes = await this.getComposedTypeAttributes(
+          type.typeName.value,
+        )
         const items = attributes.map(at => {
           const ci = new vscode.CompletionItem(
             at.qualifier,
@@ -155,9 +157,9 @@ export class FsqlCompletionAttributeItemProvider
     const referencedTypes = FsqlGrammarUtils.getReferencedTypes(parsingResult)
 
     for (const type of referencedTypes) {
-      if (type.as === typeAlias) {
+      if (type.as && type.as.value === typeAlias) {
         return type
-      } else if (type.typeName === typeAlias) {
+      } else if (type.typeName && type.typeName.value === typeAlias) {
         return type
       }
     }

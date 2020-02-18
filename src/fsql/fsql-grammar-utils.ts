@@ -48,22 +48,24 @@ export namespace FsqlGrammarUtils {
 
   export function getReferencedTypes(
     parsingResult: any,
-  ): { typeName: string; as: string | undefined }[] {
+  ): { typeName: moo.Token; as: moo.Token | undefined }[] {
     const types = traverse(parsingResult).reduce(function(acc, v) {
       if (this.key !== 'typeName') {
         return acc
       }
+      if (v === undefined || v === null) {
+        return acc
+      }
 
-      const parentNode = this.parent?.node
+      const parentNode = this.parent!.node
       if (
-        parentNode &&
         parentNode.type === 'single_type_clause' &&
         'as' in parentNode &&
         parentNode['as']
       ) {
-        acc.push({ typeName: v.value, as: parentNode['as'].value })
+        acc.push({ typeName: v, as: parentNode['as'] })
       } else {
-        acc.push({ typeName: v.value, as: undefined })
+        acc.push({ typeName: v, as: undefined })
       }
 
       return acc
