@@ -24,17 +24,17 @@
           "vscode-hybris-tools.hac.url": {
             "type": "string",
             "default": "https://localhost:9012/hac",
-            "description": "The URL to the hybris HAC extension"
+            "description": "The URL to the hybris HAC extension."
           },
           "vscode-hybris-tools.hac.username": {
             "type": "string",
             "default": "admin",
-            "description": "The username used for logging in the HAC"
+            "description": "The username used for logging in the HAC."
           },
           "vscode-hybris-tools.hac.password": {
             "type": "string",
             "default": "philipsspilihp",
-            "description": "The password used for logging in the HAC"
+            "description": "The password used for logging in the HAC."
           },
           "vscode-hybris-tools.hac.http.timeout": {
             "type": "integer",
