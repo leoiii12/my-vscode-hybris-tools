@@ -83,25 +83,25 @@ export namespace FsqlUtils {
     return []
   }
 
-  export function getPositionType(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    grammar: Grammar,
-  ) {
-    const { beforeText, afterText } = FsqlUtils.getBeforeAfterText(
-      document,
-      position,
-    )
+  export function includesAllKeys(obj: any, keys: string[]) {
+    return Object.keys(obj).filter(k => keys.includes(k)).length === keys.length
+  }
 
-    const results = tryParseWithPlaceholder(
-      grammar,
-      beforeText + '.',
-      afterText,
-    )
-    if (results.length === 0) {
-      return undefined
+  export function matchesByPatterns(
+    obj: any,
+    rules: { pattern: string[]; ret: string }[],
+  ): string | undefined {
+    for (const rule of rules) {
+      if (includesAllKeys(obj, rule.pattern) === true) {
+        return rule.ret
+      }
     }
 
-    return FsqlGrammarUtils.getPlaceholderType(results[0])
+    const anyRule = rules.find(r => r.pattern.includes('*'))
+    if (anyRule) {
+      return anyRule.ret
+    }
+
+    return undefined
   }
 }

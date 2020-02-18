@@ -81,7 +81,7 @@ export class FsqlCompletionItemProvider
     )
 
     // Parse and Get new tokens
-    const tokens = this.getNewTokensIncrementally(
+    const tokens = this.getPossibleTokensIncrementally(
       beforeText,
       tokenText,
       afterText,
@@ -94,66 +94,86 @@ export class FsqlCompletionItemProvider
     return tokens.map(at => new vscode.CompletionItem(at))
   }
 
-  private getNewTokensIncrementally(
+  private getPossibleTokensIncrementally(
     beforeText: string,
     tokenText: string,
     afterText: string,
   ): string[] {
-    let acceptedTokens = FsqlCompletionItemProvider.tryTokens(
-      this.grammar,
-      this.characterTokens,
-      beforeText,
-      afterText,
-    )
-    if (acceptedTokens.length > 0 && /[a-zA-Z]+/.test(tokenText)) {
+    const getPossibleCharacterTokens = (): string[] => {
+      let acceptedTokens = FsqlCompletionItemProvider.tryTokens(
+        this.grammar,
+        this.characterTokens,
+        beforeText,
+        afterText,
+      )
+      if (acceptedTokens.length === 0) {
+        return []
+      }
+
       const results = FsqlUtils.tryParseWithPlaceholder(
         this.grammar,
         beforeText,
         afterText,
       )
-
-      if (results.length > 0) {
-        const type = FsqlGrammarUtils.getPlaceholderType(results[0])!
-        switch (type) {
-          case 'attribute':
-            return []
-          case 'as':
-            const typeNames = FsqlGrammarUtils.getReferencedTypeNames(
-              results[0],
-            )
-
-            return typeNames.reduce((acc: string[], v: string) => {
-              const names = FsqlCompletionItemProvider.getSuggestedAliasNames(v)
-
-              return acc.concat(names)
-            }, [] as string[])
-        }
+      if (results.length === 0) {
+        throw new Error(`[getNewTokensIncrementally] - Unexpected.`)
       }
 
-      return this.types
+      const type = FsqlGrammarUtils.getPlaceholderType(results[0])!
+      switch (type) {
+        case 'attribute':
+          // This is handled by FsqlCompletionAttributeItemProvider
+          return []
+        case 'as':
+          const types = FsqlGrammarUtils.getReferencedTypes(results[0])
+
+          return types.reduce((acc: string[], v) => {
+            const names = FsqlCompletionItemProvider.getSuggestedAliasNames(
+              v.typeName,
+            )
+
+            return acc.concat(names)
+          }, [] as string[])
+        default:
+          return this.types
+      }
     }
 
-    acceptedTokens = FsqlCompletionItemProvider.tryTokens(
-      this.grammar,
-      this.numericTokens,
-      beforeText,
-      afterText,
-    )
-    if (acceptedTokens.length > 0) {
+    const getKeywordTokens = (): string[] => {
+      const acceptedTokens = FsqlCompletionItemProvider.tryTokens(
+        this.grammar,
+        this.keywordTokens,
+        beforeText,
+        afterText,
+      )
+      if (acceptedTokens.length === 0) {
+        return []
+      }
+
       return acceptedTokens
     }
 
-    acceptedTokens = FsqlCompletionItemProvider.tryTokens(
-      this.grammar,
-      this.keywordTokens,
-      beforeText,
-      afterText,
-    )
-    if (acceptedTokens.length > 0) {
-      return acceptedTokens
+    const getNumericTokens = (): string[] => {
+      const acceptedTokens = FsqlCompletionItemProvider.tryTokens(
+        this.grammar,
+        this.numericTokens,
+        beforeText,
+        afterText,
+      )
+      if (acceptedTokens.length === 0) {
+        return []
+      }
+
+      return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
     }
 
-    return []
+    const acceptedTokens = [
+      ...getPossibleCharacterTokens(),
+      ...getKeywordTokens(),
+      ...getNumericTokens(),
+    ]
+
+    return acceptedTokens
   }
 
   private static tryTokens(

@@ -19,9 +19,6 @@ export class FsqlCompletionAttributeItemProvider
     cancellationToken: vscode.CancellationToken,
     context: CompletionContext,
   ): Promise<vscode.CompletionItem[]> {
-    if (context.triggerCharacter === '.') {
-      return []
-    }
     if (document.languageId !== 'flexibleSearchQuery') {
       return []
     }
@@ -38,19 +35,41 @@ export class FsqlCompletionAttributeItemProvider
       beforeText.endsWith('.') ? beforeText : beforeText + '.',
       afterText,
     )
-
     if (results.length === 0) {
-      console.log(
-        `[FsqlCompletionAttributeItemProvider] - Completed in ${new Date().getTime() -
-          start}ms.`,
-      )
       return []
     }
 
-    const type = FsqlGrammarUtils.getPlaceholderType(results[0])!
-    switch (type) {
-      case 'attribute':
-        const attributes = await this.getAttributes('HktvVariantProduct')
+    const parsingResultWithPlaceholder = results[0]
+
+    const type = FsqlGrammarUtils.getPlaceholderType(
+      parsingResultWithPlaceholder,
+    )!
+    if (type !== 'attribute') {
+      return []
+    }
+
+    const columnRef = FsqlGrammarUtils.getPlaceholderColumnRef(
+      parsingResultWithPlaceholder,
+    )
+
+    const matchedRet = FsqlUtils.matchesByPatterns(columnRef, [
+      { pattern: ['typeAlias'], ret: 'Type' },
+      { pattern: ['tableAlias'], ret: 'Table' },
+      { pattern: ['*'], ret: '*' },
+    ])
+    switch (matchedRet) {
+      case 'Type':
+        const typeAlias = columnRef['typeAlias'].toString()
+
+        const type = await FsqlCompletionAttributeItemProvider.getActualTypeName(
+          typeAlias,
+          parsingResultWithPlaceholder,
+        )
+        if (type === undefined) {
+          return []
+        }
+
+        const attributes = await this.getComposedTypeAttributes(type.typeName)
         const items = attributes.map(at => {
           const ci = new vscode.CompletionItem(
             at.qualifier,
@@ -61,47 +80,37 @@ export class FsqlCompletionAttributeItemProvider
         })
 
         console.log(
-          `[FsqlCompletionAttributeItemProvider] - Completed in ${new Date().getTime() -
-            start}ms.`,
+          '[FsqlCompletionAttributeItemProvider] - ' +
+            `Completed in ${new Date().getTime() - start}ms.`,
         )
+
         return items
+      default:
+        console.log(
+          `[FsqlCompletionAttributeItemProvider] - Not yet implemented for ${matchedRet}.`,
+        )
+        break
     }
 
-    console.log(
-      `[FsqlCompletionAttributeItemProvider] - Completed in ${new Date().getTime() -
-        start}ms.`,
-    )
     return []
   }
 
-  private async getAttributes(
+  private async getComposedTypeAttributes(
     composedTypeCode: string,
   ): Promise<{ qualifier: string; typeCode: string }[]> {
     if (composedTypeCode in this.cachedTypes) {
       return this.cachedTypes[composedTypeCode]
     }
 
-    const groovy = this.getAttributesGroovy.replace(
-      '$_COMPOSED_TYPE',
-      composedTypeCode,
-    )
-    const execResult = await this.hacUtils.executeGroovy(false, groovy)
-    const attributes = JSON.parse(execResult.executionResult)
+    const getAttributesGroovy: string = `
+      import de.hybris.platform.core.model.type.ComposedTypeModel
+      import de.hybris.platform.core.model.type.AttributeDescriptorModel
+      import java.util.HashSet
+      import com.google.gson.JsonObject
 
-    this.cachedTypes[composedTypeCode] = attributes
+      def typeService = spring.getBean("typeService")
 
-    return attributes
-  }
-
-  private getAttributesGroovy: string = `
-    import de.hybris.platform.core.model.type.ComposedTypeModel
-    import de.hybris.platform.core.model.type.AttributeDescriptorModel
-    import java.util.HashSet
-    import com.google.gson.JsonObject
-
-    def typeService = spring.getBean("typeService")
-
-    try {
+      try {
         ComposedTypeModel typeModel = typeService.getComposedTypeForCode("$_COMPOSED_TYPE")
         if (null != typeModel)
         {
@@ -121,8 +130,37 @@ export class FsqlCompletionAttributeItemProvider
         }
 
         return []
-    } catch (Exception e) {
+      } catch (Exception e) {
         return []
+      }
+    `
+
+    const groovy = getAttributesGroovy.replace(
+      '$_COMPOSED_TYPE',
+      composedTypeCode,
+    )
+    const execResult = await this.hacUtils.executeGroovy(false, groovy)
+    const attributes = JSON.parse(execResult.executionResult)
+
+    this.cachedTypes[composedTypeCode] = attributes
+
+    return attributes
+  }
+
+  private static async getActualTypeName(
+    typeAlias: string,
+    parsingResult: any,
+  ) {
+    const referencedTypes = FsqlGrammarUtils.getReferencedTypes(parsingResult)
+
+    for (const type of referencedTypes) {
+      if (type.as === typeAlias) {
+        return type
+      } else if (type.typeName === typeAlias) {
+        return type
+      }
     }
-  `
+
+    return undefined
+  }
 }

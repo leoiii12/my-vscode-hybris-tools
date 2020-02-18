@@ -4,6 +4,11 @@ All notable changes to the "my-vscode-hybris-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## 0.0.4
 
-- Initial release
+- Implement attributes autocomplete
+
+## 0.0.3
+
+- Add keybindings for executing groovy and fsql
+- Add csv and txt to display results of groovy and fsql

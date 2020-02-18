@@ -205,7 +205,7 @@ type_join ->
     })
   %}
 single_type_clause ->
-  identifier ( _ %exclamation_mark):? ( ( __ %as ):? __ identifier ):? {%
+  identifier ( _ %exclamation_mark ):? ( ( __ %as ):? __ identifier ):? {%
     (elems) => ({ type: 'single_type_clause', typeName: elems[0], isSolid: elems[1] != null, as: elems[2] == null ? null : elems[2][2] })
   %}
 
