@@ -25,6 +25,23 @@ export namespace VscodeUtils {
     return editor.document.getText(selection)
   }
 
+  export function withProgress(promise: Promise<any>, title: string) {
+    vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: title,
+        cancellable: false,
+      },
+      progress => {
+        progress.report({
+          increment: 30,
+        })
+
+        return promise
+      },
+    )
+  }
+
   export async function openCsvWindow(
     headers: string[],
     resultList: string[][],

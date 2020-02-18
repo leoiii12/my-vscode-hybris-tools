@@ -9,6 +9,7 @@ import { GroovyCommands } from './groovy/groovy-commands'
 import { HacUtils } from './hac-utils'
 import { InternalCaches } from './internal-caches'
 import { MemFS } from './memfs'
+import { VscodeUtils } from './vscode-utils'
 
 const grammar = require('../syntaxes/flexibleSearchQuery.js')
 
@@ -47,47 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
     }),
   )
 
-  /**
-   * Fsql - Provide Diagnostics
-   */
-  const fsqlDiagnosticProvider = new FsqlDiagnosticProvider(grammar)
-  diagnosticCollection = vscode.languages.createDiagnosticCollection(
-    'flexibleSearchQuery',
-  )
-  context.subscriptions.push(
-    vscode.workspace.onDidChangeTextDocument(event => {
-      diagnosticCollection.set(event.document.uri, [])
-      diagnosticCollection.set(
-        event.document.uri,
-        fsqlDiagnosticProvider.getDiagnostics(event.document),
-      )
-    }),
-  )
-  context.subscriptions.push(diagnosticCollection)
-
-  /**
-   * Fsql - Show Code Completion Proposals
-   */
-  context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(
-      'flexibleSearchQuery',
-      new FsqlCompletionItemProvider(
-        Grammar.fromCompiled(grammar),
-        internalCaches,
-      ),
-    ),
-  )
-  context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(
-      'flexibleSearchQuery',
-      new FsqlCompletionAttributeItemProvider(
-        Grammar.fromCompiled(grammar),
-        new HacUtils(),
-        internalCaches,
-      ),
-      ...['.', ':'],
-    ),
-  )
+  registerFsqlFeatures()
 
   /**
    * Commands
@@ -95,33 +56,37 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'vscode-hybris-tools.flexibleSearchQuery.execute',
-      async () => {
-        FsqlCommands.execute(hacUtils)
-      },
+      async () =>
+        VscodeUtils.withProgress(
+          FsqlCommands.execute(hacUtils),
+          'Executing...',
+        ),
     ),
     vscode.commands.registerCommand(
       'vscode-hybris-tools.flexibleSearchQuery.executeRawSQL',
-      async () => {
-        FsqlCommands.executeRawSql(hacUtils)
-      },
+      () =>
+        VscodeUtils.withProgress(
+          FsqlCommands.execute(hacUtils),
+          'Executing...',
+        ),
     ),
-    vscode.commands.registerCommand(
-      'vscode-hybris-tools.groovy.execute',
-      async () => {
-        GroovyCommands.execute(hacUtils)
-      },
+    vscode.commands.registerCommand('vscode-hybris-tools.groovy.execute', () =>
+      VscodeUtils.withProgress(
+        GroovyCommands.execute(hacUtils),
+        'Executing...',
+      ),
     ),
     vscode.commands.registerCommand(
       'vscode-hybris-tools.groovy.executeAndCommit',
-      async () => {
-        GroovyCommands.executeAndCommit(hacUtils)
-      },
+      () =>
+        VscodeUtils.withProgress(
+          GroovyCommands.executeAndCommit(hacUtils),
+          'Executing...',
+        ),
     ),
     vscode.commands.registerCommand(
       'vscode-hybris-tools.hybris.clearCache',
-      async () => {
-        await hacUtils.clearCache()
-      },
+      () => VscodeUtils.withProgress(hacUtils.clearCache(), 'Clearing...'),
     ),
     vscode.commands.registerCommand(
       'vscode-hybris-tools.clearCache',
@@ -133,30 +98,68 @@ export function activate(context: vscode.ExtensionContext) {
 
   // *********************
   //
-  // Internal Functions
+  // Modules
+  //
+  // *********************
+
+  function registerFsqlFeatures() {
+    /**
+     * DiagnosticsProvider
+     */
+    const fsqlDiagnosticProvider = new FsqlDiagnosticProvider(grammar)
+    diagnosticCollection = vscode.languages.createDiagnosticCollection(
+      'flexibleSearchQuery',
+    )
+    context.subscriptions.push(
+      vscode.workspace.onDidChangeTextDocument(event => {
+        diagnosticCollection.set(event.document.uri, [])
+        diagnosticCollection.set(
+          event.document.uri,
+          fsqlDiagnosticProvider.getDiagnostics(event.document),
+        )
+      }),
+    )
+    context.subscriptions.push(diagnosticCollection)
+
+    /**
+     * CompletionItemProvider
+     */
+    context.subscriptions.push(
+      vscode.languages.registerCompletionItemProvider(
+        'flexibleSearchQuery',
+        new FsqlCompletionItemProvider(
+          Grammar.fromCompiled(grammar),
+          internalCaches,
+        ),
+      ),
+    )
+    context.subscriptions.push(
+      vscode.languages.registerCompletionItemProvider(
+        'flexibleSearchQuery',
+        new FsqlCompletionAttributeItemProvider(
+          Grammar.fromCompiled(grammar),
+          new HacUtils(),
+          internalCaches,
+        ),
+        ...['.', ':'],
+      ),
+    )
+  }
+
+  // *********************
+  //
+  // Internal
   //
   // *********************
 
   function initCachesWithProgress(hacUtils: HacUtils) {
-    vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: 'Started retrieve types from Hybris.',
-        cancellable: false,
-      },
-      progress => {
-        progress.report({
-          increment: 20,
-          message: 'Retrieving types from Hybris...',
-        })
+    const promise = internalCaches.init(hacUtils).catch(() => {
+      vscode.window.showErrorMessage(
+        "Can't retrieve types from Hybris. Please make sure hybris is running.",
+      )
+    })
 
-        return internalCaches.init(hacUtils).catch(() => {
-          vscode.window.showErrorMessage(
-            "Can't retrieve types from Hybris. Please make sure hybris is running.",
-          )
-        })
-      },
-    )
+    VscodeUtils.withProgress(promise, 'Retrieving types from Hybris...')
   }
 }
 
