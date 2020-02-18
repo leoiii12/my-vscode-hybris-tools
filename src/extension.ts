@@ -11,6 +11,7 @@ import { InternalCaches } from './internal-caches'
 import { MemFS } from './memfs'
 import { VscodeUtils } from './vscode-utils'
 import { FsqlDocumentFormattingEditProvider } from './fsql/fsql-document-formatting-edit-provider'
+import { FsqlDefinitionProvider } from './fsql/fsql-definition-provider'
 
 const grammar = require('../syntaxes/flexibleSearchQuery.js')
 
@@ -127,7 +128,9 @@ export function activate(context: vscode.ExtensionContext) {
      */
     context.subscriptions.push(
       vscode.languages.registerCompletionItemProvider(
-        'flexibleSearchQuery',
+        {
+          language: 'flexibleSearchQuery',
+        },
         new FsqlCompletionItemProvider(
           Grammar.fromCompiled(grammar),
           internalCaches,
@@ -136,7 +139,9 @@ export function activate(context: vscode.ExtensionContext) {
     )
     context.subscriptions.push(
       vscode.languages.registerCompletionItemProvider(
-        'flexibleSearchQuery',
+        {
+          language: 'flexibleSearchQuery',
+        },
         new FsqlCompletionAttributeItemProvider(
           Grammar.fromCompiled(grammar),
           new HacUtils(),
@@ -147,8 +152,18 @@ export function activate(context: vscode.ExtensionContext) {
     )
     context.subscriptions.push(
       vscode.languages.registerDocumentFormattingEditProvider(
-        'flexibleSearchQuery',
+        {
+          language: 'flexibleSearchQuery',
+        },
         new FsqlDocumentFormattingEditProvider(),
+      ),
+    )
+    context.subscriptions.push(
+      vscode.languages.registerDefinitionProvider(
+        {
+          language: 'flexibleSearchQuery',
+        },
+        new FsqlDefinitionProvider(grammar, internalCaches, hacUtils),
       ),
     )
   }

@@ -9,9 +9,10 @@
 
 ### Beta
 
-1. Autocomplete hybris types
-2. Autocomplete hybris attributes
+1. Autocompletion for hybris types
+2. Autocompletion for hybris type attributes
 3. fsql Formatter
+4. Definition of a hybris type
 
 ## Requirements
 

@@ -77,10 +77,13 @@ export class FsqlCompletionItemProvider
     )
 
     console.log(
-      `[FsqlCompletionItemProvider] - Completed in ${new Date().getTime() -
-        start}ms.`,
+      `[FsqlCompletionItemProvider] - ` +
+        `Completed in ${new Date().getTime() - start}ms.`,
     )
-    return tokens.map(at => new vscode.CompletionItem(at))
+    return tokens.map(at => {
+      const completionItem = new vscode.CompletionItem(at)
+      return completionItem
+    })
   }
 
   private getPossibleTokensIncrementally(

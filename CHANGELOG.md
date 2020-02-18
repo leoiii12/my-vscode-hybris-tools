@@ -6,12 +6,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## 0.0.5
 
-- Implement internal caches clearing
-- Implement a formatter
+- Add a unified caches for all modules and Support clearing
+- Add a fsql formatter
+- Add a definition provider for types
 
 ## 0.0.4
 
-- Implement attributes autocompletion
+- Add autocompletion for attributes
 
 ## 0.0.3
 
