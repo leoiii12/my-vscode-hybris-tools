@@ -42,19 +42,20 @@ export class FsqlDefinitionProvider implements vscode.DefinitionProvider {
           return []
         }
 
-        const attributes = await this.getComposedTypeAttributes(tokenText)
         const uri = vscode.Uri.parse(`memfs:/${tokenText}.attributes.json`)
-        await vscode.workspace.fs.writeFile(
-          uri,
-          Buffer.from(JSON.stringify(attributes, undefined, 2)),
-        )
+
+        const attributes = await this.getComposedTypeAttributes(tokenText)
+        const json = JSON.stringify(attributes, undefined, 2)
+        await vscode.workspace.fs.writeFile(uri, Buffer.from(json))
+
+        const numOfLines = json.split('\n').length
 
         return [
           new vscode.Location(
             uri,
             new vscode.Range(
               new vscode.Position(0, 0),
-              new vscode.Position(1, 0),
+              new vscode.Position(numOfLines, 0),
             ),
           ),
         ]
