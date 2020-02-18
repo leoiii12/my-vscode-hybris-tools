@@ -67,13 +67,19 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
       'flexibleSearchQuery',
-      new FsqlCompletionItemProvider(Grammar.fromCompiled(grammar), new HacUtils()),
+      new FsqlCompletionItemProvider(
+        Grammar.fromCompiled(grammar),
+        new HacUtils(),
+      ),
     ),
   )
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
       'flexibleSearchQuery',
-      new FsqlCompletionAttributeItemProvider(Grammar.fromCompiled(grammar), new HacUtils()),
+      new FsqlCompletionAttributeItemProvider(
+        Grammar.fromCompiled(grammar),
+        new HacUtils(),
+      ),
       ...['.'],
     ),
   )

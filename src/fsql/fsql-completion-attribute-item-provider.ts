@@ -1,15 +1,17 @@
 import * as vscode from 'vscode'
 import { CompletionContext } from 'vscode'
-import { Parser, Grammar } from 'nearley'
+import { Grammar } from 'nearley'
 import { HacUtils } from '../hac-utils'
 import { FsqlGrammarUtils } from './fsql-grammar-utils'
 import { FsqlUtils } from './fsql-utils'
 
 export class FsqlCompletionAttributeItemProvider
   implements vscode.CompletionItemProvider {
+  private cachedTypes: {
+    [compoedTypeCode: string]: { qualifier: string; typeCode: string }[]
+  } = {}
 
-  constructor(private grammar: Grammar, private hacUtils: HacUtils) {
-  }
+  constructor(private grammar: Grammar, private hacUtils: HacUtils) {}
 
   public async provideCompletionItems(
     document: vscode.TextDocument,
@@ -17,6 +19,9 @@ export class FsqlCompletionAttributeItemProvider
     cancellationToken: vscode.CancellationToken,
     context: CompletionContext,
   ): Promise<vscode.CompletionItem[]> {
+    if (context.triggerCharacter === '.') {
+      return []
+    }
     if (document.languageId !== 'flexibleSearchQuery') {
       return []
     }
@@ -35,7 +40,10 @@ export class FsqlCompletionAttributeItemProvider
     )
 
     if (results.length === 0) {
-      console.log(`[FsqlCompletionAttributeItemProvider] - Completed in ${new Date().getTime() - start}ms.`)
+      console.log(
+        `[FsqlCompletionAttributeItemProvider] - Completed in ${new Date().getTime() -
+          start}ms.`,
+      )
       return []
     }
 
@@ -43,24 +51,44 @@ export class FsqlCompletionAttributeItemProvider
     switch (type) {
       case 'attribute':
         const attributes = await this.getAttributes('HktvVariantProduct')
-        const items = attributes.map(a => a.qualifier).map(at => new vscode.CompletionItem(at))
+        const items = attributes.map(at => {
+          const ci = new vscode.CompletionItem(
+            at.qualifier,
+            vscode.CompletionItemKind.Field,
+          )
+          ci.detail = `${at.typeCode}`
+          return ci
+        })
 
-        console.log(`[FsqlCompletionAttributeItemProvider] - Completed in ${new Date().getTime() - start}ms.`)
+        console.log(
+          `[FsqlCompletionAttributeItemProvider] - Completed in ${new Date().getTime() -
+            start}ms.`,
+        )
         return items
     }
 
-    console.log(`[FsqlCompletionAttributeItemProvider] - Completed in ${new Date().getTime() - start}ms.`)
+    console.log(
+      `[FsqlCompletionAttributeItemProvider] - Completed in ${new Date().getTime() -
+        start}ms.`,
+    )
     return []
   }
 
-
-
   private async getAttributes(
-    typeName: string,
+    composedTypeCode: string,
   ): Promise<{ qualifier: string; typeCode: string }[]> {
-    const groovy = this.getAttributesGroovy.replace('$_COMPOSED_TYPE', typeName)
+    if (composedTypeCode in this.cachedTypes) {
+      return this.cachedTypes[composedTypeCode]
+    }
+
+    const groovy = this.getAttributesGroovy.replace(
+      '$_COMPOSED_TYPE',
+      composedTypeCode,
+    )
     const execResult = await this.hacUtils.executeGroovy(false, groovy)
     const attributes = JSON.parse(execResult.executionResult)
+
+    this.cachedTypes[composedTypeCode] = attributes
 
     return attributes
   }

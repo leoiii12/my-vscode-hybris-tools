@@ -87,7 +87,10 @@ export class FsqlCompletionItemProvider
       afterText,
     )
 
-    console.log(`[FsqlCompletionItemProvider] - Completed in ${new Date().getTime() - start}ms.`)
+    console.log(
+      `[FsqlCompletionItemProvider] - Completed in ${new Date().getTime() -
+        start}ms.`,
+    )
     return tokens.map(at => new vscode.CompletionItem(at))
   }
 
@@ -115,7 +118,9 @@ export class FsqlCompletionItemProvider
           case 'attribute':
             return []
           case 'as':
-            const typeNames = FsqlGrammarUtils.getReferencedTypeNames(results[0])
+            const typeNames = FsqlGrammarUtils.getReferencedTypeNames(
+              results[0],
+            )
 
             return typeNames.reduce((acc: string[], v: string) => {
               const names = FsqlCompletionItemProvider.getSuggestedAliasNames(v)
@@ -197,5 +202,4 @@ export class FsqlCompletionItemProvider
 
     return []
   }
-
 }
