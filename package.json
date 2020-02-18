@@ -3,7 +3,7 @@
   "displayName": "my-vscode-hybris-tools",
   "publisher": "leochoi",
   "description": "My Hybris Tools",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.42.0"
   },
@@ -120,6 +120,32 @@
         "scopeName": "source.sql",
         "path": "./syntaxes/flexibleSearchQuery.tmLanguage.json"
       }
+    ],
+    "keybindings": [
+      {
+        "command": "vscode-hybris-tools.flexibleSearchQuery.execute",
+        "key": "f5",
+        "mac": "f5",
+        "when": "editorTextFocus && resourceExtname == .fsql"
+      },
+      {
+        "command": "vscode-hybris-tools.flexibleSearchQuery.executeRawSQL",
+        "key": "f5",
+        "mac": "f5",
+        "when": "editorTextFocus && resourceExtname == .sql"
+      },
+      {
+        "command": "vscode-hybris-tools.groovy.execute",
+        "key": "f5",
+        "mac": "f5",
+        "when": "editorTextFocus && resourceExtname == .groovy"
+      },
+      {
+        "command": "vscode-hybris-tools.groovy.executeAndCommit",
+        "key": "shift+f5",
+        "mac": "shift+f5",
+        "when": "editorTextFocus && resourceExtname == .groovy"
+      }
     ]
   },
   "scripts": {
@@ -131,7 +157,7 @@
     "lint": "eslint src --ext ts",
     "pretest": "npm run compile && npm run lint",
     "test": "node ./out/test/runTest.js",
-    "test-install": "vsce package && code --install-extension my-vscode-hybris-tools-0.0.1.vsix --force"
+    "test-install": "vsce package && code --install-extension my-vscode-hybris-tools-0.0.2.vsix --force"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.16",

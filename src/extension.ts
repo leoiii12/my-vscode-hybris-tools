@@ -80,7 +80,7 @@ export function activate(context: vscode.ExtensionContext) {
         Grammar.fromCompiled(grammar),
         new HacUtils(),
       ),
-      ...['.'],
+      ...['.', ':'],
     ),
   )
 
@@ -100,6 +100,24 @@ export function activate(context: vscode.ExtensionContext) {
           100000,
           getSelectedTextOrDocumentText(editor),
         )
+
+        if (
+          flexQueryExecResult.exception ||
+          flexQueryExecResult.exceptionStackTrace
+        ) {
+          console.log(flexQueryExecResult)
+
+          openTxtWindow(
+            JSON.stringify(flexQueryExecResult.exception, null, 2),
+            `${new Date().toISOString()}.exception.json`,
+          )
+          openTxtWindow(
+            flexQueryExecResult.exceptionStackTrace,
+            `${new Date().toISOString()}.exceptionStackTrace.txt`,
+          )
+
+          return
+        }
 
         await openCsvWindow(
           flexQueryExecResult.headers,
@@ -121,6 +139,24 @@ export function activate(context: vscode.ExtensionContext) {
           getSelectedTextOrDocumentText(editor),
         )
 
+        if (
+          flexQueryExecResult.exception ||
+          flexQueryExecResult.exceptionStackTrace
+        ) {
+          console.log(flexQueryExecResult)
+
+          openTxtWindow(
+            JSON.stringify(flexQueryExecResult.exception, null, 2),
+            `${new Date().toISOString()}.exception.json`,
+          )
+          openTxtWindow(
+            flexQueryExecResult.exceptionStackTrace,
+            `${new Date().toISOString()}.exceptionStackTrace.txt`,
+          )
+
+          return
+        }
+
         await openCsvWindow(
           flexQueryExecResult.headers,
           flexQueryExecResult.resultList,
@@ -139,7 +175,21 @@ export function activate(context: vscode.ExtensionContext) {
           false,
           getSelectedTextOrDocumentText(editor),
         )
-        console.log(groovyScriptExecResult)
+
+        openTxtWindow(
+          groovyScriptExecResult.outputText,
+          `${new Date().toISOString()}.output.txt`,
+        )
+        openTxtWindow(
+          groovyScriptExecResult.executionResult,
+          `${new Date().toISOString()}.executionResult.txt`,
+        )
+        if (groovyScriptExecResult.stacktraceText !== '') {
+          openTxtWindow(
+            groovyScriptExecResult.stacktraceText,
+            `${new Date().toISOString()}.stacktraceText.txt`,
+          )
+        }
       },
     ),
     vscode.commands.registerCommand(
@@ -154,7 +204,21 @@ export function activate(context: vscode.ExtensionContext) {
           true,
           getSelectedTextOrDocumentText(editor),
         )
-        console.log(groovyScriptExecResult)
+
+        openTxtWindow(
+          groovyScriptExecResult.outputText,
+          `${new Date().toISOString()}.output.txt`,
+        )
+        openTxtWindow(
+          groovyScriptExecResult.executionResult,
+          `${new Date().toISOString()}.executionResult.txt`,
+        )
+        if (groovyScriptExecResult.stacktraceText !== '') {
+          openTxtWindow(
+            groovyScriptExecResult.stacktraceText,
+            `${new Date().toISOString()}.stacktraceText.txt`,
+          )
+        }
       },
     ),
     vscode.commands.registerCommand(
@@ -192,13 +256,30 @@ function ncrDecode(str: string) {
   return str
 }
 
-async function openCsvWindow(headers: string[], resultList: string[][]) {
-  const uri = vscode.Uri.parse(`memfs:/${new Date().getTime()}.csv`)
+async function openCsvWindow(
+  headers: string[],
+  resultList: string[][],
+  fileName?: string,
+) {
+  const uri = vscode.Uri.parse(
+    `memfs:/${fileName ? fileName : new Date().toISOString() + '.csv'}`,
+  )
 
   const csv = Papa.unparse([headers, ...resultList])
   const decodedCsv = ncrDecode(csv)
 
   await vscode.workspace.fs.writeFile(uri, Buffer.from(decodedCsv))
+  const document = await vscode.workspace.openTextDocument(uri)
+
+  await vscode.window.showTextDocument(document, vscode.ViewColumn.Beside)
+}
+
+async function openTxtWindow(txt: string, fileName?: string) {
+  const uri = vscode.Uri.parse(
+    `memfs:/${fileName ? fileName : new Date().toISOString() + '.txt'}`,
+  )
+
+  await vscode.workspace.fs.writeFile(uri, Buffer.from(txt))
   const document = await vscode.workspace.openTextDocument(uri)
 
   await vscode.window.showTextDocument(document, vscode.ViewColumn.Beside)
