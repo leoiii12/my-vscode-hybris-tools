@@ -16,6 +16,11 @@
 5. See the definition of a alias
 6. Auto fix actions for `1` as conditions instead of `1 = 1`
 
+### Screenshots
+
+![](images/autocomplete.gif)
+![](images/attributes.gif)
+
 ## Requirements
 
 Please provide a connectable hybris before using the extension.
