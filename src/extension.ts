@@ -80,6 +80,17 @@ export function activate(context: vscode.ExtensionContext) {
           'Executing...',
         ),
     ),
+    vscode.commands.registerCommand(
+      'vscode-hybris-tools.flexibleSearchQuery.translateToRawSQL',
+      () =>
+        VscodeUtils.withProgress(
+          FsqlCommands.translateFsqlToRawSql(hacUtils).catch(() => {
+            vscode.window.showErrorMessage("Timeout. Can't reach Hybris.")
+            return false
+          }),
+          'Executing...',
+        ),
+    ),
     vscode.commands.registerCommand('vscode-hybris-tools.groovy.execute', () =>
       VscodeUtils.withProgress(
         GroovyCommands.execute(hacUtils).catch(() => {

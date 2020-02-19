@@ -200,12 +200,12 @@ export class FsqlCompletionItemProvider
 
   private static getSuggestedAliasNames(name: string): string[] {
     const regExp = /[A-Z]/g
-    const matches = name.match(regExp)
+    const matchArr = name.match(regExp)
 
-    if (matches) {
+    if (matchArr) {
       return [
-        `AS ${matches.join('').toLowerCase()}`,
-        matches.join('').toLowerCase(),
+        `AS ${matchArr.join('').toLowerCase()}`,
+        matchArr.join('').toLowerCase(),
       ]
     }
 

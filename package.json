@@ -3,7 +3,7 @@
   "displayName": "my-vscode-hybris-tools",
   "publisher": "leochoi",
   "description": "My Hybris Tools",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "engines": {
     "vscode": "^1.42.0"
   },
@@ -67,6 +67,10 @@
         "title": "Hybris: Execute Raw SQL"
       },
       {
+        "command": "vscode-hybris-tools.flexibleSearchQuery.translateToRawSQL",
+        "title": "Hybris: Translate to Raw SQL"
+      },
+      {
         "command": "vscode-hybris-tools.groovy.execute",
         "title": "Hybris: Execute Groovy"
       },
@@ -95,7 +99,6 @@
           "flexQuery"
         ],
         "extensions": [
-          ".sql",
           ".fsql"
         ],
         "configuration": "./syntaxes/flexibleSearchQuery.language-configuration.json"

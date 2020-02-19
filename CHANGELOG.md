@@ -4,6 +4,10 @@ All notable changes to the "my-vscode-hybris-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.0.7
+
+- Add fsql to raw sql command `Hybris: Translate to Raw SQL`
+
 ## 0.0.6
 
 - Add messages when execution errors
