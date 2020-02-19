@@ -3,7 +3,7 @@
   "displayName": "my-vscode-hybris-tools",
   "publisher": "leochoi",
   "description": "My Hybris Tools",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "engines": {
     "vscode": "^1.42.0"
   },
@@ -49,7 +49,7 @@
           "vscode-hybris-tools.offline.typeCodes": {
             "type": "array",
             "items": {
-                "type": "string"
+              "type": "string"
             },
             "default": [],
             "description": "The type codes for offline types autocompletion."
@@ -173,7 +173,7 @@
     "lint": "eslint src --ext ts",
     "pretest": "npm run compile && npm run lint",
     "test": "node ./out/test/runTest.js",
-    "test-install": "vsce package && code --install-extension my-vscode-hybris-tools-0.0.4.vsix --force"
+    "test-install": "vsce package && code --install-extension my-vscode-hybris-tools-0.0.5.vsix --force"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.16",
