@@ -9,6 +9,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Add a unified caches for all modules and Support clearing
 - Add a fsql formatter
 - Add a definition provider for types
+- Add a configuration `vscode-hybris-tools.offline.typeCodes` to provide types autocompletition, when Hybris is not connectable.
+  Use a new command `Hybris: Display Caches` to see the indexed types, and put `fsqlComposedTypeCodes` into `vscode-hybris-tools.offline.typeCodes`.
 
 ## 0.0.4
 

@@ -25,8 +25,9 @@ Please provide a connectable hybris before using the extension.
 * `vscode-hybris-tools.hac.url`: The URL to the hybris HAC extension.
 * `vscode-hybris-tools.hac.username`: The username used for logging in the HAC.
 * `vscode-hybris-tools.hac.password`: The password used for logging in the HAC.
-* `vscode-hybris-tools.hac.http.timeout`: The HTTP socket timeout.
-* `vscode-hybris-tools.hac.http.useStrictSSL`: Use strict SSL.
+* `vscode-hybris-tools.http.timeout`: The HTTP socket timeout.
+* `vscode-hybris-tools.http.useStrictSSL`: Use strict SSL.
+* `vscode-hybris-tools.offline.typeCodes`: The type codes for offline types autocompletion. e.g. ["HktvVariantProduct", "OfflineType", "HelloWorld"]
 
 ## Known Issues
 

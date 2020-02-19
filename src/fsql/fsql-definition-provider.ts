@@ -113,7 +113,7 @@ export class FsqlDefinitionProvider implements vscode.DefinitionProvider {
       def typeService = spring.getBean('typeService')
 
       try {
-        ComposedTypeModel typeModel = typeService.getComposedTypeForCode("HktvVariantProduct")
+        ComposedTypeModel typeModel = typeService.getComposedTypeForCode("$_COMPOSED_TYPE")
         if (null != typeModel) {
             def attributes = new HashSet<AttributeDescriptorModel>()
             attributes.addAll(typeModel.getInheritedattributedescriptors())

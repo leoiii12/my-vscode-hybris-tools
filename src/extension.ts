@@ -1,6 +1,7 @@
 import { Grammar } from 'nearley'
 import * as vscode from 'vscode'
 
+import { Config } from './config'
 import { FsqlCodeActionProvider } from './fsql/fsql-code-action-provider'
 import { FsqlCommands } from './fsql/fsql-commands'
 import { FsqlCompletionAttributeItemProvider } from './fsql/fsql-completion-attribute-item-provider'
@@ -88,11 +89,17 @@ export function activate(context: vscode.ExtensionContext) {
         ),
     ),
     vscode.commands.registerCommand(
-      'vscode-hybris-tools.hybris.clearCache',
-      () => VscodeUtils.withProgress(hacUtils.clearCache(), 'Clearing...'),
+      'vscode-hybris-tools.hybris.clearCaches',
+      () => VscodeUtils.withProgress(hacUtils.clearCaches(), 'Clearing...'),
     ),
+    vscode.commands.registerCommand('vscode-hybris-tools.displayCaches', () => {
+      VscodeUtils.openTxtWindow(
+        JSON.stringify(internalCaches, undefined, 2),
+        'caches.json',
+      )
+    }),
     vscode.commands.registerCommand(
-      'vscode-hybris-tools.clearCache',
+      'vscode-hybris-tools.clearCaches',
       async () => {
         initCachesWithProgress(hacUtils)
       },
@@ -115,6 +122,10 @@ export function activate(context: vscode.ExtensionContext) {
     )
     context.subscriptions.push(
       vscode.workspace.onDidOpenTextDocument(document => {
+        if (document.languageId !== 'flexibleSearchQuery') {
+          return
+        }
+
         diagnosticCollection.set(document.uri, [])
         diagnosticCollection.set(
           document.uri,
@@ -122,6 +133,10 @@ export function activate(context: vscode.ExtensionContext) {
         )
       }),
       vscode.workspace.onDidChangeTextDocument(event => {
+        if (event.document.languageId !== 'flexibleSearchQuery') {
+          return
+        }
+
         diagnosticCollection.set(event.document.uri, [])
         diagnosticCollection.set(
           event.document.uri,
@@ -193,8 +208,11 @@ export function activate(context: vscode.ExtensionContext) {
   function initCachesWithProgress(hacUtils: HacUtils) {
     const promise = internalCaches.init(hacUtils).catch(() => {
       vscode.window.showErrorMessage(
-        "Can't retrieve types from Hybris. Please make sure hybris is running.",
+        "Can't retrieve types from Hybris. Please make sure it is running. \n" +
+          'vscode-hybris-tools.offline.typeCodes is in use.',
       )
+
+      internalCaches.fsqlComposedTypeCodes = Config.getOfflineTypeCodes()
     })
 
     VscodeUtils.withProgress(promise, 'Retrieving types from Hybris...')

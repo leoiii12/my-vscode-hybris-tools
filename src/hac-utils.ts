@@ -215,7 +215,7 @@ export class HacUtils {
     return res.data
   }
 
-  public async clearCache(): Promise<any> {
+  public async clearCaches(): Promise<any> {
     await this.logIn()
 
     const csrf = this.csrf

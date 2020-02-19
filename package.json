@@ -45,6 +45,14 @@
             "type": "boolean",
             "default": true,
             "description": "Use strict SSL."
+          },
+          "vscode-hybris-tools.offline.typeCodes": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "default": [],
+            "description": "The type codes for offline types autocompletion."
           }
         }
       }
@@ -67,12 +75,16 @@
         "title": "Hybris: Execute Groovy And Commit"
       },
       {
-        "command": "vscode-hybris-tools.hybris.clearCache",
-        "title": "Hybris: Clear Cache"
+        "command": "vscode-hybris-tools.hybris.clearCaches",
+        "title": "Hybris: Clear Caches"
       },
       {
-        "command": "vscode-hybris-tools.clearCache",
-        "title": "Hybris: Clear Extension Cache"
+        "command": "vscode-hybris-tools.displayCaches",
+        "title": "Hybris: Display Caches"
+      },
+      {
+        "command": "vscode-hybris-tools.clearCaches",
+        "title": "Hybris: Clear Extension Caches"
       }
     ],
     "languages": [
