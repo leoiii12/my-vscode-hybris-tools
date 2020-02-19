@@ -60,9 +60,12 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'vscode-hybris-tools.flexibleSearchQuery.execute',
-      async () =>
+      () =>
         VscodeUtils.withProgress(
-          FsqlCommands.execute(hacUtils),
+          FsqlCommands.execute(hacUtils).catch(() => {
+            vscode.window.showErrorMessage("Timeout. Can't reach Hybris.")
+            return false
+          }),
           'Executing...',
         ),
     ),
@@ -70,13 +73,19 @@ export function activate(context: vscode.ExtensionContext) {
       'vscode-hybris-tools.flexibleSearchQuery.executeRawSQL',
       () =>
         VscodeUtils.withProgress(
-          FsqlCommands.execute(hacUtils),
+          FsqlCommands.execute(hacUtils).catch(() => {
+            vscode.window.showErrorMessage("Timeout. Can't reach Hybris.")
+            return false
+          }),
           'Executing...',
         ),
     ),
     vscode.commands.registerCommand('vscode-hybris-tools.groovy.execute', () =>
       VscodeUtils.withProgress(
-        GroovyCommands.execute(hacUtils),
+        GroovyCommands.execute(hacUtils).catch(() => {
+          vscode.window.showErrorMessage("Timeout. Can't reach Hybris.")
+          return false
+        }),
         'Executing...',
       ),
     ),
@@ -84,13 +93,23 @@ export function activate(context: vscode.ExtensionContext) {
       'vscode-hybris-tools.groovy.executeAndCommit',
       () =>
         VscodeUtils.withProgress(
-          GroovyCommands.executeAndCommit(hacUtils),
-          'Executing...',
+          GroovyCommands.executeAndCommit(hacUtils).catch(() => {
+            vscode.window.showErrorMessage("Timeout. Can't reach Hybris.")
+            return false
+          }),
+          'Executing And Committing...',
         ),
     ),
     vscode.commands.registerCommand(
       'vscode-hybris-tools.hybris.clearCaches',
-      () => VscodeUtils.withProgress(hacUtils.clearCaches(), 'Clearing...'),
+      () =>
+        VscodeUtils.withProgress(
+          hacUtils.clearCaches().catch(() => {
+            vscode.window.showErrorMessage("Timeout. Can't reach Hybris.")
+            return false
+          }),
+          'Clearing...',
+        ),
     ),
     vscode.commands.registerCommand('vscode-hybris-tools.displayCaches', () => {
       VscodeUtils.openTxtWindow(
@@ -213,6 +232,8 @@ export function activate(context: vscode.ExtensionContext) {
       )
 
       internalCaches.fsqlComposedTypeCodes = Config.getOfflineTypeCodes()
+
+      return false
     })
 
     VscodeUtils.withProgress(promise, 'Retrieving types from Hybris...')

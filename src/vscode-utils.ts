@@ -25,8 +25,8 @@ export namespace VscodeUtils {
     return editor.document.getText(selection)
   }
 
-  export function withProgress(promise: Promise<any>, title: string) {
-    vscode.window.withProgress(
+  export async function withProgress(promise: Promise<any>, title: string) {
+    return vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
         title: title,
