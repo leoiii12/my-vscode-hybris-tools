@@ -6,7 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## 0.0.7
 
-- Add fsql to raw sql command `Hybris: Translate to Raw SQL`
+- Add a fsql to raw sql command `Hybris: Translate to Raw SQL`
+- Add a databaseColumn in the definition provider for types
 
 ## 0.0.6
 

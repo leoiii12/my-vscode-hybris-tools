@@ -126,6 +126,7 @@ export class FsqlDefinitionProvider implements vscode.DefinitionProvider {
                         jsonObject.addProperty("qualifier", it.getQualifier())
                         jsonObject.addProperty("typeCode", it.getAttributeType().getCode())
                         jsonObject.addProperty("extensionName", it.getExtensionName())
+                        jsonObject.addProperty("databaseColumn", it.getDatabaseColumn().toString())
                         jsonObject
                     }
                     .sorted(Comparator.comparing { it -> it.getAt("extensionName").hashCode() })
