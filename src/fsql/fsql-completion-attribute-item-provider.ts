@@ -46,7 +46,7 @@ export class FsqlCompletionAttributeItemProvider
     const parentNode = FsqlGrammarUtils.getPlaceholderParentNode(
       parsingResultWithPlaceholder,
     )
-    console.log(parentNode)
+
     switch (node.type) {
       case 'attribute': {
         const matchedRet = FsqlUtils.matchesByKeys(parentNode, [
