@@ -17,17 +17,6 @@ import { VscodeUtils } from './vscode-utils'
 
 const grammar = require('../syntaxes/flexibleSearchQuery.js')
 
-export interface ParseRow {
-  index: number
-  states: any[]
-  wants: any[]
-  scannable: any[]
-  completed: any
-  lexerState: { line: number; col: number }
-}
-
-let diagnosticCollection: vscode.DiagnosticCollection
-
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -143,11 +132,13 @@ export function activate(context: vscode.ExtensionContext) {
   // *********************
 
   function registerFsqlFeatures() {
+    let fsqlDiagnosticCollection: vscode.DiagnosticCollection
+
     /**
      * DiagnosticsProvider
      */
     const fsqlDiagnosticProvider = new FsqlDiagnosticProvider(grammar)
-    diagnosticCollection = vscode.languages.createDiagnosticCollection(
+    fsqlDiagnosticCollection = vscode.languages.createDiagnosticCollection(
       'flexibleSearchQuery',
     )
     context.subscriptions.push(
@@ -156,8 +147,8 @@ export function activate(context: vscode.ExtensionContext) {
           return
         }
 
-        diagnosticCollection.set(document.uri, [])
-        diagnosticCollection.set(
+        fsqlDiagnosticCollection.set(document.uri, [])
+        fsqlDiagnosticCollection.set(
           document.uri,
           fsqlDiagnosticProvider.getDiagnostics(document),
         )
@@ -167,14 +158,14 @@ export function activate(context: vscode.ExtensionContext) {
           return
         }
 
-        diagnosticCollection.set(event.document.uri, [])
-        diagnosticCollection.set(
+        fsqlDiagnosticCollection.set(event.document.uri, [])
+        fsqlDiagnosticCollection.set(
           event.document.uri,
           fsqlDiagnosticProvider.getDiagnostics(event.document),
         )
       }),
     )
-    context.subscriptions.push(diagnosticCollection)
+    context.subscriptions.push(fsqlDiagnosticCollection)
 
     /**
      * CompletionItemProvider

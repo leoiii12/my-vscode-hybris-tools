@@ -49,6 +49,30 @@ export class FsqlCompletionItemProvider
     'TRUE',
     'FALSE',
   ]
+  private keywordTokensInsertText: {
+    [keywordToken: string]: { label: string; snippetString: string }
+  } = {
+    'WHERE 1 = 1': {
+      label: 'WHERE',
+      snippetString: 'WHERE ${1:1} = ${2:1}',
+    },
+    'LEFT JOIN placeholder': {
+      label: 'LEFT JOIN',
+      snippetString: 'LEFT JOIN ${1:placeholder}',
+    },
+    'JOIN placeholder': {
+      label: 'JOIN',
+      snippetString: 'JOIN ${1:placeholder}',
+    },
+    'ON 1 = 1': {
+      label: 'ON',
+      snippetString: 'ON ${1:1} = ${2:1}',
+    },
+    'AS placeholder': {
+      label: 'AS',
+      snippetString: 'AS ${1:placeholder}',
+    },
+  }
 
   constructor(private grammar: Grammar, private caches: InternalCaches) {}
 
@@ -78,6 +102,15 @@ export class FsqlCompletionItemProvider
     )
     return tokens.map(at => {
       const completionItem = new vscode.CompletionItem(at)
+
+      if (at in this.keywordTokensInsertText) {
+        completionItem.label = this.keywordTokensInsertText[at].label
+        completionItem.insertText = new vscode.SnippetString(
+          this.keywordTokensInsertText[at].snippetString,
+        )
+        completionItem.kind = vscode.CompletionItemKind.Snippet
+      }
+
       return completionItem
     })
   }
