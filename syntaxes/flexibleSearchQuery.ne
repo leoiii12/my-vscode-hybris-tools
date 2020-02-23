@@ -6,6 +6,8 @@
   };
 
   const lexer = moo.compile({
+    comment: /--.*?$/,
+
     group_by: ['group by', 'GROUP BY'],
     order_by: ['order by', 'ORDER BY'],
 
@@ -243,12 +245,12 @@ condition ->
   operand _ compare _ operand {%
     (elems) => ({ type: 'condition', operand_1: elems[0], comparator: elems[2], operand_2: elems[4] })
   %}
-  | operand __ ( %not __ ):? %in_ __ _ operand _ {%
+  | operand __ ( %not __ ):? %in_ __ operand {%
     (elems) => {
       if (elems[2] == null) {
-        return { type: 'condition', operand_1: elems[0], comparator: 'IN', operand_2: elems[7] }
+        return { type: 'condition', operand_1: elems[0], comparator: 'IN', operand_2: elems[5] }
       }
-      return { type: 'condition', operand_1: elems[0], comparator: 'NOT IN', operand_2: elems[7] }
+      return { type: 'condition', operand_1: elems[0], comparator: 'NOT IN', operand_2: elems[5] }
     }
   %}
   | operand __ ( %not __ ):? %like __ operand {%
@@ -349,7 +351,7 @@ operand ->
       return {
         type: 'or_operand',
         operand_1: elems[0],
-        operands: elems[1].map(subElements => ({ operator: subElements[1], operand: subElements[3] }))
+        operands: elems[1].map(subElements => ({ operator: subElements[1][0], operand: subElements[3] }))
       }
     }
   %}
@@ -363,7 +365,7 @@ summand ->
       return {
         type: 'pm_operand',
         operand_1: elems[0],
-        operands: elems[1].map(subElements => ({ operator: subElements[1], operand: subElements[3] }))
+        operands: elems[1].map(subElements => ({ operator: subElements[1][0], operand: subElements[3] }))
       }
     }
   %}
@@ -377,7 +379,7 @@ factor ->
       return {
         type: 'to_operand',
         operand_1: elems[0],
-        operands: elems[1].map(subElements => ({ operator: subElements[1], operand: subElements[3] }))
+        operands: elems[1].map(subElements => ({ operator: subElements[1][0], operand: subElements[3] }))
       }
     }
   %}
@@ -500,5 +502,10 @@ type_string -> %string_literal              {% (elems) => (elems[0]) %}
 # Misc
 # ####################
 
-_ ->  ( %ws | %nl ):*                       {% function(d) { return null; } %}
-__ -> ( %ws | %nl ):+                       {% function(d) { return null; } %}
+_ ->
+  ( %ws | %nl ):*                               {% function(d) { return null; } %}
+  | ( %ws | %nl ):* %comment ( %ws | %nl ):*    {% function(d) { return null; } %}
+
+__ ->
+  ( %ws | %nl ):+                               {% function(d) { return null; } %}
+  | ( %ws | %nl ):+ %comment ( %ws | %nl ):*    {% function(d) { return null; } %}

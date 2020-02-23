@@ -10,6 +10,8 @@ function id(x) { return x[0]; }
   };
 
   const lexer = moo.compile({
+    comment: /--.*?$/,
+
     group_by: ['group by', 'GROUP BY'],
     order_by: ['order by', 'ORDER BY'],
 
@@ -304,12 +306,12 @@ var grammar = {
     {"name": "condition$ebnf$1$subexpression$1", "symbols": [(lexer.has("not") ? {type: "not"} : not), "__"]},
     {"name": "condition$ebnf$1", "symbols": ["condition$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "condition$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "condition", "symbols": ["operand", "__", "condition$ebnf$1", (lexer.has("in_") ? {type: "in_"} : in_), "__", "_", "operand", "_"], "postprocess": 
+    {"name": "condition", "symbols": ["operand", "__", "condition$ebnf$1", (lexer.has("in_") ? {type: "in_"} : in_), "__", "operand"], "postprocess": 
         (elems) => {
           if (elems[2] == null) {
-            return { type: 'condition', operand_1: elems[0], comparator: 'IN', operand_2: elems[7] }
+            return { type: 'condition', operand_1: elems[0], comparator: 'IN', operand_2: elems[5] }
           }
-          return { type: 'condition', operand_1: elems[0], comparator: 'NOT IN', operand_2: elems[7] }
+          return { type: 'condition', operand_1: elems[0], comparator: 'NOT IN', operand_2: elems[5] }
         }
           },
     {"name": "condition$ebnf$2$subexpression$1", "symbols": [(lexer.has("not") ? {type: "not"} : not), "__"]},
@@ -432,7 +434,7 @@ var grammar = {
           return {
             type: 'or_operand',
             operand_1: elems[0],
-            operands: elems[1].map(subElements => ({ operator: subElements[1], operand: subElements[3] }))
+            operands: elems[1].map(subElements => ({ operator: subElements[1][0], operand: subElements[3] }))
           }
         }
           },
@@ -449,7 +451,7 @@ var grammar = {
           return {
             type: 'pm_operand',
             operand_1: elems[0],
-            operands: elems[1].map(subElements => ({ operator: subElements[1], operand: subElements[3] }))
+            operands: elems[1].map(subElements => ({ operator: subElements[1][0], operand: subElements[3] }))
           }
         }
           },
@@ -466,7 +468,7 @@ var grammar = {
           return {
             type: 'to_operand',
             operand_1: elems[0],
-            operands: elems[1].map(subElements => ({ operator: subElements[1], operand: subElements[3] }))
+            operands: elems[1].map(subElements => ({ operator: subElements[1][0], operand: subElements[3] }))
           }
         }
           },
@@ -603,13 +605,33 @@ var grammar = {
     {"name": "_$ebnf$1$subexpression$1", "symbols": [(lexer.has("nl") ? {type: "nl"} : nl)]},
     {"name": "_$ebnf$1", "symbols": ["_$ebnf$1", "_$ebnf$1$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "_", "symbols": ["_$ebnf$1"], "postprocess": function(d) { return null; }},
+    {"name": "_$ebnf$2", "symbols": []},
+    {"name": "_$ebnf$2$subexpression$1", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)]},
+    {"name": "_$ebnf$2$subexpression$1", "symbols": [(lexer.has("nl") ? {type: "nl"} : nl)]},
+    {"name": "_$ebnf$2", "symbols": ["_$ebnf$2", "_$ebnf$2$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "_$ebnf$3", "symbols": []},
+    {"name": "_$ebnf$3$subexpression$1", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)]},
+    {"name": "_$ebnf$3$subexpression$1", "symbols": [(lexer.has("nl") ? {type: "nl"} : nl)]},
+    {"name": "_$ebnf$3", "symbols": ["_$ebnf$3", "_$ebnf$3$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "_", "symbols": ["_$ebnf$2", (lexer.has("comment") ? {type: "comment"} : comment), "_$ebnf$3"], "postprocess": function(d) { return null; }},
     {"name": "__$ebnf$1$subexpression$1", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)]},
     {"name": "__$ebnf$1$subexpression$1", "symbols": [(lexer.has("nl") ? {type: "nl"} : nl)]},
     {"name": "__$ebnf$1", "symbols": ["__$ebnf$1$subexpression$1"]},
     {"name": "__$ebnf$1$subexpression$2", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)]},
     {"name": "__$ebnf$1$subexpression$2", "symbols": [(lexer.has("nl") ? {type: "nl"} : nl)]},
     {"name": "__$ebnf$1", "symbols": ["__$ebnf$1", "__$ebnf$1$subexpression$2"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
-    {"name": "__", "symbols": ["__$ebnf$1"], "postprocess": function(d) { return null; }}
+    {"name": "__", "symbols": ["__$ebnf$1"], "postprocess": function(d) { return null; }},
+    {"name": "__$ebnf$2$subexpression$1", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)]},
+    {"name": "__$ebnf$2$subexpression$1", "symbols": [(lexer.has("nl") ? {type: "nl"} : nl)]},
+    {"name": "__$ebnf$2", "symbols": ["__$ebnf$2$subexpression$1"]},
+    {"name": "__$ebnf$2$subexpression$2", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)]},
+    {"name": "__$ebnf$2$subexpression$2", "symbols": [(lexer.has("nl") ? {type: "nl"} : nl)]},
+    {"name": "__$ebnf$2", "symbols": ["__$ebnf$2", "__$ebnf$2$subexpression$2"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "__$ebnf$3", "symbols": []},
+    {"name": "__$ebnf$3$subexpression$1", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)]},
+    {"name": "__$ebnf$3$subexpression$1", "symbols": [(lexer.has("nl") ? {type: "nl"} : nl)]},
+    {"name": "__$ebnf$3", "symbols": ["__$ebnf$3", "__$ebnf$3$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "__", "symbols": ["__$ebnf$2", (lexer.has("comment") ? {type: "comment"} : comment), "__$ebnf$3"], "postprocess": function(d) { return null; }}
 ]
   , ParserStart: "main"
 }
