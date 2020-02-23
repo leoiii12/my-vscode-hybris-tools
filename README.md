@@ -34,6 +34,23 @@ Please provide a connectable hybris before using the extension.
 * `vscode-hybris-tools.http.useStrictSSL`: Use strict SSL.
 * `vscode-hybris-tools.offline.typeCodes`: The type codes for offline types autocompletion. e.g. ["HktvVariantProduct", "OfflineType", "HelloWorld"]
 
+```json
+{
+  "vscode-hybris-tools.hac.url": "https://localhost:9012/hac",
+  "vscode-hybris-tools.hac.username": "admin",
+  "vscode-hybris-tools.hac.password": "philipsspilihp",
+  "vscode-hybris-tools.http.timeout": 10000,
+  "vscode-hybris-tools.http.useStrictSSL": true,
+  "vscode-hybris-tools.offline.typeCodes": [
+    "OfflineCode",
+    "HktvVariantProduct"
+  ],
+
+  // To have autocompletion in snippets, you need to have this false.
+  "editor.suggest.snippetsPreventQuickSuggestions": false
+}
+```
+
 ## Known Issues
 
 Calling out known issues can help limit users opening duplicate issues against your extension.

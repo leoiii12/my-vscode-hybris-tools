@@ -28,12 +28,14 @@ export class FsqlCompletionItemProvider
     'LAST',
 
     'LEFT JOIN placeholder',
+    'LEFT JOIN placeholder AS p',
     'JOIN placeholder',
+    'JOIN placeholder AS p',
     'ON 1 = 1',
     'AS placeholder',
 
-    'AND',
-    'OR',
+    'AND 1 = 1',
+    'OR 1 = 1',
 
     'IS NULL',
     'IS NOT NULL',
@@ -60,9 +62,17 @@ export class FsqlCompletionItemProvider
       label: 'LEFT JOIN',
       snippetString: 'LEFT JOIN ${1:placeholder}',
     },
+    'LEFT JOIN placeholder AS p': {
+      label: 'LEFT JOIN AS',
+      snippetString: 'LEFT JOIN ${1:placeholder} AS ${2:p}',
+    },
     'JOIN placeholder': {
       label: 'JOIN',
       snippetString: 'JOIN ${1:placeholder}',
+    },
+    'JOIN placeholder AS p': {
+      label: 'JOIN AS',
+      snippetString: 'JOIN ${1:placeholder} AS ${2:p}',
     },
     'ON 1 = 1': {
       label: 'ON',
@@ -71,6 +81,14 @@ export class FsqlCompletionItemProvider
     'AS placeholder': {
       label: 'AS',
       snippetString: 'AS ${1:placeholder}',
+    },
+    'AND 1 = 1': {
+      label: 'AND',
+      snippetString: 'AND ${1:1} = ${2:1}',
+    },
+    'OR 1 = 1': {
+      label: 'OR',
+      snippetString: 'OR ${1:1} = ${2:1}',
     },
   }
 
