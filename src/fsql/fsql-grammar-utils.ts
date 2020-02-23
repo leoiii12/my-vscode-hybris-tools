@@ -3,8 +3,8 @@ import * as traverse from 'traverse'
 import { FsqlUtils } from './fsql-utils'
 
 export namespace FsqlGrammarUtils {
-  export function getPlaceholderType(parsingResultWithPlaceholder: any) {
-    let type: string | undefined = undefined
+  export function getPlaceholderNode(parsingResultWithPlaceholder: any) {
+    let node: any = undefined
 
     traverse(parsingResultWithPlaceholder).forEach(function(v) {
       if (
@@ -13,19 +13,18 @@ export namespace FsqlGrammarUtils {
         'value' in v &&
         v.value === FsqlUtils.FSQL_PLACEHOLDER
       ) {
-        type = `${this.key}`
+        node = this.node
+        node.type = this.key
 
         this.stop()
       }
     })
 
-    return type
+    return node
   }
 
-  export function getPlaceholderColumnRef(
-    parsingResultWithPlaceholder: any,
-  ): any {
-    let columnRef: any = undefined
+  export function getPlaceholderParentNode(parsingResultWithPlaceholder: any) {
+    let parentNode: any = undefined
 
     traverse(parsingResultWithPlaceholder).forEach(function(v) {
       if (
@@ -34,16 +33,14 @@ export namespace FsqlGrammarUtils {
         'value' in v &&
         v.value === FsqlUtils.FSQL_PLACEHOLDER
       ) {
-        const parentNode = this.parent!.node
-        if ('type' in parentNode && parentNode['type'] === 'column_ref') {
-          columnRef = parentNode
-        }
+        parentNode = this.parent!.node
+        parentNode.type = this.parent!.key
 
         this.stop()
       }
     })
 
-    return columnRef
+    return parentNode
   }
 
   export function getReferencedTypes(

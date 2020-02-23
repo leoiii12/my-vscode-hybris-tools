@@ -32,12 +32,12 @@ export class FsqlDefinitionProvider implements vscode.DefinitionProvider {
       return []
     }
 
-    const type = FsqlGrammarUtils.getPlaceholderType(resultsWithPlaceholder[0])
-    if (type === undefined) {
+    const node = FsqlGrammarUtils.getPlaceholderNode(resultsWithPlaceholder[0])
+    if (node === undefined) {
       return []
     }
 
-    switch (type) {
+    switch (node.type) {
       case 'typeName':
         const typeCode = this.caches.fsqlComposedTypeCodes.find(
           c => c.toLowerCase() === tokenText.toLowerCase(),

@@ -191,7 +191,7 @@ export function activate(context: vscode.ExtensionContext) {
           new HacUtils(),
           internalCaches,
         ),
-        ...['.', ':'],
+        ...['.', ':', '[', ']'],
       ),
     )
     context.subscriptions.push(

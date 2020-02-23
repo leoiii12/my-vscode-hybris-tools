@@ -159,13 +159,21 @@ export class FsqlCompletionItemProvider
         return []
       }
 
-      const type = FsqlGrammarUtils.getPlaceholderType(results[0])!
-      switch (type) {
+      const parsingResultWithPlaceholder = results[0]
+
+      const node = FsqlGrammarUtils.getPlaceholderNode(
+        parsingResultWithPlaceholder,
+      )
+
+      switch (node.type) {
         case 'attribute':
+        case 'language':
           // This is handled by FsqlCompletionAttributeItemProvider
           return []
         case 'as':
-          const types = FsqlGrammarUtils.getReferencedTypes(results[0])
+          const types = FsqlGrammarUtils.getReferencedTypes(
+            parsingResultWithPlaceholder,
+          )
 
           return types.reduce((acc: string[], v) => {
             const names = FsqlCompletionItemProvider.getSuggestedAliasNames(
@@ -255,7 +263,7 @@ export class FsqlCompletionItemProvider
 
     if (matchArr) {
       return [
-        `AS ${matchArr.join('').toLowerCase()}`,
+        // `AS ${matchArr.join('').toLowerCase()}`,
         matchArr.join('').toLowerCase(),
       ]
     }

@@ -124,25 +124,25 @@ export namespace FsqlUtils {
     return matchedToken
   }
 
-  export function includesAllKeys(obj: any, keys: string[]) {
-    return Object.keys(obj).filter(k => keys.includes(k)).length === keys.length
-  }
-
-  export function matchesByPatterns(
+  export function matchesByKeys(
     obj: any,
-    rules: { pattern: string[]; ret: string }[],
+    rules: { keysToHave: string[]; ret: string }[],
   ): string | undefined {
     for (const rule of rules) {
-      if (includesAllKeys(obj, rule.pattern) === true) {
+      if (includesAllKeys(obj, rule.keysToHave) === true) {
         return rule.ret
       }
     }
 
-    const anyRule = rules.find(r => r.pattern.includes('*'))
+    const anyRule = rules.find(r => r.keysToHave.includes('*'))
     if (anyRule) {
       return anyRule.ret
     }
 
     return undefined
+  }
+
+  export function includesAllKeys(obj: any, keys: string[]) {
+    return Object.keys(obj).filter(k => keys.includes(k)).length === keys.length
   }
 }

@@ -29,7 +29,9 @@ export class FsqlCompletionAttributeItemProvider
 
     const results = FsqlUtils.tryParseWithPlaceholder(
       this.grammar,
-      beforeText.endsWith('.') ? beforeText : beforeText + '.',
+      context.triggerCharacter && beforeText.endsWith(context.triggerCharacter)
+        ? beforeText
+        : beforeText + context.triggerCharacter,
       afterText,
     )
     if (results.length === 0) {
@@ -38,62 +40,86 @@ export class FsqlCompletionAttributeItemProvider
 
     const parsingResultWithPlaceholder = results[0]
 
-    const type = FsqlGrammarUtils.getPlaceholderType(
-      parsingResultWithPlaceholder,
-    )!
-    if (type !== 'attribute') {
-      return []
-    }
-
-    const columnRef = FsqlGrammarUtils.getPlaceholderColumnRef(
+    const node = FsqlGrammarUtils.getPlaceholderNode(
       parsingResultWithPlaceholder,
     )
+    const parentNode = FsqlGrammarUtils.getPlaceholderParentNode(
+      parsingResultWithPlaceholder,
+    )
+    console.log(parentNode)
+    switch (node.type) {
+      case 'attribute': {
+        const matchedRet = FsqlUtils.matchesByKeys(parentNode, [
+          { keysToHave: ['typeAlias'], ret: 'Type' },
+          { keysToHave: ['tableAlias'], ret: 'Table' },
+          { keysToHave: ['*'], ret: '*' },
+        ])
+        switch (matchedRet) {
+          case 'Type':
+            const typeAlias = parentNode['typeAlias'].toString()
 
-    const matchedRet = FsqlUtils.matchesByPatterns(columnRef, [
-      { pattern: ['typeAlias'], ret: 'Type' },
-      { pattern: ['tableAlias'], ret: 'Table' },
-      { pattern: ['*'], ret: '*' },
-    ])
-    switch (matchedRet) {
-      case 'Type':
-        const typeAlias = columnRef['typeAlias'].toString()
+            const type = await FsqlCompletionAttributeItemProvider.getConcreteTypeCode(
+              typeAlias,
+              parsingResultWithPlaceholder,
+            )
+            if (type === undefined) {
+              return []
+            }
 
-        const type = await FsqlCompletionAttributeItemProvider.getActualTypeName(
-          typeAlias,
-          parsingResultWithPlaceholder,
-        )
-        if (type === undefined) {
-          return []
+            const attributes = await this.getComposedTypeAttributes(
+              type.typeName.value,
+            )
+            const items = attributes.map(at => {
+              const ci = new vscode.CompletionItem(
+                at.qualifier,
+                vscode.CompletionItemKind.Field,
+              )
+              ci.detail = `${at.typeCode}`
+              return ci
+            })
+
+            console.log(
+              '[FsqlCompletionAttributeItemProvider] - ' +
+                `Completed in ${new Date().getTime() - start}ms.`,
+            )
+
+            return items
+          default:
+            console.log(
+              `[FsqlCompletionAttributeItemProvider] - Not yet implemented for ${matchedRet}.`,
+            )
+            break
         }
 
-        const attributes = await this.getComposedTypeAttributes(
-          type.typeName.value,
-        )
-        const items = attributes.map(at => {
+        break
+      }
+      case 'language':
+        return ['zh', 'en'].map(lang => {
           const ci = new vscode.CompletionItem(
-            at.qualifier,
+            lang,
             vscode.CompletionItemKind.Field,
           )
-          ci.detail = `${at.typeCode}`
           return ci
         })
-
-        console.log(
-          '[FsqlCompletionAttributeItemProvider] - ' +
-            `Completed in ${new Date().getTime() - start}ms.`,
-        )
-
-        return items
+      case 'modifiers':
+        return ['o'].map(lang => {
+          const ci = new vscode.CompletionItem(
+            lang,
+            vscode.CompletionItemKind.Field,
+          )
+          return ci
+        })
       default:
-        console.log(
-          `[FsqlCompletionAttributeItemProvider] - Not yet implemented for ${matchedRet}.`,
-        )
-        break
+        return []
     }
 
     return []
   }
 
+  /**
+   * Get all attributes of a composed type
+   * @param composedTypeCode
+   */
   private async getComposedTypeAttributes(
     composedTypeCode: string,
   ): Promise<{ qualifier: string; typeCode: string }[]> {
@@ -146,7 +172,12 @@ export class FsqlCompletionAttributeItemProvider
     return attributes
   }
 
-  private static async getActualTypeName(
+  /**
+   * Convert the alias to the concrete type
+   * @param typeAlias
+   * @param parsingResult
+   */
+  private static async getConcreteTypeCode(
     typeAlias: string,
     parsingResult: any,
   ) {
