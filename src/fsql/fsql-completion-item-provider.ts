@@ -1,3 +1,4 @@
+import { Rules } from 'moo'
 import { Grammar, Parser } from 'nearley'
 import * as vscode from 'vscode'
 
@@ -92,7 +93,11 @@ export class FsqlCompletionItemProvider
     },
   }
 
-  constructor(private grammar: Grammar, private caches: InternalCaches) {}
+  constructor(
+    private grammar: Grammar,
+    private caches: InternalCaches,
+    private lexerRules: Rules,
+  ) {}
 
   public provideCompletionItems(
     document: vscode.TextDocument,
@@ -105,6 +110,7 @@ export class FsqlCompletionItemProvider
     const { beforeText, tokenText, afterText } = FsqlUtils.getBeforeAfterTexts(
       document,
       position,
+      this.lexerRules,
     )
 
     // Parse and Get new tokens

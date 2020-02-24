@@ -1,11 +1,11 @@
+import { Rules } from 'moo'
 import { Grammar, Parser } from 'nearley'
 import * as vscode from 'vscode'
 
-import { lexerRules } from './fsql-lexer'
 import { FsqlUtils } from './fsql-utils'
 
 export class FsqlCodeActionProvider implements vscode.CodeActionProvider {
-  constructor(private grammar: Grammar) {}
+  constructor(private grammar: Grammar, private lexerRules: Rules) {}
 
   provideCodeActions(
     document: vscode.TextDocument,
@@ -13,7 +13,11 @@ export class FsqlCodeActionProvider implements vscode.CodeActionProvider {
     context: vscode.CodeActionContext,
     token: vscode.CancellationToken,
   ): vscode.ProviderResult<(vscode.Command | vscode.CodeAction)[]> {
-    const { beforeText } = FsqlUtils.getBeforeAfterTexts(document, range.start)
+    const { beforeText } = FsqlUtils.getBeforeAfterTexts(
+      document,
+      range.start,
+      this.lexerRules,
+    )
 
     if (beforeText.trimRight().endsWith('1') === true) {
       return this.getActionsForOneEqualOne(document, beforeText)
@@ -50,7 +54,7 @@ export class FsqlCodeActionProvider implements vscode.CodeActionProvider {
       codeAction.isPreferred = true
 
       const latestValueToken = FsqlUtils.findLatestTokenByValue(
-        lexerRules,
+        this.lexerRules,
         beforeText,
         '1',
       )

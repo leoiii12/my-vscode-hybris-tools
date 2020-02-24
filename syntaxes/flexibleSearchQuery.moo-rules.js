@@ -1,12 +1,14 @@
-import * as moo from 'moo'
+const moo = require('moo')
 
-function ci(text: string) {
-  return [text.toLowerCase(), text.toUpperCase()]
-}
+function ci(text) {
+  return [text.toLowerCase(), text.toUpperCase()];
+};
 
-export const lexerRules = {
-  group_by: ['group by', 'GROUP BY'],
-  order_by: ['order by', 'ORDER BY'],
+const mooRules = {
+  comment: /--.*?$/,
+
+  group_by: ci('group by'),
+  order_by: ci('order by'),
 
   ws: /[ \t\v\f]+/,
   nl: { match: /[\r\n]+/, lineBreaks: true },
@@ -49,7 +51,12 @@ export const lexerRules = {
       from: ci('from'),
       where: ci('where'),
       having: ci('having'),
+      union: ci('union'),
+      except: ci('except'),
+      minus: ci('minus'),
+      intersect: ci('intersect'),
 
+      all: ci('all'),
       asc: ci('asc'),
       desc: ci('desc'),
       nulls: ci('nulls'),
@@ -69,12 +76,6 @@ export const lexerRules = {
       is: ci('is'),
       in_: ci('in'),
 
-      union: ci('union'),
-      all: ci('all'),
-      except: ci('except'),
-      minus: ci('minus'),
-      intersect: ci('intersect'),
-
       group_concat: ci('group_concat'),
       separator: ci('separator'),
       count: ci('count'),
@@ -92,5 +93,9 @@ export const lexerRules = {
 
   number_literal: /[0-9]+/,
   string_literal: /\'.*?\'/,
-  any: /.+?/,
+  any: /.+?/
+}
+
+module.exports = {
+  rules: mooRules
 }

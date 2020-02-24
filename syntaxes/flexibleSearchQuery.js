@@ -4,103 +4,9 @@
 function id(x) { return x[0]; }
 
   const moo = require('moo')
+  const mooRules = require('./flexibleSearchQuery.moo-rules.js')
 
-  function ci(text) {
-    return [text.toLowerCase(), text.toUpperCase()];
-  };
-
-  const lexer = moo.compile({
-    comment: /--.*?$/,
-
-    group_by: ['group by', 'GROUP BY'],
-    order_by: ['order by', 'ORDER BY'],
-
-    ws: /[ \t\v\f]+/,
-    nl: { match: /[\r\n]+/, lineBreaks: true },
-
-    plus: '+',
-    minus: '-',
-    times: '*',
-    obelus: '/',
-
-    not_equal: /<>|!=/,
-    less_than_and_equal: '<=',
-    greater_than_and_equal: '>=',
-    less_than: '<',
-    greater_than: '>',
-    equal: '=',
-
-    lcbrac: '{',
-    rcbrac: '}',
-    lparen: '(',
-    rparen: ')',
-    lsbrac: '[',
-    rsbrac: ']',
-
-    dot: '.',
-    colon: ':',
-    comma: ',',
-    question_mark: '?',
-    exclamation_mark: '!',
-
-    quoted_identifier: /\".*?\"/,
-
-    identifier: {
-      match: /[a-zA-Z\_][a-zA-Z\_0-9]*/,
-      type: moo.keywords({
-        true: ci('true'),
-        false: ci('false'),
-        null: ci('null'),
-
-        select: ci('select'),
-        from: ci('from'),
-        where: ci('where'),
-        having: ci('having'),
-
-        asc: ci('asc'),
-        desc: ci('desc'),
-        nulls: ci('nulls'),
-        first: ci('first'),
-        last: ci('last'),
-
-        left: ci('left'),
-        join: ci('join'),
-        on: ci('on'),
-
-        or: ci('or'),
-        or_: ci('||'),
-        and: ci('and'),
-        not: ci('not'),
-        like: ci('like'),
-        between: ci('between'),
-        is: ci('is'),
-        in_: ci('in'),
-
-        union: ci('union'),
-        all: ci('all'),
-        except: ci('except'),
-        minus: ci('minus'),
-        intersect: ci('intersect'),
-      
-        group_concat: ci('group_concat'),
-        separator: ci('separator'),
-        count: ci('count'),
-        distinct: ci('distinct'),
-      
-        case_: ci('case'),
-        when: ci('when'),
-        then: ci('then'),
-        else_: ci('else'),
-        end: ci('end'),
-      
-        as: ci('as'),
-      }),
-    },
-
-    number_literal: /[0-9]+/,
-    string_literal: /\'.*?\'/,
-    any: /.+?/
-  });
+  const lexer = moo.compile(mooRules.rules);
 var grammar = {
     Lexer: lexer,
     ParserRules: [
@@ -157,7 +63,7 @@ var grammar = {
             orderBy: elems[10] == null ? null : [
               elems[10][3][0], ...elems[10][3][1].map((elem) => elem[3])
             ],
-            union: elems[11] == null ? null : { isAll: elems[11][2] != null, query: elems[11][4] },
+            union: elems[11] == null ? null : { isAll: elems[11][3] != null, query: elems[11][4] },
             except: elems[12] == null ? null : { query: elems[12][3] },
             minus: elems[13] == null ? null : { query: elems[13][3] },
             intersect: elems[14] == null ? null : { query: elems[14][3] },
@@ -505,14 +411,14 @@ var grammar = {
     {"name": "bind_parameter", "symbols": ["bind_parameter$subexpression$1"], "postprocess": 
         (elems) => ({ type: 'bind_parameter', parameter_name: elems[0][1] })
           },
-    {"name": "function$subexpression$1$subexpression$1$ebnf$1$subexpression$1", "symbols": [(lexer.has("distinct") ? {type: "distinct"} : distinct), "__"]},
-    {"name": "function$subexpression$1$subexpression$1$ebnf$1", "symbols": ["function$subexpression$1$subexpression$1$ebnf$1$subexpression$1"], "postprocess": id},
-    {"name": "function$subexpression$1$subexpression$1$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "function$subexpression$1$subexpression$1", "symbols": ["function$subexpression$1$subexpression$1$ebnf$1", (lexer.has("times") ? {type: "times"} : times)], "postprocess": (elems) => (elems[1])},
-    {"name": "function$subexpression$1$subexpression$1", "symbols": ["term"], "postprocess": (elems) => (elems[0])},
-    {"name": "function$subexpression$1", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "_", "function$subexpression$1$subexpression$1", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)]},
+    {"name": "function$subexpression$1$ebnf$1$subexpression$1", "symbols": [(lexer.has("distinct") ? {type: "distinct"} : distinct), "__"]},
+    {"name": "function$subexpression$1$ebnf$1", "symbols": ["function$subexpression$1$ebnf$1$subexpression$1"], "postprocess": id},
+    {"name": "function$subexpression$1$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "function$subexpression$1$subexpression$1", "symbols": [(lexer.has("times") ? {type: "times"} : times)]},
+    {"name": "function$subexpression$1$subexpression$1", "symbols": ["term"]},
+    {"name": "function$subexpression$1", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "_", "function$subexpression$1$ebnf$1", "function$subexpression$1$subexpression$1", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)]},
     {"name": "function", "symbols": [(lexer.has("count") ? {type: "count"} : count), "_", "function$subexpression$1"], "postprocess": 
-        (elems) => ({ type: 'function', function: 'COUNT', args: [elems[2][3]] })
+        (elems) => ({ type: 'function', function: 'COUNT', args: [elems[2][2], elems[2][3]] })
           },
     {"name": "function$subexpression$2$ebnf$1$subexpression$1", "symbols": ["_", (lexer.has("separator") ? {type: "separator"} : separator), "_", "type_string"]},
     {"name": "function$subexpression$2$ebnf$1", "symbols": ["function$subexpression$2$ebnf$1$subexpression$1"], "postprocess": id},

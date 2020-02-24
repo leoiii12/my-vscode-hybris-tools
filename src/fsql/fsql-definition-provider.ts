@@ -1,3 +1,4 @@
+import { Rules } from 'moo'
 import { Grammar, Parser } from 'nearley'
 import * as vscode from 'vscode'
 
@@ -11,6 +12,7 @@ export class FsqlDefinitionProvider implements vscode.DefinitionProvider {
     private grammar: Grammar,
     private caches: InternalCaches,
     private hacUtils: HacUtils,
+    private lexerRules: Rules,
   ) {}
 
   async provideDefinition(
@@ -21,6 +23,7 @@ export class FsqlDefinitionProvider implements vscode.DefinitionProvider {
     const { beforeText, afterText, tokenText } = FsqlUtils.getBeforeAfterTexts(
       document,
       position,
+      this.lexerRules,
     )
 
     const resultsWithPlaceholder = FsqlUtils.tryParseWithPlaceholder(

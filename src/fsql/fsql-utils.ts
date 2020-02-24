@@ -2,14 +2,13 @@ import * as moo from 'moo'
 import { Grammar, Parser } from 'nearley'
 import * as vscode from 'vscode'
 
-import { lexerRules } from './fsql-lexer'
-
 export namespace FsqlUtils {
   export const FSQL_PLACEHOLDER = 'FsqlPlaceholder'
 
   export function getBeforeAfterTexts(
     document: vscode.TextDocument,
     position: vscode.Position,
+    lexerRules: moo.Rules,
   ) {
     const text = document.getText()
     const offset = document.offsetAt(position)

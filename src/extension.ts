@@ -15,7 +15,8 @@ import { InternalCaches } from './internal-caches'
 import { MemFS } from './memfs'
 import { VscodeUtils } from './vscode-utils'
 
-const grammar = require('../syntaxes/flexibleSearchQuery.js')
+const fsqlGrammar = require('../syntaxes/flexibleSearchQuery.js')
+const fsqlMooRules = require('../syntaxes/flexibleSearchQuery.moo-rules.js')
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -137,7 +138,7 @@ export function activate(context: vscode.ExtensionContext) {
     /**
      * DiagnosticsProvider
      */
-    const fsqlDiagnosticProvider = new FsqlDiagnosticProvider(grammar)
+    const fsqlDiagnosticProvider = new FsqlDiagnosticProvider(fsqlGrammar)
     fsqlDiagnosticCollection = vscode.languages.createDiagnosticCollection(
       'flexibleSearchQuery',
     )
@@ -176,8 +177,9 @@ export function activate(context: vscode.ExtensionContext) {
           language: 'flexibleSearchQuery',
         },
         new FsqlCompletionItemProvider(
-          Grammar.fromCompiled(grammar),
+          Grammar.fromCompiled(fsqlGrammar),
           internalCaches,
+          fsqlMooRules.rules,
         ),
       ),
     )
@@ -187,9 +189,10 @@ export function activate(context: vscode.ExtensionContext) {
           language: 'flexibleSearchQuery',
         },
         new FsqlCompletionAttributeItemProvider(
-          Grammar.fromCompiled(grammar),
+          Grammar.fromCompiled(fsqlGrammar),
           new HacUtils(),
           internalCaches,
+          fsqlMooRules.rules,
         ),
         ...['.', ':', '[', ']'],
       ),
@@ -207,7 +210,12 @@ export function activate(context: vscode.ExtensionContext) {
         {
           language: 'flexibleSearchQuery',
         },
-        new FsqlDefinitionProvider(grammar, internalCaches, hacUtils),
+        new FsqlDefinitionProvider(
+          fsqlGrammar,
+          internalCaches,
+          hacUtils,
+          fsqlMooRules.rules,
+        ),
       ),
     )
     context.subscriptions.push(
@@ -215,7 +223,7 @@ export function activate(context: vscode.ExtensionContext) {
         {
           language: 'flexibleSearchQuery',
         },
-        new FsqlCodeActionProvider(grammar),
+        new FsqlCodeActionProvider(fsqlGrammar, fsqlMooRules.rules),
       ),
     )
   }

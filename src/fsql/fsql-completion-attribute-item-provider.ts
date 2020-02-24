@@ -1,3 +1,4 @@
+import { Rules } from 'moo'
 import { Grammar } from 'nearley'
 import * as vscode from 'vscode'
 
@@ -12,6 +13,7 @@ export class FsqlCompletionAttributeItemProvider
     private grammar: Grammar,
     private hacUtils: HacUtils,
     private caches: InternalCaches,
+    private lexerRules: Rules,
   ) {}
 
   public async provideCompletionItems(
@@ -25,6 +27,7 @@ export class FsqlCompletionAttributeItemProvider
     const { beforeText, afterText } = FsqlUtils.getBeforeAfterTexts(
       document,
       position,
+      this.lexerRules,
     )
 
     const results = FsqlUtils.tryParseWithPlaceholder(
