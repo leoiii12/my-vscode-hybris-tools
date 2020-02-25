@@ -10,6 +10,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Add a databaseColumn in the definition provider for types
 - Support comments in fsql
 - Add some snippets for autocompletion i.e. `WHERE`, `JOIN`, `ON`, `AS`, `AND`, `OR`
+- Add subquery autocompletion
 
 ## 0.0.6
 

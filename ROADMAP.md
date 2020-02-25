@@ -11,5 +11,4 @@
 
 ## Misc
 
-1. Convert fsql to sql and Fill in params
-2. Structure outline
+1. Structure outline

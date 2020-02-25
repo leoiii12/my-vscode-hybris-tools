@@ -51,50 +51,40 @@ export class FsqlCompletionAttributeItemProvider
     )
 
     switch (node.type) {
+      // Type
       case 'attribute': {
-        const matchedRet = FsqlUtils.matchesByKeys(parentNode, [
-          { keysToHave: ['typeAlias'], ret: 'Type' },
-          { keysToHave: ['tableAlias'], ret: 'Table' },
-          { keysToHave: ['*'], ret: '*' },
-        ])
-        switch (matchedRet) {
-          case 'Type':
-            const typeAlias = parentNode['typeAlias'].toString()
-
-            const type = await FsqlCompletionAttributeItemProvider.getConcreteTypeCode(
-              typeAlias,
-              parsingResultWithPlaceholder,
-            )
-            if (type === undefined) {
-              return []
-            }
-
-            const attributes = await this.getComposedTypeAttributes(
-              type.typeName.value,
-            )
-            const items = attributes.map(at => {
-              const ci = new vscode.CompletionItem(
-                at.qualifier,
-                vscode.CompletionItemKind.Field,
-              )
-              ci.detail = `${at.typeCode}`
-              return ci
-            })
-
-            console.log(
-              '[FsqlCompletionAttributeItemProvider] - ' +
-                `Completed in ${new Date().getTime() - start}ms.`,
-            )
-
-            return items
-          default:
-            console.log(
-              `[FsqlCompletionAttributeItemProvider] - Not yet implemented for ${matchedRet}.`,
-            )
-            break
+        if ('typeAlias' in parentNode === false) {
+          return []
         }
 
-        break
+        const typeAlias = parentNode['typeAlias'].toString()
+
+        const type = await FsqlCompletionAttributeItemProvider.getConcreteTypeCode(
+          typeAlias,
+          parsingResultWithPlaceholder,
+        )
+        if (type === undefined) {
+          return []
+        }
+
+        const attributes = await this.getComposedTypeAttributes(
+          type.typeName.value,
+        )
+        const items = attributes.map(at => {
+          const ci = new vscode.CompletionItem(
+            at.qualifier,
+            vscode.CompletionItemKind.Field,
+          )
+          ci.detail = `${at.typeCode}`
+          return ci
+        })
+
+        console.log(
+          '[FsqlCompletionAttributeItemProvider] - ' +
+            `Completed in ${new Date().getTime() - start}ms.`,
+        )
+
+        return items
       }
       case 'language':
         return ['zh', 'en'].map(lang => {
@@ -112,6 +102,51 @@ export class FsqlCompletionAttributeItemProvider
           )
           return ci
         })
+
+      // Table
+      case 'column': {
+        if ('tableAlias' in parentNode === false) {
+          return []
+        }
+
+        const tableAlias = parentNode['tableAlias'].toString()
+
+        const subqueries = FsqlGrammarUtils.getSubqueries(
+          parsingResultWithPlaceholder,
+        )
+
+        const matchedSubquery = subqueries.find(
+          sq => sq.as?.value === tableAlias,
+        )
+        if (matchedSubquery === undefined) {
+          return []
+        }
+
+        const selects = FsqlGrammarUtils.getSelects(
+          parsingResultWithPlaceholder,
+        )
+
+        return selects
+          .filter(t => t.path.startsWith(matchedSubquery.path))
+          .map((s, i) => {
+            let label = s['as']?.value
+            if (label === undefined) {
+              if (s.term['type'] === 'column_ref') {
+                label = s.term['attribute'].value || s.term['column'].value
+              } else {
+                label = s.term
+              }
+            }
+            const ci = new vscode.CompletionItem(
+              label!,
+              vscode.CompletionItemKind.Field,
+            )
+            ci.sortText = `${i}`
+            return ci
+          })
+          .filter((v, i, a) => a.findIndex(e => e.label === v.label) === i)
+      }
+
       default:
         return []
     }
@@ -184,7 +219,7 @@ export class FsqlCompletionAttributeItemProvider
     typeAlias: string,
     parsingResult: any,
   ) {
-    const referencedTypes = FsqlGrammarUtils.getReferencedTypes(parsingResult)
+    const referencedTypes = FsqlGrammarUtils.getTypes(parsingResult)
 
     for (const type of referencedTypes) {
       if (type.as && type.as.value === typeAlias) {

@@ -174,12 +174,12 @@ export class FsqlCompletionItemProvider
       switch (node.type) {
         case 'attribute':
         case 'language':
+        case 'modifiers':
+        case 'column':
           // This is handled by FsqlCompletionAttributeItemProvider
           return []
         case 'as':
-          const types = FsqlGrammarUtils.getReferencedTypes(
-            parsingResultWithPlaceholder,
-          )
+          const types = FsqlGrammarUtils.getTypes(parsingResultWithPlaceholder)
 
           return types.reduce((acc: string[], v) => {
             const names = FsqlCompletionItemProvider.getSuggestedAliasNames(

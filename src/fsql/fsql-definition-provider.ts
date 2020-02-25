@@ -71,9 +71,7 @@ export class FsqlDefinitionProvider implements vscode.DefinitionProvider {
         parser.feed(document.getText())
         parser.finish()
 
-        const referencedTypes = FsqlGrammarUtils.getReferencedTypes(
-          parser.results[0],
-        )
+        const referencedTypes = FsqlGrammarUtils.getTypes(parser.results[0])
 
         const selectedType = referencedTypes.find(
           rt =>

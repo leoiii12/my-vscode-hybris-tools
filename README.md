@@ -11,10 +11,12 @@
 
 1. Autocompletion for hybris types
 2. Autocompletion for hybris type attributes
-3. fsql Formatter
-4. See the definition of a hybris type
-5. See the definition of a alias
-6. Auto fix actions for `1` as conditions instead of `1 = 1`
+3. Autocompletion for subqueries
+4. fsql Formatter
+5. See the definition of a hybris type
+6. See the definition of a alias
+7. Auto fix actions for `1` as conditions instead of `1 = 1`
+8. Convert fsql to sql and fill in parameters
 
 ### Screenshots
 
