@@ -11,6 +11,14 @@
     "Other"
   ],
   "activationEvents": [
+    "onCommand:vscode-hybris-tools.flexibleSearchQuery.execute",
+    "onCommand:vscode-hybris-tools.flexibleSearchQuery.executeRawSQL",
+    "onCommand:vscode-hybris-tools.flexibleSearchQuery.translateToRawSQL",
+    "onCommand:vscode-hybris-tools.groovy.execute",
+    "onCommand:vscode-hybris-tools.groovy.executeAndCommit",
+    "onCommand:vscode-hybris-tools.hybris.clearCaches",
+    "onCommand:vscode-hybris-tools.displayCaches",
+    "onCommand:vscode-hybris-tools.clearCaches",
     "onLanguage:flexibleSearchQuery",
     "onLanguage:groovy"
   ],
@@ -112,26 +120,6 @@
         ]
       }
     ],
-    "menus": {
-      "commandPalette": [
-        {
-          "when": "resourceExtname == .sql",
-          "command": "vscode-hybris-tools.flexibleSearchQuery.executeRawSQL"
-        },
-        {
-          "when": "resourceExtname == .fsql",
-          "command": "vscode-hybris-tools.flexibleSearchQuery.execute"
-        },
-        {
-          "when": "resourceExtname == .groovy",
-          "command": "vscode-hybris-tools.groovy.execute"
-        },
-        {
-          "when": "resourceExtname == .groovy",
-          "command": "vscode-hybris-tools.groovy.executeAndCommit"
-        }
-      ]
-    },
     "grammars": [
       {
         "language": "flexibleSearchQuery",
@@ -175,7 +163,7 @@
     "lint": "eslint src --ext ts",
     "pretest": "npm run compile && npm run lint",
     "test": "node ./out/test/runTest.js",
-    "test-install": "vsce package --baseImagesUrl https://it-catch.hktv.com.hk:10080/leochoi/vscode-hybris-tools/raw/master/  && code --install-extension my-vscode-hybris-tools-0.0.7.vsix --force"
+    "test-install": "vsce package --baseImagesUrl https://it-catch.hktv.com.hk:10080/leochoi/vscode-hybris-tools/raw/master/ && code --install-extension my-vscode-hybris-tools-0.0.7.vsix --force"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.16",

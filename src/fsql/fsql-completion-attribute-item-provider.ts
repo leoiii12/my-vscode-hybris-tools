@@ -22,6 +22,24 @@ export class FsqlCompletionAttributeItemProvider
     cancellationToken: vscode.CancellationToken,
     context: vscode.CompletionContext,
   ): Promise<vscode.CompletionItem[]> {
+    return vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Window,
+        title: 'Loading...',
+      },
+      async progress => {
+        progress.report({ increment: 0 })
+
+        return this.getCompletionItems(document, position, context)
+      },
+    )
+  }
+
+  public async getCompletionItems(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    context: vscode.CompletionContext,
+  ) {
     const start = new Date().getTime()
 
     const { beforeText, afterText } = FsqlUtils.getBeforeAfterTexts(
@@ -146,9 +164,6 @@ export class FsqlCompletionAttributeItemProvider
           })
           .filter((v, i, a) => a.findIndex(e => e.label === v.label) === i)
       }
-
-      default:
-        return []
     }
 
     return []

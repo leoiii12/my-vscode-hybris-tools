@@ -11,6 +11,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Support comments in fsql
 - Add some snippets for autocompletion i.e. `WHERE`, `JOIN`, `ON`, `AS`, `AND`, `OR`
 - Add subquery autocompletion
+- Add a loading badge for attribute autocompletion
 
 ## 0.0.6
 
