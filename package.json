@@ -16,11 +16,14 @@
     "onCommand:vscode-hybris-tools.flexibleSearchQuery.translateToRawSQL",
     "onCommand:vscode-hybris-tools.groovy.execute",
     "onCommand:vscode-hybris-tools.groovy.executeAndCommit",
+    "onCommand:vscode-hybris-tools.impEx.import",
+    "onCommand:vscode-hybris-tools.impEx.validate",
     "onCommand:vscode-hybris-tools.hybris.clearCaches",
     "onCommand:vscode-hybris-tools.displayCaches",
     "onCommand:vscode-hybris-tools.clearCaches",
     "onLanguage:flexibleSearchQuery",
-    "onLanguage:groovy"
+    "onLanguage:groovy",
+    "onLanguage:impEx"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -86,6 +89,14 @@
         "title": "Hybris: Execute Groovy And Commit"
       },
       {
+        "command": "vscode-hybris-tools.impEx.import",
+        "title": "Hybris: Import ImpEx"
+      },
+      {
+        "command": "vscode-hybris-tools.impEx.validate",
+        "title": "Hybris: Validate ImpEx"
+      },
+      {
         "command": "vscode-hybris-tools.hybris.clearCaches",
         "title": "Hybris: Clear Caches"
       },
@@ -117,6 +128,16 @@
         ],
         "extensions": [
           ".grovvy"
+        ]
+      },
+      {
+        "id": "impEx",
+        "aliases": [
+          "ImpEx",
+          "impex"
+        ],
+        "extensions": [
+          ".impex"
         ]
       }
     ],
@@ -151,6 +172,12 @@
         "key": "shift+f5",
         "mac": "shift+f5",
         "when": "editorTextFocus && resourceExtname == .groovy"
+      },
+      {
+        "command": "vscode-hybris-tools.impEx.import",
+        "key": "f5",
+        "mac": "f5",
+        "when": "editorTextFocus && resourceExtname == .impex"
       }
     ]
   },

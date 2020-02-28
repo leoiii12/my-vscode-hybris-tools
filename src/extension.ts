@@ -11,6 +11,7 @@ import { FsqlDiagnosticProvider } from './fsql/fsql-diagnostic-provider'
 import { FsqlDocumentFormattingEditProvider } from './fsql/fsql-document-formatting-edit-provider'
 import { GroovyCommands } from './groovy/groovy-commands'
 import { HacUtils } from './hac-utils'
+import { ImpExCommands } from './imp-ex/imp-ex-commands'
 import { InternalCaches } from './internal-caches'
 import { MemFS } from './memfs'
 import { VscodeUtils } from './vscode-utils'
@@ -52,64 +53,99 @@ export function activate(context: vscode.ExtensionContext) {
       'vscode-hybris-tools.flexibleSearchQuery.execute',
       () =>
         VscodeUtils.withProgress(
-          FsqlCommands.execute(hacUtils).catch(() => {
-            vscode.window.showErrorMessage("Timeout. Can't reach Hybris.")
+          FsqlCommands.execute(hacUtils).catch(err => {
+            vscode.window.showErrorMessage(
+              err ? err.message : 'Timeout. Please check whether Hybris is on.',
+            )
             return false
           }),
-          'Executing...',
+          'Executing, Please wait...',
         ),
     ),
     vscode.commands.registerCommand(
       'vscode-hybris-tools.flexibleSearchQuery.executeRawSQL',
       () =>
         VscodeUtils.withProgress(
-          FsqlCommands.execute(hacUtils).catch(() => {
-            vscode.window.showErrorMessage("Timeout. Can't reach Hybris.")
+          FsqlCommands.execute(hacUtils).catch(err => {
+            vscode.window.showErrorMessage(
+              err ? err.message : 'Timeout. Please check whether Hybris is on.',
+            )
             return false
           }),
-          'Executing...',
+          'Executing, Please wait...',
         ),
     ),
     vscode.commands.registerCommand(
       'vscode-hybris-tools.flexibleSearchQuery.translateToRawSQL',
       () =>
         VscodeUtils.withProgress(
-          FsqlCommands.translateFsqlToRawSql(hacUtils).catch(() => {
-            vscode.window.showErrorMessage("Timeout. Can't reach Hybris.")
+          FsqlCommands.translateFsqlToRawSql(hacUtils).catch(err => {
+            vscode.window.showErrorMessage(
+              err ? err.message : 'Timeout. Please check whether Hybris is on.',
+            )
             return false
           }),
-          'Executing...',
+          'Executing, Please wait...',
         ),
     ),
     vscode.commands.registerCommand('vscode-hybris-tools.groovy.execute', () =>
       VscodeUtils.withProgress(
-        GroovyCommands.execute(hacUtils).catch(() => {
-          vscode.window.showErrorMessage("Timeout. Can't reach Hybris.")
+        GroovyCommands.execute(hacUtils).catch(err => {
+          vscode.window.showErrorMessage(
+            err ? err.message : 'Timeout. Please check whether Hybris is on.',
+          )
           return false
         }),
-        'Executing...',
+        'Executing, Please wait...',
       ),
     ),
     vscode.commands.registerCommand(
       'vscode-hybris-tools.groovy.executeAndCommit',
       () =>
         VscodeUtils.withProgress(
-          GroovyCommands.executeAndCommit(hacUtils).catch(() => {
-            vscode.window.showErrorMessage("Timeout. Can't reach Hybris.")
+          GroovyCommands.executeAndCommit(hacUtils).catch(err => {
+            vscode.window.showErrorMessage(
+              err ? err.message : 'Timeout. Please check whether Hybris is on.',
+            )
+
             return false
           }),
-          'Executing And Committing...',
+          'Executing And Committing, Please wait...',
         ),
+    ),
+    vscode.commands.registerCommand('vscode-hybris-tools.impEx.import', () =>
+      VscodeUtils.withProgress(
+        ImpExCommands.importImpEx(hacUtils).catch((err: Error) => {
+          vscode.window.showErrorMessage(
+            err ? err.message : 'Timeout. Please check whether Hybris is on.',
+          )
+          return false
+        }),
+        'Importing, Please wait...',
+      ),
+    ),
+    vscode.commands.registerCommand('vscode-hybris-tools.impEx.validate', () =>
+      VscodeUtils.withProgress(
+        ImpExCommands.validateImpEx(hacUtils).catch((err: Error) => {
+          vscode.window.showErrorMessage(
+            err ? err.message : 'Timeout. Please check whether Hybris is on.',
+          )
+          return false
+        }),
+        'Validating, Please wait...',
+      ),
     ),
     vscode.commands.registerCommand(
       'vscode-hybris-tools.hybris.clearCaches',
       () =>
         VscodeUtils.withProgress(
-          hacUtils.clearCaches().catch(() => {
-            vscode.window.showErrorMessage("Timeout. Can't reach Hybris.")
+          hacUtils.clearCaches().catch(err => {
+            vscode.window.showErrorMessage(
+              err ? err.message : 'Timeout. Please check whether Hybris is on.',
+            )
             return false
           }),
-          'Clearing...',
+          'Clearing, Please wait...',
         ),
     ),
     vscode.commands.registerCommand('vscode-hybris-tools.displayCaches', () => {
@@ -246,7 +282,10 @@ export function activate(context: vscode.ExtensionContext) {
       return false
     })
 
-    VscodeUtils.withProgress(promise, 'Retrieving types from Hybris...')
+    VscodeUtils.withProgress(
+      promise,
+      'Retrieving types from Hybris, Please wait...',
+    )
   }
 }
 

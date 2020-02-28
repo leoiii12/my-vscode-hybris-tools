@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios'
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
 import * as cheerio from 'cheerio'
 import { Agent } from 'https'
 import * as qs from 'querystring'
@@ -213,6 +213,96 @@ export class HacUtils {
     )
 
     return res.data
+  }
+
+  public async validateImpEx(impEx: string): Promise<void> {
+    await this.logIn()
+
+    const csrf = this.csrf
+    const sessionId = this.sessionId
+
+    const executeForm = {
+      scriptContent: impEx,
+      validationEnum: 'IMPORT_STRICT',
+      maxThreads: 1,
+      encoding: 'UTF-8',
+      _legacyMode: 'on',
+      _enableCodeExecution: 'on',
+      _csrf: csrf,
+      _distributedMode: 'on',
+      _sldEnabled: 'on',
+    }
+
+    const res = await this.axiosInstance!.post(
+      `/console/impex/import/validate`,
+      qs.stringify(executeForm),
+      {
+        headers: {
+          Cookie: sessionId,
+        },
+      },
+    )
+
+    if (res.status !== 200) {
+      throw new Error(
+        `The server is returning ${res.status}. Please check whether the server is on.`,
+      )
+    }
+
+    var html = cheerio.load(res.data)
+    var impExExecMsg = html(
+      "span#validationResultMsg[data-level='error']",
+    ).attr('data-result')
+    if (impExExecMsg !== undefined) {
+      throw new Error(
+        `Hybris found some errors in your impEx. Msg = "${impExExecMsg}"`,
+      )
+    }
+  }
+
+  public async importImpEx(impEx: string): Promise<void> {
+    await this.logIn()
+
+    const csrf = this.csrf
+    const sessionId = this.sessionId
+
+    const executeForm = {
+      scriptContent: impEx,
+      validationEnum: 'IMPORT_STRICT',
+      maxThreads: 1,
+      encoding: 'UTF-8',
+      _legacyMode: 'on',
+      _enableCodeExecution: 'on',
+      _csrf: csrf,
+      _distributedMode: 'on',
+      _sldEnabled: 'on',
+    }
+
+    const res = await this.axiosInstance!.post(
+      `/console/impex/import`,
+      qs.stringify(executeForm),
+      {
+        headers: {
+          Cookie: sessionId,
+        },
+      },
+    )
+
+    if (res.status !== 200) {
+      throw new Error(
+        `The server is returning ${res.status}. Please check whether the server is on.`,
+      )
+    }
+
+    var html = cheerio.load(res.data)
+    var impExExecMsg = html("span#impexResult[data-level='error']").attr(
+      'data-result',
+    )
+    if (impExExecMsg !== undefined) {
+      throw new Error(
+        `Hybris found some errors in your impEx. Msg = "${impExExecMsg}"`,
+      )
+    }
   }
 
   public async clearCaches(): Promise<any> {
