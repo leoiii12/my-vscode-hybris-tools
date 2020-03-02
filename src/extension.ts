@@ -238,7 +238,7 @@ export function activate(context: vscode.ExtensionContext) {
         {
           language: 'flexibleSearchQuery',
         },
-        new FsqlDocumentFormattingEditProvider(),
+        new FsqlDocumentFormattingEditProvider(fsqlGrammar),
       ),
     )
     context.subscriptions.push(
