@@ -4,7 +4,7 @@ All notable changes to the "my-vscode-hybris-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## 0.0.7
+## 0.0.8
 
 - Add a fsql to raw sql command `Hybris: Translate to Raw SQL`
 - Add a databaseColumn in the definition provider for types
@@ -13,6 +13,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Add subquery autocompletion
 - Add a loading badge for attribute autocompletion
 - Support impEx (Execution, Validation)
+- Add a better formatter
 
 ## 0.0.6
 
