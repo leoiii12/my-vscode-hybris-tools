@@ -4,6 +4,10 @@ All notable changes to the "my-vscode-hybris-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.0.9
+
+- Enhanced the fsql grammar (Interval, IN / NOT IN) 
+
 ## 0.0.8
 
 - Add a fsql to raw sql command `Hybris: Translate to Raw SQL`
