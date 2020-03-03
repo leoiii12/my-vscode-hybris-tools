@@ -1,4 +1,4 @@
-export class Formatter {
+export class FsqlFormatter {
   static NL = '\n'
 
   /**
@@ -9,66 +9,67 @@ export class Formatter {
   public getFormattedFsql(query: any) {
     let str = ''
 
-    str += this.gs(this.noi) + 'SELECT' + Formatter.NL
+    str += this.gs(this.noi) + 'SELECT' + FsqlFormatter.NL
 
     this.noi += 2
-    str += `${this.aa(query['select'], ',' + Formatter.NL)}` + Formatter.NL
+    str +=
+      `${this.aa(query['select'], ',' + FsqlFormatter.NL)}` + FsqlFormatter.NL
     this.noi -= 2
 
-    str += this.gs(this.noi) + `FROM` + Formatter.NL
+    str += this.gs(this.noi) + `FROM` + FsqlFormatter.NL
     this.noi += 2
-    str += `${this.aa(query['from'], ',' + Formatter.NL)}`
+    str += `${this.aa(query['from'], ',' + FsqlFormatter.NL)}`
     this.noi -= 2
 
     if (query['where']) {
-      str += Formatter.NL
-      str += this.gs(this.noi) + `WHERE` + Formatter.NL
+      str += FsqlFormatter.NL
+      str += this.gs(this.noi) + `WHERE` + FsqlFormatter.NL
       this.noi += 2
       str += this.gs(this.noi) + `${this.ao(query['where'])}`
       this.noi -= 2
     }
     if (query['groupBy']) {
-      str += Formatter.NL
-      str += this.gs(this.noi) + `GROUP BY` + Formatter.NL
+      str += FsqlFormatter.NL
+      str += this.gs(this.noi) + `GROUP BY` + FsqlFormatter.NL
       this.noi += 2
       str += `${this.ao(query['groupBy'])}`
       this.noi -= 2
     }
     if (query['orderBy']) {
-      str += Formatter.NL
-      str += this.gs(this.noi) + `ORDER BY` + Formatter.NL
+      str += FsqlFormatter.NL
+      str += this.gs(this.noi) + `ORDER BY` + FsqlFormatter.NL
       this.noi += 2
       str += `${query['orderBy'].map((oe: any) => this.ao(oe)).join(',\n')}`
       this.noi -= 2
     }
     if (query['union']) {
-      str += Formatter.NL
+      str += FsqlFormatter.NL
       str +=
         this.gs(this.noi) +
         `UNION` +
         (query['union']['isAll'] ? ' ALL' : '') +
-        Formatter.NL
+        FsqlFormatter.NL
       this.noi += 2
       str += `${this.getFormattedFsql(query['union']['query'])}`
       this.noi -= 2
     }
     if (query['except']) {
-      str += Formatter.NL
-      str += this.gs(this.noi) + `EXCEPT` + Formatter.NL
+      str += FsqlFormatter.NL
+      str += this.gs(this.noi) + `EXCEPT` + FsqlFormatter.NL
       this.noi += 2
       str += `${this.getFormattedFsql(query['except']['query'])}`
       this.noi -= 2
     }
     if (query['minus']) {
-      str += Formatter.NL
-      str += this.gs(this.noi) + `MINUS` + Formatter.NL
+      str += FsqlFormatter.NL
+      str += this.gs(this.noi) + `MINUS` + FsqlFormatter.NL
       this.noi += 2
       str += `${this.getFormattedFsql(query['minus']['minus'])}`
       this.noi -= 2
     }
     if (query['intersect']) {
-      str += Formatter.NL
-      str += this.gs(this.noi) + `INTERSECT` + Formatter.NL
+      str += FsqlFormatter.NL
+      str += this.gs(this.noi) + `INTERSECT` + FsqlFormatter.NL
       this.noi += 2
       str += `${this.getFormattedFsql(query['intersect']['query'])}`
       this.noi -= 2
@@ -164,11 +165,14 @@ export class Formatter {
           if ('htypeJoin' in obj) {
             let str = ''
 
-            str += `{` + Formatter.NL
+            str += `{` + FsqlFormatter.NL
 
             this.noi += 2
-            str += this.gs(this.noi) + `${this.ao(obj['htype'])}` + Formatter.NL
-            str += `${this.aa(obj['htypeJoin'], Formatter.NL)}` + Formatter.NL
+            str +=
+              this.gs(this.noi) + `${this.ao(obj['htype'])}` + FsqlFormatter.NL
+            str +=
+              `${this.aa(obj['htypeJoin'], FsqlFormatter.NL)}` +
+              FsqlFormatter.NL
             this.noi -= 2
 
             str += this.gs(this.noi) + `}`
@@ -195,16 +199,18 @@ export class Formatter {
         case 'or_condition': {
           let str = ''
 
-          str += `(` + Formatter.NL
+          str += `(` + FsqlFormatter.NL
           this.noi += 2
 
           str +=
-            this.gs(this.noi) + `${this.ao(obj['operands'][0])}` + Formatter.NL
+            this.gs(this.noi) +
+            `${this.ao(obj['operands'][0])}` +
+            FsqlFormatter.NL
           for (let i = 1; i < obj['operands'].length; i++) {
             str +=
               this.gs(this.noi) +
               `OR ${this.ao(obj['operands'][i])}` +
-              Formatter.NL
+              FsqlFormatter.NL
           }
 
           this.noi -= 2
@@ -215,15 +221,17 @@ export class Formatter {
         case 'and_condition': {
           let str = ''
 
-          str += `(` + Formatter.NL
+          str += `(` + FsqlFormatter.NL
           this.noi += 2
           str +=
-            this.gs(this.noi) + `${this.ao(obj['operands'][0])}` + Formatter.NL
+            this.gs(this.noi) +
+            `${this.ao(obj['operands'][0])}` +
+            FsqlFormatter.NL
           for (let i = 1; i < obj['operands'].length; i++) {
             str +=
               this.gs(this.noi) +
               `AND ${this.ao(obj['operands'][i])}` +
-              Formatter.NL
+              FsqlFormatter.NL
           }
           this.noi -= 2
           str += this.gs(this.noi) + `)`
@@ -258,7 +266,7 @@ export class Formatter {
           if ('tableAlias' in obj) {
             str += `${this.ao(obj['tableAlias'])}.${this.ao(obj['column'])}`
           } else if ('typeAlias' in obj) {
-            const typeAliasPart = obj['typeAlias'] ? `${obj['typeAlias']}.` : ''
+            const typeAliasPart = obj['typeAlias'] ? `${obj['typeAlias']}:` : ''
             const attrPart = `${obj['attribute']}`
             const langPart = obj['language'] ? `[${obj['language']}]` : ''
             const modPart = obj['modifiers'] ? `:${obj['modifiers']}` : ''
@@ -277,16 +285,18 @@ export class Formatter {
         case 'to_operand': {
           let str = ''
 
-          str += `(` + Formatter.NL
+          str += `(` + FsqlFormatter.NL
 
           this.noi += 2
           str +=
-            this.gs(this.noi) + `${this.ao(obj['operand_1'])}` + Formatter.NL
+            this.gs(this.noi) +
+            `${this.ao(obj['operand_1'])}` +
+            FsqlFormatter.NL
           for (const operand of obj['operands']) {
             str +=
               this.gs(this.noi) +
               `${this.ao(operand['operator'])} ${this.ao(operand['operand'])}` +
-              Formatter.NL
+              FsqlFormatter.NL
           }
           this.noi -= 2
 
@@ -315,7 +325,7 @@ export class Formatter {
         case 'case': {
           let str = ''
 
-          str += `CASE ${this.ao(obj['case'])}` + Formatter.NL
+          str += `CASE ${this.ao(obj['case'])}` + FsqlFormatter.NL
 
           this.noi += 2
           for (const whenExp of obj['when']) {
@@ -324,11 +334,13 @@ export class Formatter {
               `WHEN ${this.ao(whenExp['when'])} THEN ${this.ao(
                 whenExp['then'],
               )}` +
-              Formatter.NL
+              FsqlFormatter.NL
           }
           if (obj['else'] !== null) {
             str +=
-              this.gs(this.noi) + `ELSE ${this.ao(obj['else'])}` + Formatter.NL
+              this.gs(this.noi) +
+              `ELSE ${this.ao(obj['else'])}` +
+              FsqlFormatter.NL
           }
           this.noi -= 2
 
@@ -339,7 +351,7 @@ export class Formatter {
         case 'case_when': {
           let str = ''
 
-          str += `CASE` + Formatter.NL
+          str += `CASE` + FsqlFormatter.NL
 
           this.noi += 2
           for (const whenExp of obj['when']) {
@@ -348,11 +360,13 @@ export class Formatter {
               `WHEN ${this.ao(whenExp['when'])} THEN ${this.ao(
                 whenExp['then'],
               )}` +
-              Formatter.NL
+              FsqlFormatter.NL
           }
           if (obj['else'] !== null) {
             str +=
-              this.gs(this.noi) + `ELSE ${this.ao(obj['else'])}` + Formatter.NL
+              this.gs(this.noi) +
+              `ELSE ${this.ao(obj['else'])}` +
+              FsqlFormatter.NL
           }
           this.noi -= 2
 
@@ -366,11 +380,11 @@ export class Formatter {
         case 'subquery': {
           let str = ''
 
-          str += `{{` + Formatter.NL
+          str += `{{` + FsqlFormatter.NL
           this.noi += 2
           str += `${this.getFormattedFsql(obj['query'])}`
           this.noi -= 2
-          str += Formatter.NL + this.gs(this.noi) + `}}`
+          str += FsqlFormatter.NL + this.gs(this.noi) + `}}`
 
           return str
         }

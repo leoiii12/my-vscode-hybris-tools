@@ -1,7 +1,7 @@
 import { Grammar, Parser } from 'nearley'
 import * as vscode from 'vscode'
 
-import { Formatter } from './internals/formatter'
+import { FsqlFormatter } from './internal/fsql-formatter'
 
 const sqlFormatter = require('@leoiii12/sql-formatter')
 
@@ -21,7 +21,7 @@ export class FsqlDocumentFormattingEditProvider
       parser.feed(text)
       parser.finish()
 
-      const formatter = new Formatter()
+      const formatter = new FsqlFormatter()
       const formattedText = formatter.getFormattedFsql(parser.results[0])
 
       const range = new vscode.Range(

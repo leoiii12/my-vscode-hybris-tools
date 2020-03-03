@@ -3,8 +3,8 @@ import { Grammar, Parser } from 'nearley'
 import * as vscode from 'vscode'
 
 import { InternalCaches } from '../internal-caches'
-import { FsqlGrammarUtils } from './internals/fsql-grammar-utils'
-import { FsqlUtils } from './internals/fsql-utils'
+import { FsqlGrammarUtils } from './internal/fsql-grammar-utils'
+import { FsqlUtils } from './internal/fsql-utils'
 
 export class FsqlCompletionItemProvider
   implements vscode.CompletionItemProvider {
