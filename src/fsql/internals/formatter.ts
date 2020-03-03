@@ -93,7 +93,7 @@ export class Formatter {
     return str
   }
 
-  public ao(obj: any): any {
+  public ao(obj: any): string {
     if (obj !== null && typeof obj === 'object' && 'type' in obj) {
       switch (obj['type']) {
         case 'true':
@@ -237,35 +237,40 @@ export class Formatter {
             str += `NOT (${this.ao(obj['expression'])})`
           } else if (obj['expression']) {
             str += `${this.ao(obj['expression'])}`
+          } else if ('operand_1' in obj && 'operand_2' in obj) {
+            str += `${this.ao(obj['operand_1'])} `
+            str += `${obj['comparator']} `
+            str += `${this.ao(obj['operand_2'])}`
           } else {
-            str += `${this.ao(obj['operand_1'])} ${obj['comparator']} ${this.ao(
-              obj['operand_2'],
-            )}`
+            str += `${this.ao(obj['comparator'])} ${this.ao(obj['operand_1'])}`
           }
 
           return str
         }
 
-        case 'column_ref':
-          const distinctPart = obj['isDistinct'] === true ? 'DISTINCT ' : ''
+        case 'column_ref': {
+          let str = ''
+
+          if (obj['isDistinct'] === true) {
+            str += `DISTINCT `
+          }
 
           if ('tableAlias' in obj) {
-            return `${distinctPart}${this.ao(obj['tableAlias'])}.${this.ao(
-              obj['column'],
-            )}`
+            str += `${this.ao(obj['tableAlias'])}.${this.ao(obj['column'])}`
           } else if ('typeAlias' in obj) {
             const typeAliasPart = obj['typeAlias'] ? `${obj['typeAlias']}.` : ''
             const attrPart = `${obj['attribute']}`
             const langPart = obj['language'] ? `[${obj['language']}]` : ''
             const modPart = obj['modifiers'] ? `:${obj['modifiers']}` : ''
 
-            return `${distinctPart}{ ${typeAliasPart}${attrPart}${langPart}${modPart} }`
+            str += `{ ${typeAliasPart}${attrPart}${langPart}${modPart} }`
           } else if ('column' in obj) {
-            return `${this.ao(obj['column'])}`
+            str += `${this.ao(obj['column'])}`
           } else {
             console.log('Uncaught column_ref')
           }
-          break
+          return str
+        }
 
         case 'or_operand':
         case 'pm_operand':
@@ -295,10 +300,15 @@ export class Formatter {
         case 'function':
           const func = obj['function']
           const args = obj['args']
-          if (func.toString() === 'COUNT') {
-            return `${this.ao(func)}(${obj['args'][0] ? 'DISTINCT ' : ''}${
-              obj['args'][1]
-            })`
+          if (func.toString() === 'COUNT_S') {
+            let str = ''
+            str += `${this.ao(func)}`
+            str += `(`
+            str += `${obj['args'][0] ? 'DISTINCT ' : ''}`
+            str += `*`
+            str += `)`
+
+            return str
           }
 
           return `${this.ao(func)}(${this.aa(args)})`
@@ -384,9 +394,9 @@ export class Formatter {
           console.log()
       }
     } else if (typeof obj === 'number') {
-      return obj
+      return `${obj}`
     } else if (typeof obj === 'boolean') {
-      return obj
+      return `${obj}`
     } else if (typeof obj === 'string') {
       return obj
     } else {
@@ -395,5 +405,7 @@ export class Formatter {
       console.log(JSON.stringify(obj))
       console.log()
     }
+
+    return 'undefined'
   }
 }

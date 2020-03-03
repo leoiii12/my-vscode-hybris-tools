@@ -4,8 +4,8 @@ import * as vscode from 'vscode'
 
 import { HacUtils } from '../hac-utils'
 import { InternalCaches } from '../internal-caches'
-import { FsqlGrammarUtils } from './fsql-grammar-utils'
-import { FsqlUtils } from './fsql-utils'
+import { FsqlGrammarUtils } from './internals/fsql-grammar-utils'
+import { FsqlUtils } from './internals/fsql-utils'
 
 export class FsqlCompletionAttributeItemProvider
   implements vscode.CompletionItemProvider {

@@ -2,7 +2,7 @@ import { Rules } from 'moo'
 import { Grammar, Parser } from 'nearley'
 import * as vscode from 'vscode'
 
-import { FsqlUtils } from './fsql-utils'
+import { FsqlUtils } from './internals/fsql-utils'
 
 export class FsqlCodeActionProvider implements vscode.CodeActionProvider {
   constructor(private grammar: Grammar, private lexerRules: Rules) {}

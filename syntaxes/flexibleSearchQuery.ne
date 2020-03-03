@@ -42,12 +42,7 @@ query ->
   %}
 
 select_expression ->
-  %times {%
-    (elems) => {
-      return { type: 'select_expression', column: "*" }
-    }
-  %}
-  | identifier _ %dot _ %times {%
+  identifier _ %dot _ %times {%
     (elems) => {
       return { type: 'select_expression', tableAlias: elems[0], column: "*" }
     }
@@ -70,7 +65,7 @@ from ->
 
 table_expression ->
   subquery {% (elems) => { return { type: 'table_expression', subquery: elems[0] } } %}
-  | %lparen __ subquery __ %rparen ( __ %as ):? __ identifier {% (elems) => { return { type: 'table_expression', subquery: elems[2], as: elems[7] } } %}
+  | %lparen _ subquery _ %rparen ( __ %as ):? __ identifier {% (elems) => { return { type: 'table_expression', subquery: elems[2], as: elems[7] } } %}
   | types {% (elems) => { return { type: 'table_expression', types: elems[0] } } %}
 
 order_expression ->
@@ -183,6 +178,14 @@ condition ->
       return { type: 'condition', operand_1: elems[0], comparator: 'IS NOT', operand_2: elems[5] }
     }
   %}
+  | ( %not __ ):? %exists __ operand {%
+    (elems) => {
+      if (elems[0] == null) {
+        return { type: 'condition',comparator: 'EXISTS', operand_1: elems[3] }
+      }
+      return { type: 'condition', comparator: 'NOT EXISTS', operand_1: elems[3] }
+    }
+  %}
   | %not __ expression {%
     (elems) => ({ type: 'condition', expression: elems[2], isNot: true })
   %}
@@ -223,6 +226,14 @@ column_ref ->
     }
   %}
   | identifier {%
+    (elems) => {
+      return {
+        type: 'column_ref',
+        column: elems[0]
+      }
+    }
+  %}
+  | %times {%
     (elems) => {
       return {
         type: 'column_ref',
@@ -301,7 +312,7 @@ term ->
   | case {% (elems) => (elems[0]) %}
   | case_when {% (elems) => (elems[0]) %}
   | %lparen _ operand _ %rparen  {% (elems) => (elems[2]) %}
-  | ( ( %distinct | %all ) __ ):? column_ref {%
+  | ( ( %distinct | %all ) _ ):? column_ref {%
     (elems) => { 
       const columnRef = elems[1]
       columnRef['isDistinct']  = elems[0] == null ? false : true
@@ -323,10 +334,7 @@ bind_parameter ->
   %}
 
 function ->
-  %count _ ( %lparen _ ( %distinct __ ):? ( %times | term ) _ %rparen ) {%
-    (elems) => ({ type: 'function', function: 'COUNT', args: [elems[2][2], elems[2][3]] })
-  %}
-  | %group_concat _ ( %lparen _ term ( _ %separator _ type_string ):? _ %rparen ) {%
+  %group_concat _ ( %lparen _ term ( _ %separator _ type_string ):? _ %rparen ) {%
     (elems) => ({
       type: 'function',
       function: 'GROUP_CONCAT',

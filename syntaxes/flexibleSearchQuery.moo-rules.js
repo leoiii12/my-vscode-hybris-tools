@@ -73,12 +73,12 @@ const mooRules = {
       not: ci('not'),
       like: ci('like'),
       between: ci('between'),
+      exists: ci('exists'),
       is: ci('is'),
       in_: ci('in'),
 
       group_concat: ci('group_concat'),
       separator: ci('separator'),
-      count: ci('count'),
       distinct: ci('distinct'),
 
       case_: ci('case'),

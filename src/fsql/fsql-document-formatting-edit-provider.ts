@@ -1,6 +1,7 @@
-import * as vscode from 'vscode'
-import { Formatter } from './internals/formatter'
 import { Grammar, Parser } from 'nearley'
+import * as vscode from 'vscode'
+
+import { Formatter } from './internals/formatter'
 
 const sqlFormatter = require('@leoiii12/sql-formatter')
 
