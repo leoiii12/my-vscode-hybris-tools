@@ -248,7 +248,12 @@ export class FsqlFormatter {
           } else if ('operand_1' in obj && 'operand_2' in obj) {
             str += `${this.ao(obj['operand_1'])} `
             str += `${obj['comparator']} `
-            str += `${this.ao(obj['operand_2'])}`
+
+            if (obj['comparator'] === 'IN' || obj['comparator'] === 'NOT IN') {
+              str += `(${this.ao(obj['operand_2'])})`
+            } else {
+              str += `${this.ao(obj['operand_2'])}`
+            }
           } else {
             str += `${this.ao(obj['comparator'])} ${this.ao(obj['operand_1'])}`
           }
@@ -375,7 +380,7 @@ export class FsqlFormatter {
           return str
         }
         case 'row_value_constructor': {
-          return `(${this.aa(obj['terms'])})`
+          return `${this.aa(obj['terms'])}`
         }
         case 'subquery': {
           let str = ''
@@ -388,6 +393,8 @@ export class FsqlFormatter {
 
           return str
         }
+        case 'interval':
+          return `INTERVAL ${this.ao(obj['term'])} ${this.ao(obj['unit'])}`
 
         case 'quoted_identifier':
           return obj['value']

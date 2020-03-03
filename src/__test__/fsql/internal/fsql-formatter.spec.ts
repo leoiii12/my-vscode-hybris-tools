@@ -77,7 +77,7 @@ WHERE
       FROM
         { DiscountRow AS dr }
     }})
-    OR { p:PK } IN {{
+    OR { p:PK } IN ({{
       SELECT
         { prod:PK }
       FROM
@@ -87,7 +87,7 @@ WHERE
         }
       WHERE
         { prod:Europe1PriceFactory_PDG } IS NOT NULL
-    }}
+    }})
   )
 ORDER BY
   { p:name } ASC,
@@ -188,10 +188,10 @@ GROUP BY {c:PK}, {c:code}, {c:name[en]}
 SELECT
   { c:name[en] } AS Name,
   { c:code } AS Code,
-  (CASE
+  CASE
     WHEN COUNT(DISTINCT { superCategory:PK }) <= 0 THEN 'root category'
     ELSE 'normal category'
-  END) AS TYPE,
+  END AS TYPE,
   COUNT(DISTINCT { superCategory:PK }) AS SuperCategories
 FROM
   {
@@ -346,24 +346,26 @@ select
   { so.user },
   { so.code },
   { product.merchantProductID },
-  {{
-    select
-      group_concat(distinct { cat :code })
-    from
-      { HktvProduct as p
-      join CategoryProductRelation as cpr on { cpr :target } = { p :pk }
-      join Category as cat on { cat :pk } = { cpr :source }
-      left join CategoryCategoryRelation as ccr on { ccr :target } = { cat :pk }
-      left join Category as superCat on { superCat :pk } = { ccr :source } }
-    where
-      { p :pk } = { product :baseproduct }
-      and (
-        { cat :isBrand } is null
-        or { cat :isBrand } = false
-      )
-      and upper({ superCat :code }) not like upper('%promo%')
-      and substring({ cat :code }, 1, 1) <> '_'
-  }},
+  (
+    {{
+      select
+        group_concat(distinct { cat :code })
+      from
+        { HktvProduct as p
+        join CategoryProductRelation as cpr on { cpr :target } = { p :pk }
+        join Category as cat on { cat :pk } = { cpr :source }
+        left join CategoryCategoryRelation as ccr on { ccr :target } = { cat :pk }
+        left join Category as superCat on { superCat :pk } = { ccr :source } }
+      where
+        { p :pk } = { product :baseproduct }
+        and (
+          { cat :isBrand } is null
+          or { cat :isBrand } = false
+        )
+        and upper({ superCat :code }) not like upper('%promo%')
+        and substring({ cat :code }, 1, 1) <> '_'
+    }}
+  ),
   substring({ product.code }, 12),
   replace({ product.name [en] :o }, '"', ''),
   replace({ product.name [zh] :o }, '"', ''),
@@ -503,9 +505,9 @@ from
   left join orderEntry as originalOrderEntry on { originalConsignmentEntry.orderEntry } = { originalOrderEntry.pk }
   left join hktvVariantProduct as product on { originalOrderEntry.product } = { product.pk }
   left join ConsignmentStatus as originalConsignmentStatus on { originalConsignmentStatus :pk } = { originalConsignment.status }
-  join SubOrder ! as so on { so.pk } = { originalOrderEntry."order" }
+  join SubOrder ! as so on { so.pk } = { originalOrderEntry.order }
   left join Order ! as po on { po.pk } = { so.parentOrder }
-  LEFT JOIN OrderEntry AS poe ON { poe."order" } = { po.pk }
+  LEFT JOIN OrderEntry AS poe ON { poe.order } = { po.pk }
   AND { poe.entryNumber } = { originalOrderEntry.entryNumber }
   LEFT JOIN OrderEntry AS bpoe ON { bpoe.pk } = { poe.bundleParentEntry }
   LEFT JOIN HktvVariantProduct AS bpvp ON { bpvp.pk } = { bpoe.product } }
@@ -513,7 +515,7 @@ WHERE
   1 = 1
   and hktvReturnRequestTable.originalConsignmentEntryPk = { originalConsignmentEntry.pk }
   and { po.replenishmentOrderStore } is null
-  and hktvReturnRequestTable.returnStatus IN ('NEW', 'ab')
+  and hktvReturnRequestTable.returnStatus NOT IN ('NEW')
   and hktvReturnRequestTable.acceptedTime >= ?startDate
   and 1 = 1
 **
@@ -672,10 +674,10 @@ FROM
     LEFT JOIN orderEntry AS originalOrderEntry ON { originalConsignmentEntry:orderEntry } = { originalOrderEntry:pk }
     LEFT JOIN hktvVariantProduct AS product ON { originalOrderEntry:product } = { product:pk }
     LEFT JOIN ConsignmentStatus AS originalConsignmentStatus ON { originalConsignmentStatus:pk } = { originalConsignment:status }
-    JOIN SubOrder! AS so ON { so:pk } = { originalOrderEntry:"order" }
+    JOIN SubOrder! AS so ON { so:pk } = { originalOrderEntry:order }
     LEFT JOIN Order! AS po ON { po:pk } = { so:parentOrder }
     LEFT JOIN OrderEntry AS poe ON (
-      { poe:"order" } = { po:pk }
+      { poe:order } = { po:pk }
       AND { poe:entryNumber } = { originalOrderEntry:entryNumber }
     )
     LEFT JOIN OrderEntry AS bpoe ON { bpoe:pk } = { poe:bundleParentEntry }
@@ -686,7 +688,7 @@ WHERE
     1 = 1
     AND hktvReturnRequestTable.originalConsignmentEntryPk = { originalConsignmentEntry:pk }
     AND { po:replenishmentOrderStore } IS NULL
-    AND hktvReturnRequestTable.returnStatus IN ('NEW', 'ab')
+    AND hktvReturnRequestTable.returnStatus NOT IN ('NEW')
     AND hktvReturnRequestTable.acceptedTime >= ?startDate
     AND 1 = 1
   )
@@ -701,6 +703,50 @@ SELECT
   { p:name[zh] } AS a
 FROM
   { HktvVariantProduct! }
+****
+SELECT
+{ o :pk } as orderPk
+FROM
+{ ConsignmentRefundRecord AS crr
+JOIN Consignment AS c on { c.pk } = { crr.consignment }
+JOIN SubOrder AS so on { so.pk } = { c.order }
+JOIN Order AS o on { o.pk } = { so.parentOrder }
+JOIN PaymentTransaction AS pt on { o.pk } = { pt.order } }
+WHERE
+{ pt.paymentGateway } = 'payme'
+AND (
+  { crr :refundAmtByCC } > 0
+  OR { crr :refundDeliveryAmt } > 0
+)
+AND DATE(DATE_SUB(NOW(), INTERVAL 1 DAY)) <= DATE({ crr :creationtime })
+AND DATE(NOW()) <> DATE({ crr :creationtime })
+AND { crr.refundFailedPromotion } IS NOT TRUE
+GROUP BY
+orderPk
+**
+SELECT
+  { o:pk } AS orderPk
+FROM
+  {
+    ConsignmentRefundRecord AS crr
+    JOIN Consignment AS c ON { c:pk } = { crr:consignment }
+    JOIN SubOrder AS so ON { so:pk } = { c:order }
+    JOIN Order AS o ON { o:pk } = { so:parentOrder }
+    JOIN PaymentTransaction AS pt ON { o:pk } = { pt:order }
+  }
+WHERE
+  (
+    { pt:paymentGateway } = 'payme'
+    AND (
+      { crr:refundAmtByCC } > 0
+      OR { crr:refundDeliveryAmt } > 0
+    )
+    AND DATE(DATE_SUB(NOW(), INTERVAL 1 DAY)) <= DATE({ crr:creationtime })
+    AND DATE(NOW()) <> DATE({ crr:creationtime })
+    AND { crr:refundFailedPromotion } IS NOT TRUE
+  )
+GROUP BY
+  orderPk
 `
 
 function getCases(str: string): Array<string[]> {

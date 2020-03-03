@@ -80,6 +80,7 @@ const mooRules = {
       group_concat: ci('group_concat'),
       separator: ci('separator'),
       distinct: ci('distinct'),
+      interval: ci('interval'),
 
       case_: ci('case'),
       when: ci('when'),

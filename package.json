@@ -182,13 +182,13 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run compile && npm run compile:fsql",
     "format": "prettier --write \"src/**/*.{js,css,json,md,ts}\"",
     "compile": "tsc -p ./",
     "compile:fsql": "nearleyc ./syntaxes/flexibleSearchQuery.ne -o ./syntaxes/flexibleSearchQuery.js",
     "watch": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",
-    "pretest": "npm run compile && npm run lint",
+    "pretest": "npm run compile && npm run compile:fsql && npm run lint",
     "test": "jest",
     "test-install": "vsce package --baseImagesUrl https://it-catch.hktv.com.hk:10080/leochoi/vscode-hybris-tools/raw/master/ && code --install-extension my-vscode-hybris-tools-0.0.8.vsix --force"
   },

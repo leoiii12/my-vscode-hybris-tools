@@ -170,12 +170,12 @@ condition ->
       return { type: 'condition', operand_1: elems[0], comparator: 'NOT BETWEEN', operand_2: elems[6], operand_3: elems[10] }
     }
   %}
-  | operand __ %is __ (%not __):? type_null {%
+  | operand __ %is __ (%not __):? ( type_null | type_boolean ) {%
     (elems) => {
       if (elems[4] == null) {
-        return { type: 'condition', operand_1: elems[0], comparator: 'IS', operand_2: elems[5] }
+        return { type: 'condition', operand_1: elems[0], comparator: 'IS', operand_2: elems[5][0] }
       }
-      return { type: 'condition', operand_1: elems[0], comparator: 'IS NOT', operand_2: elems[5] }
+      return { type: 'condition', operand_1: elems[0], comparator: 'IS NOT', operand_2: elems[5][0] }
     }
   %}
   | ( %not __ ):? %exists __ operand {%
@@ -311,6 +311,7 @@ term ->
   | function {% (elems) => (elems[0]) %}
   | case {% (elems) => (elems[0]) %}
   | case_when {% (elems) => (elems[0]) %}
+  | row_value_constructor {% (elems) => (elems[0]) %}
   | %lparen _ operand _ %rparen  {% (elems) => (elems[2]) %}
   | ( ( %distinct | %all ) _ ):? column_ref {%
     (elems) => { 
@@ -320,8 +321,8 @@ term ->
       return columnRef
     }
   %}
-  | row_value_constructor {% (elems) => (elems[0]) %}
   | subquery {% (elems) => (elems[0]) %}
+  | interval {% (elems) => (elems[0]) %}
 
 value ->
   ( type_numeric | type_boolean | type_null | type_string ) {%
@@ -373,13 +374,18 @@ case_when ->
   %}
 
 row_value_constructor ->
-  %lparen ( _ term ) ( _ %comma _ term ):* _ %rparen {%
+  %lparen ( _ term ) ( _ %comma _ term ):+ _ %rparen {%
     (elems) => ({ type: 'row_value_constructor', terms: [elems[1][1], ...elems[2].map((elem) => elem[3])] })
   %}
 
 subquery ->
   ( %lcbrac _ %lcbrac ) _ query _ ( %rcbrac _ %rcbrac ) {%
     (elems) => ({ type: 'subquery', query: elems[2]})
+  %}
+
+interval ->
+  %interval __ term __ %identifier {%
+    (elems) => ({ type: 'interval', interval: elems[0], term: elems[2], unit: elems[4] })
   %}
 
 # ####################

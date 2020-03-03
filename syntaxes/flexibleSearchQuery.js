@@ -240,12 +240,14 @@ var grammar = {
     {"name": "condition$ebnf$4$subexpression$1", "symbols": [(lexer.has("not") ? {type: "not"} : not), "__"]},
     {"name": "condition$ebnf$4", "symbols": ["condition$ebnf$4$subexpression$1"], "postprocess": id},
     {"name": "condition$ebnf$4", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "condition", "symbols": ["operand", "__", (lexer.has("is") ? {type: "is"} : is), "__", "condition$ebnf$4", "type_null"], "postprocess": 
+    {"name": "condition$subexpression$1", "symbols": ["type_null"]},
+    {"name": "condition$subexpression$1", "symbols": ["type_boolean"]},
+    {"name": "condition", "symbols": ["operand", "__", (lexer.has("is") ? {type: "is"} : is), "__", "condition$ebnf$4", "condition$subexpression$1"], "postprocess": 
         (elems) => {
           if (elems[4] == null) {
-            return { type: 'condition', operand_1: elems[0], comparator: 'IS', operand_2: elems[5] }
+            return { type: 'condition', operand_1: elems[0], comparator: 'IS', operand_2: elems[5][0] }
           }
-          return { type: 'condition', operand_1: elems[0], comparator: 'IS NOT', operand_2: elems[5] }
+          return { type: 'condition', operand_1: elems[0], comparator: 'IS NOT', operand_2: elems[5][0] }
         }
           },
     {"name": "condition$ebnf$5$subexpression$1", "symbols": [(lexer.has("not") ? {type: "not"} : not), "__"]},
@@ -397,6 +399,7 @@ var grammar = {
     {"name": "term", "symbols": ["function"], "postprocess": (elems) => (elems[0])},
     {"name": "term", "symbols": ["case"], "postprocess": (elems) => (elems[0])},
     {"name": "term", "symbols": ["case_when"], "postprocess": (elems) => (elems[0])},
+    {"name": "term", "symbols": ["row_value_constructor"], "postprocess": (elems) => (elems[0])},
     {"name": "term", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "_", "operand", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)], "postprocess": (elems) => (elems[2])},
     {"name": "term$ebnf$1$subexpression$1$subexpression$1", "symbols": [(lexer.has("distinct") ? {type: "distinct"} : distinct)]},
     {"name": "term$ebnf$1$subexpression$1$subexpression$1", "symbols": [(lexer.has("all") ? {type: "all"} : all)]},
@@ -411,8 +414,8 @@ var grammar = {
           return columnRef
         }
           },
-    {"name": "term", "symbols": ["row_value_constructor"], "postprocess": (elems) => (elems[0])},
     {"name": "term", "symbols": ["subquery"], "postprocess": (elems) => (elems[0])},
+    {"name": "term", "symbols": ["interval"], "postprocess": (elems) => (elems[0])},
     {"name": "value$subexpression$1", "symbols": ["type_numeric"]},
     {"name": "value$subexpression$1", "symbols": ["type_boolean"]},
     {"name": "value$subexpression$1", "symbols": ["type_null"]},
@@ -484,9 +487,10 @@ var grammar = {
         })
           },
     {"name": "row_value_constructor$subexpression$1", "symbols": ["_", "term"]},
-    {"name": "row_value_constructor$ebnf$1", "symbols": []},
     {"name": "row_value_constructor$ebnf$1$subexpression$1", "symbols": ["_", (lexer.has("comma") ? {type: "comma"} : comma), "_", "term"]},
-    {"name": "row_value_constructor$ebnf$1", "symbols": ["row_value_constructor$ebnf$1", "row_value_constructor$ebnf$1$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "row_value_constructor$ebnf$1", "symbols": ["row_value_constructor$ebnf$1$subexpression$1"]},
+    {"name": "row_value_constructor$ebnf$1$subexpression$2", "symbols": ["_", (lexer.has("comma") ? {type: "comma"} : comma), "_", "term"]},
+    {"name": "row_value_constructor$ebnf$1", "symbols": ["row_value_constructor$ebnf$1", "row_value_constructor$ebnf$1$subexpression$2"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "row_value_constructor", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "row_value_constructor$subexpression$1", "row_value_constructor$ebnf$1", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)], "postprocess": 
         (elems) => ({ type: 'row_value_constructor', terms: [elems[1][1], ...elems[2].map((elem) => elem[3])] })
           },
@@ -494,6 +498,9 @@ var grammar = {
     {"name": "subquery$subexpression$2", "symbols": [(lexer.has("rcbrac") ? {type: "rcbrac"} : rcbrac), "_", (lexer.has("rcbrac") ? {type: "rcbrac"} : rcbrac)]},
     {"name": "subquery", "symbols": ["subquery$subexpression$1", "_", "query", "_", "subquery$subexpression$2"], "postprocess": 
         (elems) => ({ type: 'subquery', query: elems[2]})
+          },
+    {"name": "interval", "symbols": [(lexer.has("interval") ? {type: "interval"} : interval), "__", "term", "__", (lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": 
+        (elems) => ({ type: 'interval', interval: elems[0], term: elems[2], unit: elems[4] })
           },
     {"name": "identifier", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": (elems) => (elems[0])},
     {"name": "identifier", "symbols": [(lexer.has("quoted_identifier") ? {type: "quoted_identifier"} : quoted_identifier)], "postprocess": (elems) => (elems[0])},
