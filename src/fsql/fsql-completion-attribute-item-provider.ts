@@ -181,17 +181,15 @@ export class FsqlCompletionAttributeItemProvider
     }
 
     const getAttributesGroovy: string = `
-      import de.hybris.platform.core.model.type.ComposedTypeModel
-      import de.hybris.platform.core.model.type.AttributeDescriptorModel
-      import java.util.HashSet
       import com.google.gson.JsonObject
+      import de.hybris.platform.core.model.type.AttributeDescriptorModel
+      import de.hybris.platform.core.model.type.ComposedTypeModel
 
-      def typeService = spring.getBean("typeService")
+      def typeService = spring.getBean('typeService')
 
       try {
         ComposedTypeModel typeModel = typeService.getComposedTypeForCode("$_COMPOSED_TYPE")
-        if (null != typeModel)
-        {
+        if (null != typeModel) {
             def attributes = new HashSet<AttributeDescriptorModel>()
             attributes.addAll(typeModel.getInheritedattributedescriptors())
             attributes.addAll(typeModel.getDeclaredattributedescriptors())
@@ -202,10 +200,13 @@ export class FsqlCompletionAttributeItemProvider
                         JsonObject jsonObject = new JsonObject();
                         jsonObject.addProperty("qualifier", it.getQualifier())
                         jsonObject.addProperty("typeCode", it.getAttributeType().getCode())
+                        jsonObject.addProperty("extensionName", it.getExtensionName())
+                        jsonObject.addProperty("databaseColumn", it.getDatabaseColumn().toString())
                         jsonObject
                     }
+                    .sorted(Comparator.comparing { it -> it.getAt("extensionName").hashCode() })
                     .collect()
-        }
+          }
 
         return []
       } catch (Exception e) {
