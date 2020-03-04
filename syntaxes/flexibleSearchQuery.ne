@@ -186,6 +186,12 @@ condition ->
       return { type: 'condition', comparator: 'NOT EXISTS', operand_1: elems[3] }
     }
   %}
+  | type_int {%
+    (elems) => ({ type: 'condition', expression: elems[0] })
+  %}
+  | column_ref {%
+    (elems) => ({ type: 'condition', expression: elems[0] })
+  %}
   | %not __ expression {%
     (elems) => ({ type: 'condition', expression: elems[2], isNot: true })
   %}

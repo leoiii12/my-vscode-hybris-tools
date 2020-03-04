@@ -261,6 +261,12 @@ var grammar = {
           return { type: 'condition', comparator: 'NOT EXISTS', operand_1: elems[3] }
         }
           },
+    {"name": "condition", "symbols": ["type_int"], "postprocess": 
+        (elems) => ({ type: 'condition', expression: elems[0] })
+          },
+    {"name": "condition", "symbols": ["column_ref"], "postprocess": 
+        (elems) => ({ type: 'condition', expression: elems[0] })
+          },
     {"name": "condition", "symbols": [(lexer.has("not") ? {type: "not"} : not), "__", "expression"], "postprocess": 
         (elems) => ({ type: 'condition', expression: elems[2], isNot: true })
           },

@@ -241,9 +241,9 @@ export class FsqlFormatter {
         case 'condition': {
           let str = ''
 
-          if (obj['expression'] && obj['isNot']) {
+          if ('expression' in obj && 'isNot' in obj && obj['isNot'] === true) {
             str += `NOT (${this.ao(obj['expression'])})`
-          } else if (obj['expression']) {
+          } else if ('expression' in obj) {
             str += `${this.ao(obj['expression'])}`
           } else if ('operand_1' in obj && 'operand_2' in obj) {
             str += `${this.ao(obj['operand_1'])} `
