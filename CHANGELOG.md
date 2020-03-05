@@ -6,7 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## 0.0.9
 
-- Enhanced the fsql grammar (Interval, IN / NOT IN) 
+- Enhanced the fsql grammar (Interval, IN / NOT IN, Single-expression condition)
+- Fixed the naming of some vscode settings
 
 ## 0.0.8
 

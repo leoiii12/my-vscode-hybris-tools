@@ -3,7 +3,7 @@
   "displayName": "my-vscode-hybris-tools",
   "publisher": "leochoi",
   "description": "My Hybris Tools",
-  "version": "0.0.9-0f1e502",
+  "version": "0.0.9-fd1a5d1",
   "engines": {
     "vscode": "^1.42.0"
   },
@@ -46,14 +46,14 @@
             "default": "philipsspilihp",
             "description": "The password used for logging in the HAC."
           },
-          "vscode-hybris-tools.hac.http.timeout": {
+          "vscode-hybris-tools.http.timeout": {
             "type": "integer",
             "default": 10000,
             "description": "The HTTP socket timeout."
           },
-          "vscode-hybris-tools.hac.http.useStrictSSL": {
+          "vscode-hybris-tools.http.useStrictSSL": {
             "type": "boolean",
-            "default": true,
+            "default": false,
             "description": "Use strict SSL."
           },
           "vscode-hybris-tools.offline.typeCodes": {
@@ -190,7 +190,7 @@
     "lint": "eslint src --ext ts",
     "pretest": "npm run compile && npm run compile:fsql && npm run lint",
     "test": "jest",
-    "test-install": "vsce package --baseImagesUrl https://it-catch.hktv.com.hk:10080/leochoi/vscode-hybris-tools/raw/master/ && code --install-extension my-vscode-hybris-tools-0.0.9-0f1e502.vsix --force"
+    "test-install": "vsce package --baseImagesUrl https://it-catch.hktv.com.hk:10080/leochoi/vscode-hybris-tools/raw/master/ && code --install-extension my-vscode-hybris-tools-0.0.9-fd1a5d1.vsix --force"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.16",
