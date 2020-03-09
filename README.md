@@ -78,6 +78,10 @@ Calling out known issues can help limit users opening duplicate issues against y
 
 Please see `./CHANGELOG.md`.
 
+## The Future
+
+Please see `./ROADMAP.md`.
+
 ### For more information
 
 * [Our parser and some sample features](https://github.com/leoiii12/flex-query-parser)
