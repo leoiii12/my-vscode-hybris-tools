@@ -6,6 +6,7 @@
 2. Execute fsql (`F5`)
 3. Execute groovy (`F5`)
 4. Execute and Commit groovy (`Shift + F5`)
+5. Import ImpEx
 
 ### Beta
 
@@ -19,6 +20,8 @@
 8. Convert fsql to sql and fill in parameters
 
 ### Screenshots
+
+https://docs.google.com/presentation/d/1dWoE6_gfGKV0wwEU5XDJmwHHoOJiO5BATnyd7NPPLkU/edit#slide=id.p
 
 ![](images/autocomplete.gif)
 ![](images/attributes.gif)
@@ -42,10 +45,10 @@ Please provide a connectable hybris before using the extension.
   "vscode-hybris-tools.hac.username": "admin",
   "vscode-hybris-tools.hac.password": "philipsspilihp",
   "vscode-hybris-tools.http.timeout": 10000,
-  "vscode-hybris-tools.http.useStrictSSL": true,
+  "vscode-hybris-tools.http.useStrictSSL": false,
   "vscode-hybris-tools.offline.typeCodes": [
     "OfflineCode",
-    "HktvVariantProduct"
+    "VariantProduct"
   ],
 
   // To have autocompletion in snippets, you need to have this false.
