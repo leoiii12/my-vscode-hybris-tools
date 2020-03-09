@@ -1,5 +1,19 @@
 # my-vscode-hybris-tools README
 
+## Getting Started 
+
+1. Install https://marketplace.visualstudio.com/items?itemName=leochoi.my-vscode-hybris-tools
+2. Ctrl + Shift + P → Preferences: Open Settings (JSON)
+   ```json
+    {
+      "editor.suggest.snippetsPreventQuickSuggestions": false,
+      "editor.suggestSelection": "first",
+      "vscode-hybris-tools.http.timeout": 200000,
+      "vscode-hybris-tools.http.useStrictSSL": false
+    }
+   ```
+3. Ctrl + Shift + P → Developer: Reload Window
+
 ## Features
 
 1. Validate fsql syntax
