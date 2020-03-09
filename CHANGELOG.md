@@ -8,6 +8,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - Enhanced the fsql grammar (Interval, IN / NOT IN, Single-expression condition)
 - Fixed the naming of some vscode settings
+- Added more completion keywords
 
 ## 0.0.8
 

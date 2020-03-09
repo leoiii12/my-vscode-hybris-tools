@@ -11,17 +11,24 @@ export class FsqlCompletionItemProvider
   private characterTokens = ['a']
   private numericTokens = ['0']
   private keywordTokens = [
+    'GROUP BY',
+    'ORDER BY',
+
+    'TRUE',
+    'FALSE',
+    'NULL',
+
     'SELECT',
     'FROM',
     'WHERE 1 = 1',
-    'GROUP BY',
-    'ORDER BY',
+    'HAVING 1 = 1',
     'UNION',
     'ALL',
     'EXCEPT',
     'MINUS',
     'INTERSECT',
 
+    'ALL',
     'ASC',
     'DESC',
     'NULLS',
@@ -33,15 +40,20 @@ export class FsqlCompletionItemProvider
     'JOIN placeholder',
     'JOIN placeholder AS p',
     'ON 1 = 1',
-    'AS placeholder',
 
     'AND 1 = 1',
     'OR 1 = 1',
-
-    'IS NULL',
-    'IS NOT NULL',
     'NOT',
-    'NULL',
+    'NOT LIKE',
+    'NOT BETWEEN',
+    'NOT EXISTS',
+    'IS NOT',
+    'NOT IN',
+    'LIKE',
+    'BETWEEN',
+    'EXISTS',
+    'IS',
+    'IN',
 
     'CASE',
     'WHEN',
@@ -49,8 +61,7 @@ export class FsqlCompletionItemProvider
     'ELSE',
     'END',
 
-    'TRUE',
-    'FALSE',
+    'AS placeholder',
   ]
   private keywordTokensInsertText: {
     [keywordToken: string]: { label: string; snippetString: string }
