@@ -162,6 +162,14 @@ condition ->
       return { type: 'condition', operand_1: elems[0], comparator: 'NOT LIKE', operand_2: elems[5] }
     }
   %}
+  | operand __ ( %not __ ):? %regexp __ operand {%
+    (elems) => {
+      if (elems[2] == null) {
+        return { type: 'condition', operand_1: elems[0], comparator: 'REGEXP', operand_2: elems[5] }
+      }
+      return { type: 'condition', operand_1: elems[0], comparator: 'NOT REGEXP', operand_2: elems[5] }
+    }
+  %}
   | operand __ ( %not __ ):? %between __ operand __ %and __ operand {%
     (elems) => {
       if (elems[2] == null) {

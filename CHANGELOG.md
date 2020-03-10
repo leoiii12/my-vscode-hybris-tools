@@ -4,10 +4,20 @@ All notable changes to the "my-vscode-hybris-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.0.3
+
+- Fixed `REGEXP` in fsql
+
 ## 1.0.2
 
 - Enhanced the attribute autocompletion when no typeAlias e.g. typing typeAlias
 - Bumped packages
+
+## 1.0.1
+## 1.0.0
+
+- Published to VSCode Marketplace
+- Enhanced README
 
 ## 0.0.9
 

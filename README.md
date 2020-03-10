@@ -34,6 +34,13 @@
 7. Auto fix actions for `1` as conditions instead of `1 = 1`
 8. Convert fsql to sql and fill in parameters
 
+### Screenshots
+
+https://docs.google.com/presentation/d/1dWoE6_gfGKV0wwEU5XDJmwHHoOJiO5BATnyd7NPPLkU/edit#slide=id.p
+
+![](images/autocomplete.gif)
+![](images/attributes.gif)
+
 ## Requirements
 
 Please provide a connectable hybris before using the extension.

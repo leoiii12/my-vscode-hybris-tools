@@ -229,7 +229,18 @@ var grammar = {
     {"name": "condition$ebnf$3$subexpression$1", "symbols": [(lexer.has("not") ? {type: "not"} : not), "__"]},
     {"name": "condition$ebnf$3", "symbols": ["condition$ebnf$3$subexpression$1"], "postprocess": id},
     {"name": "condition$ebnf$3", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "condition", "symbols": ["operand", "__", "condition$ebnf$3", (lexer.has("between") ? {type: "between"} : between), "__", "operand", "__", (lexer.has("and") ? {type: "and"} : and), "__", "operand"], "postprocess": 
+    {"name": "condition", "symbols": ["operand", "__", "condition$ebnf$3", (lexer.has("regexp") ? {type: "regexp"} : regexp), "__", "operand"], "postprocess": 
+        (elems) => {
+          if (elems[2] == null) {
+            return { type: 'condition', operand_1: elems[0], comparator: 'REGEXP', operand_2: elems[5] }
+          }
+          return { type: 'condition', operand_1: elems[0], comparator: 'NOT REGEXP', operand_2: elems[5] }
+        }
+          },
+    {"name": "condition$ebnf$4$subexpression$1", "symbols": [(lexer.has("not") ? {type: "not"} : not), "__"]},
+    {"name": "condition$ebnf$4", "symbols": ["condition$ebnf$4$subexpression$1"], "postprocess": id},
+    {"name": "condition$ebnf$4", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "condition", "symbols": ["operand", "__", "condition$ebnf$4", (lexer.has("between") ? {type: "between"} : between), "__", "operand", "__", (lexer.has("and") ? {type: "and"} : and), "__", "operand"], "postprocess": 
         (elems) => {
           if (elems[2] == null) {
             return { type: 'condition', operand_1: elems[0], comparator: 'BETWEEN', operand_2: elems[6], operand_3: elems[10] }
@@ -237,12 +248,12 @@ var grammar = {
           return { type: 'condition', operand_1: elems[0], comparator: 'NOT BETWEEN', operand_2: elems[6], operand_3: elems[10] }
         }
           },
-    {"name": "condition$ebnf$4$subexpression$1", "symbols": [(lexer.has("not") ? {type: "not"} : not), "__"]},
-    {"name": "condition$ebnf$4", "symbols": ["condition$ebnf$4$subexpression$1"], "postprocess": id},
-    {"name": "condition$ebnf$4", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "condition$ebnf$5$subexpression$1", "symbols": [(lexer.has("not") ? {type: "not"} : not), "__"]},
+    {"name": "condition$ebnf$5", "symbols": ["condition$ebnf$5$subexpression$1"], "postprocess": id},
+    {"name": "condition$ebnf$5", "symbols": [], "postprocess": function(d) {return null;}},
     {"name": "condition$subexpression$1", "symbols": ["type_null"]},
     {"name": "condition$subexpression$1", "symbols": ["type_boolean"]},
-    {"name": "condition", "symbols": ["operand", "__", (lexer.has("is") ? {type: "is"} : is), "__", "condition$ebnf$4", "condition$subexpression$1"], "postprocess": 
+    {"name": "condition", "symbols": ["operand", "__", (lexer.has("is") ? {type: "is"} : is), "__", "condition$ebnf$5", "condition$subexpression$1"], "postprocess": 
         (elems) => {
           if (elems[4] == null) {
             return { type: 'condition', operand_1: elems[0], comparator: 'IS', operand_2: elems[5][0] }
@@ -250,10 +261,10 @@ var grammar = {
           return { type: 'condition', operand_1: elems[0], comparator: 'IS NOT', operand_2: elems[5][0] }
         }
           },
-    {"name": "condition$ebnf$5$subexpression$1", "symbols": [(lexer.has("not") ? {type: "not"} : not), "__"]},
-    {"name": "condition$ebnf$5", "symbols": ["condition$ebnf$5$subexpression$1"], "postprocess": id},
-    {"name": "condition$ebnf$5", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "condition", "symbols": ["condition$ebnf$5", (lexer.has("exists") ? {type: "exists"} : exists), "__", "operand"], "postprocess": 
+    {"name": "condition$ebnf$6$subexpression$1", "symbols": [(lexer.has("not") ? {type: "not"} : not), "__"]},
+    {"name": "condition$ebnf$6", "symbols": ["condition$ebnf$6$subexpression$1"], "postprocess": id},
+    {"name": "condition$ebnf$6", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "condition", "symbols": ["condition$ebnf$6", (lexer.has("exists") ? {type: "exists"} : exists), "__", "operand"], "postprocess": 
         (elems) => {
           if (elems[0] == null) {
             return { type: 'condition',comparator: 'EXISTS', operand_1: elems[3] }

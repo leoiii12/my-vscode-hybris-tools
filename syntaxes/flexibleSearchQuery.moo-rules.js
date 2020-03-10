@@ -76,6 +76,7 @@ const mooRules = {
       exists: ci('exists'),
       is: ci('is'),
       in_: ci('in'),
+      regexp: ci('regexp'),
 
       group_concat: ci('group_concat'),
       separator: ci('separator'),
