@@ -50,9 +50,10 @@ export class FsqlCompletionAttributeItemProvider
 
     const results = FsqlUtils.tryParseWithPlaceholder(
       this.grammar,
-      context.triggerCharacter && beforeText.endsWith(context.triggerCharacter)
-        ? beforeText
-        : beforeText + context.triggerCharacter,
+      context.triggerCharacter !== undefined &&
+        '.:[]'.includes(context.triggerCharacter) === true
+        ? beforeText + context.triggerCharacter
+        : beforeText,
       afterText,
     )
     if (results.length === 0) {
@@ -75,10 +76,22 @@ export class FsqlCompletionAttributeItemProvider
           return []
         }
 
-        const typeAlias = parentNode['typeAlias'].toString()
+        const typeAlias = parentNode['typeAlias']
+        if (typeAlias === null) {
+          const types = FsqlGrammarUtils.getTypes(parsingResultWithPlaceholder)
+
+          return types.reduce((acc, v) => {
+            acc.push(new vscode.CompletionItem(v.typeName.toString()))
+            if (v.as !== undefined) {
+              acc.push(new vscode.CompletionItem(v.as.toString()))
+            }
+
+            return acc
+          }, [] as vscode.CompletionItem[])
+        }
 
         const type = await FsqlCompletionAttributeItemProvider.getConcreteTypeCode(
-          typeAlias,
+          typeAlias.toString(),
           parsingResultWithPlaceholder,
         )
         if (type === undefined) {

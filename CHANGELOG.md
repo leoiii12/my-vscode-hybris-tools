@@ -4,6 +4,11 @@ All notable changes to the "my-vscode-hybris-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.0.2
+
+- Enhanced the attribute autocompletion when no typeAlias e.g. typing typeAlias
+- Bumped packages
+
 ## 0.0.9
 
 - Enhanced the fsql grammar (Interval, IN / NOT IN, Single-expression condition)

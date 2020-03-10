@@ -3,16 +3,17 @@
 ## Getting Started 
 
 1. Install https://marketplace.visualstudio.com/items?itemName=leochoi.my-vscode-hybris-tools
-2. Ctrl + Shift + P → Preferences: Open Settings (JSON)
+2. `Ctrl + Shift + P` → `Preferences: Open Settings (JSON)`
+   The default timeout is 10s, which is too short for some queries.
+   You may need the following settings to provide better autocompletion features.
    ```json
     {
       "editor.suggest.snippetsPreventQuickSuggestions": false,
       "editor.suggestSelection": "first",
-      "vscode-hybris-tools.http.timeout": 200000,
-      "vscode-hybris-tools.http.useStrictSSL": false
+      "vscode-hybris-tools.http.timeout": 200000
     }
    ```
-3. Ctrl + Shift + P → Developer: Reload Window
+3. `Ctrl + Shift + P` → `Developer: Reload Window`
 
 ## Features
 
@@ -33,13 +34,6 @@
 7. Auto fix actions for `1` as conditions instead of `1 = 1`
 8. Convert fsql to sql and fill in parameters
 
-### Screenshots
-
-https://docs.google.com/presentation/d/1dWoE6_gfGKV0wwEU5XDJmwHHoOJiO5BATnyd7NPPLkU/edit#slide=id.p
-
-![](images/autocomplete.gif)
-![](images/attributes.gif)
-
 ## Requirements
 
 Please provide a connectable hybris before using the extension.
@@ -51,7 +45,9 @@ Please provide a connectable hybris before using the extension.
 * `vscode-hybris-tools.hac.password`: The password used for logging in the HAC.
 * `vscode-hybris-tools.http.timeout`: The HTTP socket timeout.
 * `vscode-hybris-tools.http.useStrictSSL`: Use strict SSL.
-* `vscode-hybris-tools.offline.typeCodes`: The type codes for offline types autocompletion. e.g. ["HktvVariantProduct", "OfflineType", "HelloWorld"]
+* `vscode-hybris-tools.offline.typeCodes`: The type codes for offline types autocompletion. e.g. ["OfflineType", "HelloWorld"]
+
+The following is the default settings.
 
 ```json
 {
@@ -62,11 +58,12 @@ Please provide a connectable hybris before using the extension.
   "vscode-hybris-tools.http.useStrictSSL": false,
   "vscode-hybris-tools.offline.typeCodes": [
     "OfflineCode",
-    "VariantProduct"
+    "HelloWorld"
   ],
 
   // To have autocompletion in snippets, you need to have this false.
-  "editor.suggest.snippetsPreventQuickSuggestions": false
+  "editor.suggest.snippetsPreventQuickSuggestions": false,
+  "editor.suggestSelection": "first"
 }
 ```
 

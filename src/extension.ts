@@ -217,6 +217,7 @@ export function activate(context: vscode.ExtensionContext) {
           internalCaches,
           fsqlMooRules.rules,
         ),
+        ...'abcdefghijklmnopqrstuvwsyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
       ),
     )
     context.subscriptions.push(
@@ -230,7 +231,7 @@ export function activate(context: vscode.ExtensionContext) {
           internalCaches,
           fsqlMooRules.rules,
         ),
-        ...['.', ':', '[', ']'],
+        ...'.:[]abcdefghijklmnopqrstuvwsyz',
       ),
     )
     context.subscriptions.push(
