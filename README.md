@@ -10,7 +10,8 @@
     {
       "editor.suggest.snippetsPreventQuickSuggestions": false,
       "editor.suggestSelection": "first",
-      "vscode-hybris-tools.http.timeout": 200000
+      "vscode-hybris-tools.http.timeout": 200000,
+      "vscode-hybris-tools.hac.url": "https://ecomdev01.hktv.com.hk:9002/hac"
     }
    ```
 3. `Ctrl + Shift + P` → `Developer: Reload Window`
