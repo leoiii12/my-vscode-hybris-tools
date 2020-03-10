@@ -52,36 +52,28 @@ export namespace VscodeUtils {
     const csv = Papa.unparse([headers, ...resultList])
     const decodedCsv = ncrDecode(csv)
 
-    const path = `${tmpdir}/my-vscode-hybris-tools/csv/${
-      fileName ? fileName : new Date().getTime()
-    }.csv`
-    mkdirSync(`${tmpdir}/my-vscode-hybris-tools/csv/`, { recursive: true })
+    const dir = `${tmpdir}/my-vscode-hybris-tools/csv`
+    const path = `${dir}/${fileName ? fileName : new Date().getTime() + '.csv'}`
+
+    mkdirSync(dir, { recursive: true })
     writeFileSync(path, Buffer.from(decodedCsv))
 
     const uri = vscode.Uri.file(path)
     const document = await vscode.workspace.openTextDocument(uri)
 
-    await vscode.window.showTextDocument(
-      document,
-      vscode.ViewColumn.Beside,
-      true,
-    )
+    await vscode.window.showTextDocument(document, vscode.ViewColumn.Beside)
   }
 
   export async function openTxtWindow(txt: string, fileName?: string) {
-    const path = `${tmpdir}/my-vscode-hybris-tools/txt/${
-      fileName ? fileName : new Date().getTime()
-    }.txt`
-    mkdirSync(`${tmpdir}/my-vscode-hybris-tools/txt/`, { recursive: true })
+    const dir = `${tmpdir}/my-vscode-hybris-tools/txt`
+    const path = `${dir}/${fileName ? fileName : new Date().getTime() + '.txt'}`
+
+    mkdirSync(dir, { recursive: true })
     writeFileSync(path, Buffer.from(txt))
 
     const uri = vscode.Uri.file(path)
     const document = await vscode.workspace.openTextDocument(uri)
 
-    await vscode.window.showTextDocument(
-      document,
-      vscode.ViewColumn.Beside,
-      true,
-    )
+    await vscode.window.showTextDocument(document, vscode.ViewColumn.Beside)
   }
 }

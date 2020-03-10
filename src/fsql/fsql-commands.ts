@@ -29,11 +29,11 @@ export namespace FsqlCommands {
 
       VscodeUtils.openTxtWindow(
         JSON.stringify(flexQueryExecResult.exception, null, 2),
-        `${new Date().toISOString()}.exception.json`,
+        `${new Date().getTime()}.exception.json`,
       )
       VscodeUtils.openTxtWindow(
         flexQueryExecResult.exceptionStackTrace,
-        `${new Date().toISOString()}.exceptionStackTrace.txt`,
+        `${new Date().getTime()}.exceptionStackTrace.txt`,
       )
 
       return false
@@ -67,11 +67,11 @@ export namespace FsqlCommands {
 
       VscodeUtils.openTxtWindow(
         JSON.stringify(flexQueryExecResult.exception, null, 2),
-        `${new Date().toISOString()}.exception.json`,
+        `${new Date().getTime()}.exception.json`,
       )
       VscodeUtils.openTxtWindow(
         flexQueryExecResult.exceptionStackTrace,
-        `${new Date().toISOString()}.exceptionStackTrace.txt`,
+        `${new Date().getTime()}.exceptionStackTrace.txt`,
       )
 
       return false
@@ -172,16 +172,16 @@ export namespace FsqlCommands {
 
       const formattedSql = sqlFormatter.format(mySqlQuery, { language: 'sql' })
 
-      VscodeUtils.openTxtWindow(formattedSql, `${new Date().toISOString()}.sql`)
+      VscodeUtils.openTxtWindow(formattedSql, `${new Date().getTime()}.sql`)
 
       return true
     } catch (e) {
       vscode.window.showErrorMessage("Can't match all parameters.")
 
-      VscodeUtils.openTxtWindow(sqlQuery, `${new Date().toISOString()}.sql`)
+      VscodeUtils.openTxtWindow(sqlQuery, `${new Date().getTime()}.sql`)
       VscodeUtils.openTxtWindow(
         JSON.stringify(sqlQueryParameters),
-        `${new Date().toISOString()}.parameters.json`,
+        `${new Date().getTime()}.parameters.json`,
       )
 
       return false

@@ -17,16 +17,16 @@ export namespace GroovyCommands {
 
     VscodeUtils.openTxtWindow(
       groovyScriptExecResult.outputText,
-      `${new Date().toISOString()}.output.txt`,
+      `${new Date().getTime()}.output.txt`,
     )
     VscodeUtils.openTxtWindow(
       groovyScriptExecResult.executionResult,
-      `${new Date().toISOString()}.executionResult.txt`,
+      `${new Date().getTime()}.executionResult.txt`,
     )
     if (groovyScriptExecResult.stacktraceText !== '') {
       VscodeUtils.openTxtWindow(
         groovyScriptExecResult.stacktraceText,
-        `${new Date().toISOString()}.stacktraceText.txt`,
+        `${new Date().getTime()}.stacktraceText.txt`,
       )
     }
   }
@@ -44,16 +44,16 @@ export namespace GroovyCommands {
 
     VscodeUtils.openTxtWindow(
       groovyScriptExecResult.outputText,
-      `${new Date().toISOString()}.output.txt`,
+      `${new Date().getTime()}.output.txt`,
     )
     VscodeUtils.openTxtWindow(
       groovyScriptExecResult.executionResult,
-      `${new Date().toISOString()}.executionResult.txt`,
+      `${new Date().getTime()}.executionResult.txt`,
     )
     if (groovyScriptExecResult.stacktraceText !== '') {
       VscodeUtils.openTxtWindow(
         groovyScriptExecResult.stacktraceText,
-        `${new Date().toISOString()}.stacktraceText.txt`,
+        `${new Date().getTime()}.stacktraceText.txt`,
       )
     }
   }
