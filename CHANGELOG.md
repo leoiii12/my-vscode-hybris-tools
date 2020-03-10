@@ -4,6 +4,11 @@ All notable changes to the "my-vscode-hybris-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 
+
+- Fixed 403 errors when multiple requests are created in HacUtils
+- Migrated from memfs to localfs
+
 ## 1.0.4
 
 - More autocompletion features

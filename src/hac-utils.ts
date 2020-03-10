@@ -1,10 +1,11 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
+import axios, { AxiosInstance } from 'axios'
 import * as cheerio from 'cheerio'
 import { Agent } from 'https'
 import * as qs from 'querystring'
 import { CookieJar } from 'tough-cookie'
 
 import { Config } from './config'
+import { Subject, zip, Observer, Observable } from 'rxjs'
 
 const axiosCookiejarSupport = require('axios-cookiejar-support').default
 
@@ -38,9 +39,40 @@ export interface GroovyExecResult {
   outputText: string
 }
 
+class Lock {
+  private lockAcquire = new Subject<Observer<void>>()
+  private lockRelease = new Subject()
+
+  constructor() {
+    zip(this.lockAcquire, this.lockRelease.asObservable()).subscribe(
+      ([acquirer, released]) => {
+        acquirer.next()
+        acquirer.complete()
+      },
+    )
+
+    this.release()
+  }
+
+  public acquire(): Observable<void> {
+    return Observable.create((observer: Observer<void>) => {
+      this.lockAcquire.next(observer)
+    })
+  }
+
+  public release() {
+    this.lockRelease.next()
+  }
+}
+
 export class HacUtils {
   private axiosInstance: AxiosInstance | undefined
   private initTimestamp: number | undefined
+
+  /**
+   * To make sure this is thread-safe, this needs to acquire the lock before proceeding
+   */
+  private lock = new Lock()
 
   private readonly credentials = {
     csrf: '',
@@ -66,6 +98,50 @@ export class HacUtils {
   }
 
   constructor() {}
+
+  public async executeFlexibleSearch(
+    maxCount: number,
+    fsql?: string,
+    sql?: string,
+  ) {
+    await this.lock.acquire().toPromise()
+
+    return this._executeFlexibleSearch(maxCount, fsql, sql).finally(() => {
+      this.lock.release()
+    })
+  }
+
+  public async executeGroovy(commit: boolean, script: string) {
+    await this.lock.acquire().toPromise()
+
+    return this._executeGroovy(commit, script).finally(() => {
+      this.lock.release()
+    })
+  }
+
+  public async validateImpEx(impEx: string) {
+    await this.lock.acquire().toPromise()
+
+    return this._validateImpEx(impEx).finally(() => {
+      this.lock.release()
+    })
+  }
+
+  public async importImpEx(impEx: string) {
+    await this.lock.acquire().toPromise()
+
+    return this._importImpEx(impEx).finally(() => {
+      this.lock.release()
+    })
+  }
+
+  public async clearCaches() {
+    await this.lock.acquire().toPromise()
+
+    return this._clearCaches().finally(() => {
+      this.lock.release()
+    })
+  }
 
   private async initSession() {
     if (
@@ -149,7 +225,7 @@ export class HacUtils {
     return this.credentials
   }
 
-  public async executeFlexibleSearch(
+  private async _executeFlexibleSearch(
     maxCount: number,
     fsql?: string,
     sql?: string,
@@ -186,7 +262,7 @@ export class HacUtils {
     return res.data
   }
 
-  public async executeGroovy(
+  private async _executeGroovy(
     commit: boolean,
     script: string,
   ): Promise<GroovyExecResult> {
@@ -215,7 +291,7 @@ export class HacUtils {
     return res.data
   }
 
-  public async validateImpEx(impEx: string): Promise<void> {
+  private async _validateImpEx(impEx: string): Promise<void> {
     await this.logIn()
 
     const csrf = this.csrf
@@ -260,7 +336,7 @@ export class HacUtils {
     }
   }
 
-  public async importImpEx(impEx: string): Promise<void> {
+  public async _importImpEx(impEx: string): Promise<void> {
     await this.logIn()
 
     const csrf = this.csrf
@@ -305,7 +381,7 @@ export class HacUtils {
     }
   }
 
-  public async clearCaches(): Promise<any> {
+  public async _clearCaches(): Promise<any> {
     await this.logIn()
 
     const csrf = this.csrf
