@@ -76,18 +76,39 @@ export class FsqlCompletionAttributeItemProvider
           return []
         }
 
-        const typeAlias = parentNode['typeAlias']
+        let typeAlias = parentNode['typeAlias']
+
+        const types = FsqlGrammarUtils.getTypes(parsingResultWithPlaceholder)
         if (typeAlias === null) {
-          const types = FsqlGrammarUtils.getTypes(parsingResultWithPlaceholder)
+          // No type def yet
+          if (types.length === 0) {
+            return []
+          }
+          // The only-default type
+          else if (types.length === 1) {
+            typeAlias = types[0].typeName
+          }
+          // More than one type
+          else if (types.length > 1) {
+            return types.reduce((acc, v) => {
+              acc.push(
+                new vscode.CompletionItem(
+                  v.typeName.toString(),
+                  vscode.CompletionItemKind.Class,
+                ),
+              )
+              if (v.as !== undefined) {
+                acc.push(
+                  new vscode.CompletionItem(
+                    v.as.toString(),
+                    vscode.CompletionItemKind.Variable,
+                  ),
+                )
+              }
 
-          return types.reduce((acc, v) => {
-            acc.push(new vscode.CompletionItem(v.typeName.toString()))
-            if (v.as !== undefined) {
-              acc.push(new vscode.CompletionItem(v.as.toString()))
-            }
-
-            return acc
-          }, [] as vscode.CompletionItem[])
+              return acc
+            }, [] as vscode.CompletionItem[])
+          }
         }
 
         const type = await FsqlCompletionAttributeItemProvider.getConcreteTypeCode(
