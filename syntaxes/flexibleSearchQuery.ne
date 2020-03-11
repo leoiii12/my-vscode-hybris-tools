@@ -349,7 +349,7 @@ bind_parameter ->
   %}
 
 function ->
-  %group_concat _ ( %lparen _ term ( _ %separator _ type_string ):? _ %rparen ) {%
+  %group_concat _ ( %lparen _ operand ( _ %separator _ type_string ):? _ %rparen ) {%
     (elems) => ({
       type: 'function',
       function: 'GROUP_CONCAT',
@@ -358,7 +358,7 @@ function ->
         [elems[2][2], elems[2][3][3]]
     })
   %}
-  | %identifier _ ( %lparen ( _ term ):? ( _ %comma _ term ):* _ %rparen ) {%
+  | %identifier _ ( %lparen ( _ operand ):? ( _ %comma _ operand ):* _ %rparen ) {%
     (elems) => {
       if (elems[2][1] === null) {
         return ({ type: 'function', function: elems[0], args: [] })

@@ -4,6 +4,10 @@ All notable changes to the "my-vscode-hybris-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.0.6
+
+- Grammar - Allow operand in function
+
 ## 1.0.5
 
 - Fixed 403 errors when multiple requests are created in HacUtils

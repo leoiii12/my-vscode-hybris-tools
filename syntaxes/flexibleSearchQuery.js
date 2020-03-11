@@ -448,7 +448,7 @@ var grammar = {
     {"name": "function$subexpression$1$ebnf$1$subexpression$1", "symbols": ["_", (lexer.has("separator") ? {type: "separator"} : separator), "_", "type_string"]},
     {"name": "function$subexpression$1$ebnf$1", "symbols": ["function$subexpression$1$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "function$subexpression$1$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "function$subexpression$1", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "_", "term", "function$subexpression$1$ebnf$1", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)]},
+    {"name": "function$subexpression$1", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "_", "operand", "function$subexpression$1$ebnf$1", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)]},
     {"name": "function", "symbols": [(lexer.has("group_concat") ? {type: "group_concat"} : group_concat), "_", "function$subexpression$1"], "postprocess": 
         (elems) => ({
           type: 'function',
@@ -458,11 +458,11 @@ var grammar = {
             [elems[2][2], elems[2][3][3]]
         })
           },
-    {"name": "function$subexpression$2$ebnf$1$subexpression$1", "symbols": ["_", "term"]},
+    {"name": "function$subexpression$2$ebnf$1$subexpression$1", "symbols": ["_", "operand"]},
     {"name": "function$subexpression$2$ebnf$1", "symbols": ["function$subexpression$2$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "function$subexpression$2$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
     {"name": "function$subexpression$2$ebnf$2", "symbols": []},
-    {"name": "function$subexpression$2$ebnf$2$subexpression$1", "symbols": ["_", (lexer.has("comma") ? {type: "comma"} : comma), "_", "term"]},
+    {"name": "function$subexpression$2$ebnf$2$subexpression$1", "symbols": ["_", (lexer.has("comma") ? {type: "comma"} : comma), "_", "operand"]},
     {"name": "function$subexpression$2$ebnf$2", "symbols": ["function$subexpression$2$ebnf$2", "function$subexpression$2$ebnf$2$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "function$subexpression$2", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "function$subexpression$2$ebnf$1", "function$subexpression$2$ebnf$2", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)]},
     {"name": "function", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "function$subexpression$2"], "postprocess": 
