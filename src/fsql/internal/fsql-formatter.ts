@@ -115,10 +115,18 @@ export class FsqlFormatter {
             str += `${obj['tableAlias']}.${obj['column']}`
           } else if ('typeAlias' in obj) {
             str += `{ ${obj['typeAlias']}.${obj['column']} }`
-          } else if ('term' in obj && 'as' in obj && obj['as'] !== null) {
-            str += `${this.ao(obj['term'])} AS ${this.ao(obj['as'])}`
           } else if ('term' in obj) {
-            str += `${this.ao(obj['term'])}`
+
+            if (obj['term'].type === 'subquery') {
+              str += `(${this.ao(obj['term'])})`
+            } else {
+              str += `${this.ao(obj['term'])}`
+            }
+
+            if ('as' in obj && obj['as'] !== null) {
+              str += ` AS ${this.ao(obj['as'])}`
+            }  
+
           } else if ('column' in obj) {
             str += `${obj['column']}`
           } else {

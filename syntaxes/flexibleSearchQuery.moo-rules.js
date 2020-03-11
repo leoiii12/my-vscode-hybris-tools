@@ -94,7 +94,7 @@ const mooRules = {
   },
 
   number_literal: /[0-9]+/,
-  string_literal: /\'.*?\'/,
+  string_literal: /\'(?:\'\'|[^\'\'])*\'/,
   any: /.+?/
 }
 

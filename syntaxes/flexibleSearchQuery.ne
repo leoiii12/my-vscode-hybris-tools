@@ -52,7 +52,7 @@ select_expression ->
       return { type: 'select_expression', typeAlias: elems[2], column: "*" }
     }
   %}
-  | term ( ( __ %as ):? __ identifier ):? {%
+  | operand ( ( __ %as ):? __ identifier ):? {%
     (elems) => {
       return { type: 'select_expression', term: elems[0], as: elems[1] == null ? null : elems[1][2] }
     }

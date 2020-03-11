@@ -3,7 +3,7 @@
   "displayName": "my-vscode-hybris-tools",
   "publisher": "leochoi",
   "description": "My Hybris Tools",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "engines": {
     "vscode": "^1.42.0"
   },
@@ -190,7 +190,7 @@
     "lint": "eslint src --ext ts",
     "pretest": "npm run compile && npm run compile:fsql && npm run lint",
     "test": "jest",
-    "test-install": "vsce package --baseImagesUrl https://it-catch.hktv.com.hk:10080/leochoi/vscode-hybris-tools/raw/master/ && code --install-extension my-vscode-hybris-tools-1.0.4.vsix --force"
+    "test-install": "vsce package --baseImagesUrl https://it-catch.hktv.com.hk:10080/leochoi/vscode-hybris-tools/raw/master/ && code --install-extension my-vscode-hybris-tools-1.0.5.vsix --force"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.16",

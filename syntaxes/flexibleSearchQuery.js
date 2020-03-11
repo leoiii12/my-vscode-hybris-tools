@@ -86,7 +86,7 @@ var grammar = {
     {"name": "select_expression$ebnf$1$subexpression$1", "symbols": ["select_expression$ebnf$1$subexpression$1$ebnf$1", "__", "identifier"]},
     {"name": "select_expression$ebnf$1", "symbols": ["select_expression$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "select_expression$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "select_expression", "symbols": ["term", "select_expression$ebnf$1"], "postprocess": 
+    {"name": "select_expression", "symbols": ["operand", "select_expression$ebnf$1"], "postprocess": 
         (elems) => {
           return { type: 'select_expression', term: elems[0], as: elems[1] == null ? null : elems[1][2] }
         }
