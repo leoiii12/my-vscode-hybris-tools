@@ -66,7 +66,7 @@ export function activate(context: vscode.ExtensionContext) {
       'vscode-hybris-tools.flexibleSearchQuery.executeRawSQL',
       () =>
         VscodeUtils.withProgress(
-          FsqlCommands.execute(hacUtils).catch(err => {
+          FsqlCommands.executeRawSql(hacUtils).catch(err => {
             vscode.window.showErrorMessage(
               err ? err.message : 'Timeout. Please check whether Hybris is on.',
             )
