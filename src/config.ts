@@ -30,11 +30,11 @@ export namespace Config {
       return (
         vscode.workspace
           .getConfiguration()
-          .get('vscode-hybris-tools.hac.password') || 'philipsspilihp'
+          .get('vscode-hybris-tools.hac.password') || 'nimda'
       )
     }
 
-    return 'philipsspilihp'
+    return 'nimda'
   }
 
   export function getHttpTimeout(): number {

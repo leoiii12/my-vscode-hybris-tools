@@ -4,6 +4,11 @@ All notable changes to the "my-vscode-hybris-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.0.8
+
+- Added `.fxs`
+- Fixed the fsql format, column_ref and type
+
 ## 1.0.7
 
 - Fixed `Hybris: Execute Raw SQL` wrongly binded to `Hybris: Execute FSQL`

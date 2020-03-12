@@ -21,19 +21,24 @@ export namespace FsqlCommands {
       VscodeUtils.getSelectedTextOrDocumentText(editor),
     )
 
-    if (
-      flexQueryExecResult.exception ||
-      flexQueryExecResult.exceptionStackTrace
-    ) {
-      console.log(flexQueryExecResult)
+    if (flexQueryExecResult.exception) {
+      if (flexQueryExecResult.exception.message) {
+        VscodeUtils.openTxtWindow(
+          JSON.stringify(flexQueryExecResult, null, 2),
+          `${new Date().getTime()}.exception.json`,
+        )
+      } else {
+        VscodeUtils.openTxtWindow(
+          JSON.stringify(flexQueryExecResult.exception, null, 2),
+          `${new Date().getTime()}.exception.json`,
+        )
+      }
 
+      return false
+    } else if (flexQueryExecResult.exceptionStackTrace) {
       VscodeUtils.openTxtWindow(
-        JSON.stringify(flexQueryExecResult.exception, null, 2),
-        `${new Date().getTime()}.exception.json`,
-      )
-      VscodeUtils.openTxtWindow(
-        flexQueryExecResult.exceptionStackTrace,
-        `${new Date().getTime()}.exceptionStackTrace.txt`,
+        JSON.stringify(flexQueryExecResult.exceptionStackTrace, null, 2),
+        `${new Date().getTime()}.exceptionStackTrace.json`,
       )
 
       return false

@@ -114,9 +114,8 @@ export class FsqlFormatter {
           if ('tableAlias' in obj) {
             str += `${obj['tableAlias']}.${obj['column']}`
           } else if ('typeAlias' in obj) {
-            str += `{ ${obj['typeAlias']}.${obj['column']} }`
+            str += `{${obj['typeAlias']}.${obj['column']}}`
           } else if ('term' in obj) {
-
             if (obj['term'].type === 'subquery') {
               str += `(${this.ao(obj['term'])})`
             } else {
@@ -125,8 +124,7 @@ export class FsqlFormatter {
 
             if ('as' in obj && obj['as'] !== null) {
               str += ` AS ${this.ao(obj['as'])}`
-            }  
-
+            }
           } else if ('column' in obj) {
             str += `${obj['column']}`
           } else {
@@ -279,12 +277,12 @@ export class FsqlFormatter {
           if ('tableAlias' in obj) {
             str += `${this.ao(obj['tableAlias'])}.${this.ao(obj['column'])}`
           } else if ('typeAlias' in obj) {
-            const typeAliasPart = obj['typeAlias'] ? `${obj['typeAlias']}:` : ''
+            const typeAliasPart = obj['typeAlias'] ? `${obj['typeAlias']}.` : ''
             const attrPart = `${obj['attribute']}`
             const langPart = obj['language'] ? `[${obj['language']}]` : ''
             const modPart = obj['modifiers'] ? `:${obj['modifiers']}` : ''
 
-            str += `{ ${typeAliasPart}${attrPart}${langPart}${modPart} }`
+            str += `{${typeAliasPart}${attrPart}${langPart}${modPart}}`
           } else if ('column' in obj) {
             str += `${this.ao(obj['column'])}`
           } else {

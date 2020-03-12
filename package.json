@@ -3,7 +3,7 @@
   "displayName": "my-vscode-hybris-tools",
   "publisher": "leochoi",
   "description": "My Hybris Tools",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "engines": {
     "vscode": "^1.42.0"
   },
@@ -43,7 +43,7 @@
           },
           "vscode-hybris-tools.hac.password": {
             "type": "string",
-            "default": "philipsspilihp",
+            "default": "nimda",
             "description": "The password used for logging in the HAC."
           },
           "vscode-hybris-tools.http.timeout": {
@@ -117,7 +117,8 @@
           "flexQuery"
         ],
         "extensions": [
-          ".fsql"
+          ".fsql",
+          ".fxs"
         ],
         "configuration": "./syntaxes/flexibleSearchQuery.language-configuration.json"
       },
@@ -153,7 +154,7 @@
         "command": "vscode-hybris-tools.flexibleSearchQuery.execute",
         "key": "f5",
         "mac": "f5",
-        "when": "editorTextFocus && resourceExtname == .fsql"
+        "when": "editorTextFocus && ( resourceExtname == .fsql || resourceExtname == .fxs )"
       },
       {
         "command": "vscode-hybris-tools.flexibleSearchQuery.executeRawSQL",

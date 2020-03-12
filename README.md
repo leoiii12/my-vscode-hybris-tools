@@ -1,20 +1,13 @@
 # my-vscode-hybris-tools README
 
-## Getting Started 
+### Getting Started 
 
-1. Install https://marketplace.visualstudio.com/items?itemName=leochoi.my-vscode-hybris-tools
-2. `Ctrl + Shift + P` → `Preferences: Open Settings (JSON)`
-   The default timeout is 10s, which is too short for some queries.
-   You may need the following settings to provide better autocompletion features.
-   ```json
-    {
-      "editor.suggest.snippetsPreventQuickSuggestions": false,
-      "editor.suggestSelection": "first",
-      "vscode-hybris-tools.http.timeout": 200000,
-      "vscode-hybris-tools.hac.url": "https://ecomdev01.hktv.com.hk:9002/hac"
-    }
-   ```
-3. `Ctrl + Shift + P` → `Developer: Reload Window`
+https://docs.google.com/presentation/d/1dWoE6_gfGKV0wwEU5XDJmwHHoOJiO5BATnyd7NPPLkU/edit#slide=id.p
+
+![](images/autocomplete.gif)<br><br>
+![](images/attributes.gif)<br><br>
+![](images/execute-fsql.gif)<br><br>
+![](images/translate-fsql-to-sql.gif)
 
 ## Features
 
@@ -35,13 +28,6 @@
 7. Auto fix actions for `1` as conditions instead of `1 = 1`
 8. Convert fsql to sql and fill in parameters
 
-### Screenshots
-
-https://docs.google.com/presentation/d/1dWoE6_gfGKV0wwEU5XDJmwHHoOJiO5BATnyd7NPPLkU/edit#slide=id.p
-
-![](images/autocomplete.gif)
-![](images/attributes.gif)
-
 ## Requirements
 
 Please provide a connectable hybris before using the extension.
@@ -61,7 +47,7 @@ The following is the default settings.
 {
   "vscode-hybris-tools.hac.url": "https://localhost:9012/hac",
   "vscode-hybris-tools.hac.username": "admin",
-  "vscode-hybris-tools.hac.password": "philipsspilihp",
+  "vscode-hybris-tools.hac.password": "nimda",
   "vscode-hybris-tools.http.timeout": 10000,
   "vscode-hybris-tools.http.useStrictSSL": false,
   "vscode-hybris-tools.offline.typeCodes": [
