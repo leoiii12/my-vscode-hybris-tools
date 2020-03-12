@@ -3,7 +3,7 @@
   "displayName": "my-vscode-hybris-tools",
   "publisher": "leochoi",
   "description": "My Hybris Tools",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "engines": {
     "vscode": "^1.42.0"
   },
@@ -154,7 +154,13 @@
         "command": "vscode-hybris-tools.flexibleSearchQuery.execute",
         "key": "f5",
         "mac": "f5",
-        "when": "editorTextFocus && ( resourceExtname == .fsql || resourceExtname == .fxs )"
+        "when": "editorTextFocus && resourceExtname == .fsql"
+      },
+      {
+        "command": "vscode-hybris-tools.flexibleSearchQuery.execute",
+        "key": "f5",
+        "mac": "f5",
+        "when": "editorTextFocus && resourceExtname == .fxs"
       },
       {
         "command": "vscode-hybris-tools.flexibleSearchQuery.executeRawSQL",
@@ -191,7 +197,7 @@
     "lint": "eslint src --ext ts",
     "pretest": "npm run compile && npm run compile:fsql && npm run lint",
     "test": "jest",
-    "test-install": "vsce package --baseImagesUrl https://it-catch.hktv.com.hk:10080/leochoi/vscode-hybris-tools/raw/master/ && code --install-extension my-vscode-hybris-tools-1.0.7.vsix --force"
+    "test-install": "vsce package --baseImagesUrl https://it-catch.hktv.com.hk:10080/leochoi/vscode-hybris-tools/raw/master/ && code --install-extension my-vscode-hybris-tools-1.0.9.vsix --force"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.16",

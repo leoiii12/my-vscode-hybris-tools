@@ -24,8 +24,8 @@ export namespace FsqlCommands {
     if (flexQueryExecResult.exception) {
       if (flexQueryExecResult.exception.message) {
         VscodeUtils.openTxtWindow(
-          JSON.stringify(flexQueryExecResult, null, 2),
-          `${new Date().getTime()}.exception.json`,
+          flexQueryExecResult.exception.message,
+          `${new Date().getTime()}.exception.txt`,
         )
       } else {
         VscodeUtils.openTxtWindow(
@@ -37,11 +37,13 @@ export namespace FsqlCommands {
       return false
     } else if (flexQueryExecResult.exceptionStackTrace) {
       VscodeUtils.openTxtWindow(
-        JSON.stringify(flexQueryExecResult.exceptionStackTrace, null, 2),
-        `${new Date().getTime()}.exceptionStackTrace.json`,
+        flexQueryExecResult.exceptionStackTrace,
+        `${new Date().getTime()}.exceptionStackTrace.txt`,
       )
 
       return false
+    } else {
+      console.log(flexQueryExecResult)
     }
 
     await VscodeUtils.openCsvWindow(
