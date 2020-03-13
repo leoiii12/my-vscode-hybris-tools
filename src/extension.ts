@@ -48,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
   /**
    * GroovyFS
    */
-  const groovyFs = new GroovyFS(hacUtils)
+  const groovyFs = new GroovyFS([new HacUtils(), new HacUtils()])
   context.subscriptions.push(
     vscode.workspace.registerFileSystemProvider('groovyfs', groovyFs, {
       isCaseSensitive: true,
