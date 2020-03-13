@@ -2,20 +2,21 @@ import { Grammar } from 'nearley'
 import * as vscode from 'vscode'
 
 import { Config } from './config'
-import { FsqlCodeActionProvider } from './fsql/fsql-code-action-provider'
-import { FsqlCommands } from './fsql/fsql-commands'
-import { FsqlCompletionAttributeItemProvider } from './fsql/fsql-completion-attribute-item-provider'
-import { FsqlCompletionItemProvider } from './fsql/fsql-completion-item-provider'
-import { FsqlDefinitionProvider } from './fsql/fsql-definition-provider'
-import { FsqlDiagnosticProvider } from './fsql/fsql-diagnostic-provider'
-import { FsqlDocumentFormattingEditProvider } from './fsql/fsql-document-formatting-edit-provider'
-import { GroovyCommands } from './groovy/groovy-commands'
+import { FsqlCodeActionProvider } from './lang-fsql/fsql-code-action-provider'
+import { FsqlCommands } from './lang-fsql/fsql-commands'
+import { FsqlCompletionAttributeItemProvider } from './lang-fsql/fsql-completion-attribute-item-provider'
+import { FsqlCompletionItemProvider } from './lang-fsql/fsql-completion-item-provider'
+import { FsqlDefinitionProvider } from './lang-fsql/fsql-definition-provider'
+import { FsqlDiagnosticProvider } from './lang-fsql/fsql-diagnostic-provider'
+import { FsqlDocumentFormattingEditProvider } from './lang-fsql/fsql-document-formatting-edit-provider'
+import { GroovyCommands } from './lang-groovy/groovy-commands'
 import { HacUtils } from './hac-utils'
-import { ImpExCommands } from './imp-ex/imp-ex-commands'
+import { ImpExCommands } from './lang-imp-ex/imp-ex-commands'
 import { InternalCaches } from './internal-caches'
-import { MemFS } from './memfs'
+import { MemFS } from './fs/memfs'
 import { VscodeUtils } from './vscode-utils'
-import { SqlDocumentFormattingEditProvider } from './sql/sql-document-formatting-edit-provider'
+import { SqlDocumentFormattingEditProvider } from './lang-sql/sql-document-formatting-edit-provider'
+import { GroovyFS } from './fs/groovyfs'
 
 const fsqlGrammar = require('../syntaxes/flexibleSearchQuery.js')
 const fsqlMooRules = require('../syntaxes/flexibleSearchQuery.moo-rules.js')
@@ -35,12 +36,30 @@ export function activate(context: vscode.ExtensionContext) {
   initCachesWithProgress(hacUtils)
 
   /**
-   * MemFS - File System Provider
+   * MemFS
    */
   const memFs = new MemFS()
   context.subscriptions.push(
     vscode.workspace.registerFileSystemProvider('memfs', memFs, {
       isCaseSensitive: true,
+    }),
+  )
+
+  /**
+   * GroovyFS
+   */
+  const groovyFs = new GroovyFS(hacUtils)
+  context.subscriptions.push(
+    vscode.workspace.registerFileSystemProvider('groovyfs', groovyFs, {
+      isCaseSensitive: true,
+    }),
+  )
+  context.subscriptions.push(
+    vscode.commands.registerCommand('vscode-hybris-tools.groovyfs.init', _ => {
+      vscode.workspace.updateWorkspaceFolders(1, 0, {
+        uri: vscode.Uri.parse('groovyfs:/'),
+        name: 'GroovyFS',
+      })
     }),
   )
 

@@ -1,4 +1,4 @@
-import { FsqlFormatter } from '../../../fsql/internal/fsql-formatter'
+import { FsqlFormatter } from '../../../lang-fsql/internal/fsql-formatter'
 import { Parser } from 'nearley'
 import { kases } from './assests'
 

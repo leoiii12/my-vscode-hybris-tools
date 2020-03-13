@@ -11,6 +11,8 @@
     "Other"
   ],
   "activationEvents": [
+    "onFileSystem:groovyfs",
+    "onCommand:vscode-hybris-tools.groovyfs.init",
     "onCommand:vscode-hybris-tools.flexibleSearchQuery.execute",
     "onCommand:vscode-hybris-tools.flexibleSearchQuery.executeRawSQL",
     "onCommand:vscode-hybris-tools.flexibleSearchQuery.translateToRawSQL",
@@ -68,6 +70,10 @@
       }
     ],
     "commands": [
+      {
+				"command": "vscode-hybris-tools.groovyfs.init",
+				"title": "Hybris: Init GroovyFS"
+			},
       {
         "command": "vscode-hybris-tools.flexibleSearchQuery.execute",
         "title": "Hybris: Execute FSQL"
