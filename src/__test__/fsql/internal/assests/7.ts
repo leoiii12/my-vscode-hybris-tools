@@ -177,62 +177,62 @@ WHERE
   and 1 = 1
 **
 SELECT
-  { so:user },
-  { so:code },
-  { product:merchantProductID },
+  {so.user},
+  {so.code},
+  {product.merchantProductID},
   ({{
     SELECT
-      GROUP_CONCAT(DISTINCT { cat:code })
+      GROUP_CONCAT(DISTINCT {cat.code})
     FROM
       {
         HktvProduct AS p
-        JOIN CategoryProductRelation AS cpr ON { cpr:target } = { p:pk }
-        JOIN Category AS cat ON { cat:pk } = { cpr:source }
-        LEFT JOIN CategoryCategoryRelation AS ccr ON { ccr:target } = { cat:pk }
-        LEFT JOIN Category AS superCat ON { superCat:pk } = { ccr:source }
+        JOIN CategoryProductRelation AS cpr ON {cpr.target} = {p.pk}
+        JOIN Category AS cat ON {cat.pk} = {cpr.source}
+        LEFT JOIN CategoryCategoryRelation AS ccr ON {ccr.target} = {cat.pk}
+        LEFT JOIN Category AS superCat ON {superCat.pk} = {ccr.source}
       }
     WHERE
       (
-        { p:pk } = { product:baseproduct }
+        {p.pk} = {product.baseproduct}
         AND (
-          { cat:isBrand } IS NULL
-          OR { cat:isBrand } = FALSE
+          {cat.isBrand} IS NULL
+          OR {cat.isBrand} = FALSE
         )
-        AND upper({ superCat:code }) NOT LIKE upper('%promo%')
-        AND substring({ cat:code }, 1, 1) <> '_'
+        AND upper({superCat.code}) NOT LIKE upper('%promo%')
+        AND substring({cat.code}, 1, 1) <> '_'
       )
   }}),
-  substring({ product:code }, 12),
-  replace({ product:name[en]:o }, '"', ''),
-  replace({ product:name[zh]:o }, '"', ''),
+  substring({product.code}, 12),
+  replace({product.name[en]:o}, '"', ''),
+  replace({product.name[zh]:o}, '"', ''),
   hktvReturnRequestTable.requestCode,
   hktvReturnRequestTable.rWaybill,
   hktvReturnRequestTable.pickupDateTime,
   hktvReturnRequestTable.returnStatus AS entryStatusCode,
   hktvReturnRequestTable.returnReason AS entryReturnReason,
   hktvReturnRequestTable.expectedQuantity AS entryExpectedQuantity,
-  round(ifnull({ originalConsignmentEntry:shippedQuantity }, 0), 2),
+  round(ifnull({originalConsignmentEntry.shippedQuantity}, 0), 2),
   (
-    round(ifnull({ originalOrderEntry:basePrice }, 0), 2)
+    round(ifnull({originalOrderEntry.basePrice}, 0), 2)
     * -1
   ),
   (
     round((
       (
-        ifnull({ originalOrderEntry:totalPrice }, 0)
-        / ifnull({ originalOrderEntry:quantity }, 0)
+        ifnull({originalOrderEntry.totalPrice}, 0)
+        / ifnull({originalOrderEntry.quantity}, 0)
       )
-      * ifnull({ originalConsignmentEntry:shippedQuantity }, 0)
+      * ifnull({originalConsignmentEntry.shippedQuantity}, 0)
     ), 2)
     * -1
   ),
-  { originalConsignmentStatus:code },
-  DATE_FORMAT({ originalConsignment:modifiedtime }, '%Y-%m-%d %H:%i:%s'),
-  { originalConsignmentEntry:pk },
-  { originalConsignment:code },
-  { originalConsignment:trackingID },
+  {originalConsignmentStatus.code},
+  DATE_FORMAT({originalConsignment.modifiedtime}, '%Y-%m-%d %H:%i:%s'),
+  {originalConsignmentEntry.pk},
+  {originalConsignment.code},
+  {originalConsignment.trackingID},
   CASE
-    WHEN { po:posOrderNumber } IS NOT NULL THEN CONCAT('#', { po:posOrderNumber })
+    WHEN {po.posOrderNumber} IS NOT NULL THEN CONCAT('#', {po.posOrderNumber})
     ELSE ''
   END AS posOrderNumber,
   DATE_FORMAT(hktvReturnRequestTable.modifiedtime, '%Y-%m-%d %H:%i:%s') AS modified_date,
@@ -243,7 +243,7 @@ SELECT
   END AS accepted_by,
   hktvReturnRequestTable.refundAmtByCC,
   hktvReturnRequestTable.refundAmtByMallDollar,
-  IFNULL({ bpvp:code }, '') AS "bundle_set",
+  IFNULL({bpvp.code}, '') AS "bundle_set",
   hktvReturnRequestTable.refundAmtByCoupon,
   DATE_FORMAT(hktvReturnRequestTable.acceptedTime, '%Y-%m-%d %H:%i:%s') AS accepted_time,
   hktvReturnRequestTable.refundValue
@@ -254,38 +254,38 @@ FROM
     FROM
       ({{
         SELECT
-          { pk },
-          { code } AS requestCode,
-          { parentRequest } AS parentRequest,
-          { ct1:code } AS typeCode,
-          { refundMethod:code } AS refundMethodCode,
-          { ore:code } AS requestStatus,
-          { hktvReturnRequest:returnWaybillNumber } AS rWaybill,
-          { hktvReturnRequest:pickupDateTime } AS pickupDateTime,
-          { r:modifiedtime } AS modifiedtime,
-          { HktvRefundEntry:originalConsignmentEntry } AS originalConsignmentEntryPk,
-          { HktvRefundEntry:reportReason } AS reportReasonPk,
-          { HKTVReturnEntryReturnStatus:code } AS returnStatus,
-          { HktvRefundEntry:expectedQuantity } AS expectedQuantity,
-          { HktvRefundEntry:returnReason } AS returnReason,
-          { HktvRefundEntry:refundAmtByCC } AS refundAmtByCC,
+          {pk},
+          {code} AS requestCode,
+          {parentRequest} AS parentRequest,
+          {ct1.code} AS typeCode,
+          {refundMethod.code} AS refundMethodCode,
+          {ore.code} AS requestStatus,
+          {hktvReturnRequest.returnWaybillNumber} AS rWaybill,
+          {hktvReturnRequest.pickupDateTime} AS pickupDateTime,
+          {r.modifiedtime} AS modifiedtime,
+          {HktvRefundEntry.originalConsignmentEntry} AS originalConsignmentEntryPk,
+          {HktvRefundEntry.reportReason} AS reportReasonPk,
+          {HKTVReturnEntryReturnStatus.code} AS returnStatus,
+          {HktvRefundEntry.expectedQuantity} AS expectedQuantity,
+          {HktvRefundEntry.returnReason} AS returnReason,
+          {HktvRefundEntry.refundAmtByCC} AS refundAmtByCC,
           (
-            { HktvRefundEntry:refundAmtByCredit }
-            + { HktvRefundEntry:refundAmtByPaidVoucher }
-            + { HktvRefundEntry:refundCCAmtByCredit }
+            {HktvRefundEntry.refundAmtByCredit}
+            + {HktvRefundEntry.refundAmtByPaidVoucher}
+            + {HktvRefundEntry.refundCCAmtByCredit}
           ) AS refundAmtByMallDollar,
-          { HktvRefundEntry:refundAmtByCoupon } AS refundAmtByCoupon,
-          { HktvRefundEntry:acceptedTime } AS acceptedTime,
-          { HktvRefundEntry:refundValue } AS refundValue
+          {HktvRefundEntry.refundAmtByCoupon} AS refundAmtByCoupon,
+          {HktvRefundEntry.acceptedTime} AS acceptedTime,
+          {HktvRefundEntry.refundValue} AS refundValue
         FROM
           {
             hktvRefundRequest! AS r
-            LEFT JOIN ComposedType AS ct1 ON { r:itemType } = { ct1:pk }
-            LEFT JOIN RefundMethod AS refundMethod ON { r:refundMethod } = { refundMethod:pk }
-            LEFT JOIN OrderReturnEntryStatus AS ore ON { r:returnStatus } = { ore:pk }
-            LEFT JOIN hktvReturnRequest AS hktvReturnRequest ON { r:siblingReturnRequest } = { hktvReturnRequest:pk }
-            LEFT JOIN HktvRefundEntry AS HktvRefundEntry ON { HktvRefundEntry:returnRequest } = { r:pk }
-            LEFT JOIN returnStatus AS HKTVReturnEntryReturnStatus ON { HktvRefundEntry:status } = { HKTVReturnEntryReturnStatus:pk }
+            LEFT JOIN ComposedType AS ct1 ON {r.itemType} = {ct1.pk}
+            LEFT JOIN RefundMethod AS refundMethod ON {r.refundMethod} = {refundMethod.pk}
+            LEFT JOIN OrderReturnEntryStatus AS ore ON {r.returnStatus} = {ore.pk}
+            LEFT JOIN hktvReturnRequest AS hktvReturnRequest ON {r.siblingReturnRequest} = {hktvReturnRequest.pk}
+            LEFT JOIN HktvRefundEntry AS HktvRefundEntry ON {HktvRefundEntry.returnRequest} = {r.pk}
+            LEFT JOIN returnStatus AS HKTVReturnEntryReturnStatus ON {HktvRefundEntry.status} = {HKTVReturnEntryReturnStatus.pk}
           }
       }}) AS y
     UNION ALL
@@ -294,57 +294,57 @@ FROM
       FROM
         ({{
           SELECT
-            { pk },
-            { code } AS requestCode,
-            { parentRequest } AS parentRequest,
-            { ct1:code } AS typeCode,
-            { refundMethod:code } AS refundMethodCode,
-            { ore:code } AS requestStatus,
-            { hktvReturnRequest:returnWaybillNumber } AS rWaybill,
-            { hktvReturnRequest:pickupDateTime } AS pickupDateTime,
-            { r:modifiedtime } AS modifiedtime,
-            { HktvReplacementEntry:originalConsignmentEntry } AS originalConsignmentEntryPk,
-            { HktvReplacementEntry:reportReason } AS reportReasonPk,
-            { HKTVReturnEntryReturnStatus:code } AS returnStatus,
-            { HktvReplacementEntry:expectedQuantity } AS expectedQuantity,
-            { HktvReplacementEntry:returnReason } AS returnReason,
+            {pk},
+            {code} AS requestCode,
+            {parentRequest} AS parentRequest,
+            {ct1.code} AS typeCode,
+            {refundMethod.code} AS refundMethodCode,
+            {ore.code} AS requestStatus,
+            {hktvReturnRequest.returnWaybillNumber} AS rWaybill,
+            {hktvReturnRequest.pickupDateTime} AS pickupDateTime,
+            {r.modifiedtime} AS modifiedtime,
+            {HktvReplacementEntry.originalConsignmentEntry} AS originalConsignmentEntryPk,
+            {HktvReplacementEntry.reportReason} AS reportReasonPk,
+            {HKTVReturnEntryReturnStatus.code} AS returnStatus,
+            {HktvReplacementEntry.expectedQuantity} AS expectedQuantity,
+            {HktvReplacementEntry.returnReason} AS returnReason,
             0 AS refundAmtByCC,
             0 AS refundAmtByMallDollar,
             0 AS refundAmtByCoupon,
-            { HktvReplacementEntry:acceptedTime } AS acceptedTime,
-            { HktvReplacementEntry:refundValue } AS refundValue
+            {HktvReplacementEntry.acceptedTime} AS acceptedTime,
+            {HktvReplacementEntry.refundValue} AS refundValue
           FROM
             {
               hktvReplacementRequest! AS r
-              LEFT JOIN ComposedType AS ct1 ON { r:itemType } = { ct1:pk }
-              LEFT JOIN RefundMethod AS refundMethod ON { r:refundMethod } = { refundMethod:pk }
-              LEFT JOIN OrderReturnEntryStatus AS ore ON { r:returnStatus } = { ore:pk }
-              LEFT JOIN hktvReturnRequest AS hktvReturnRequest ON { r:siblingReturnRequest } = { hktvReturnRequest:pk }
-              LEFT JOIN HktvReplacementEntry AS HktvReplacementEntry ON { HktvReplacementEntry:returnRequest } = { r:pk }
-              LEFT JOIN returnStatus AS HKTVReturnEntryReturnStatus ON { HktvReplacementEntry:status } = { HKTVReturnEntryReturnStatus:pk }
+              LEFT JOIN ComposedType AS ct1 ON {r.itemType} = {ct1.pk}
+              LEFT JOIN RefundMethod AS refundMethod ON {r.refundMethod} = {refundMethod.pk}
+              LEFT JOIN OrderReturnEntryStatus AS ore ON {r.returnStatus} = {ore.pk}
+              LEFT JOIN hktvReturnRequest AS hktvReturnRequest ON {r.siblingReturnRequest} = {hktvReturnRequest.pk}
+              LEFT JOIN HktvReplacementEntry AS HktvReplacementEntry ON {HktvReplacementEntry.returnRequest} = {r.pk}
+              LEFT JOIN returnStatus AS HKTVReturnEntryReturnStatus ON {HktvReplacementEntry.status} = {HKTVReturnEntryReturnStatus.pk}
             }
         }}) AS z
   }}) AS hktvReturnRequestTable,
   {
     consignmentEntry AS originalConsignmentEntry
-    LEFT JOIN Consignment AS originalConsignment ON { originalConsignmentEntry:consignment } = { originalConsignment:pk }
-    LEFT JOIN orderEntry AS originalOrderEntry ON { originalConsignmentEntry:orderEntry } = { originalOrderEntry:pk }
-    LEFT JOIN hktvVariantProduct AS product ON { originalOrderEntry:product } = { product:pk }
-    LEFT JOIN ConsignmentStatus AS originalConsignmentStatus ON { originalConsignmentStatus:pk } = { originalConsignment:status }
-    JOIN SubOrder! AS so ON { so:pk } = { originalOrderEntry:order }
-    LEFT JOIN Order! AS po ON { po:pk } = { so:parentOrder }
+    LEFT JOIN Consignment AS originalConsignment ON {originalConsignmentEntry.consignment} = {originalConsignment.pk}
+    LEFT JOIN orderEntry AS originalOrderEntry ON {originalConsignmentEntry.orderEntry} = {originalOrderEntry.pk}
+    LEFT JOIN hktvVariantProduct AS product ON {originalOrderEntry.product} = {product.pk}
+    LEFT JOIN ConsignmentStatus AS originalConsignmentStatus ON {originalConsignmentStatus.pk} = {originalConsignment.status}
+    JOIN SubOrder! AS so ON {so.pk} = {originalOrderEntry.order}
+    LEFT JOIN Order! AS po ON {po.pk} = {so.parentOrder}
     LEFT JOIN OrderEntry AS poe ON (
-      { poe:order } = { po:pk }
-      AND { poe:entryNumber } = { originalOrderEntry:entryNumber }
+      {poe.order} = {po.pk}
+      AND {poe.entryNumber} = {originalOrderEntry.entryNumber}
     )
-    LEFT JOIN OrderEntry AS bpoe ON { bpoe:pk } = { poe:bundleParentEntry }
-    LEFT JOIN HktvVariantProduct AS bpvp ON { bpvp:pk } = { bpoe:product }
+    LEFT JOIN OrderEntry AS bpoe ON {bpoe.pk} = {poe.bundleParentEntry}
+    LEFT JOIN HktvVariantProduct AS bpvp ON {bpvp.pk} = {bpoe.product}
   }
 WHERE
   (
     1 = 1
-    AND hktvReturnRequestTable.originalConsignmentEntryPk = { originalConsignmentEntry:pk }
-    AND { po:replenishmentOrderStore } IS NULL
+    AND hktvReturnRequestTable.originalConsignmentEntryPk = {originalConsignmentEntry.pk}
+    AND {po.replenishmentOrderStore} IS NULL
     AND hktvReturnRequestTable.returnStatus NOT IN ('NEW')
     AND hktvReturnRequestTable.acceptedTime >= ?startDate
     AND 1 = 1

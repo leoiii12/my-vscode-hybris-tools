@@ -13,16 +13,16 @@ SELECT
 FROM
   ({{
     SELECT
-      SUM({ totalPrice }) AS totprice,
-      SUM({ quantity }) AS totquantity
+      SUM({totalPrice}) AS totprice,
+      SUM({quantity}) AS totquantity
     FROM
       { OrderEntry }
     WHERE
       (
-        { creationtime } >= ?startDate
-        AND { creationtime } < ?endDate
+        {creationtime} >= ?startDate
+        AND {creationtime} < ?endDate
       )
     GROUP BY
-      { order }
+      {order}
   }}) AS torderentries
 `

@@ -6,7 +6,7 @@ FROM
   { HktvVariantProduct    ! }
 **
 SELECT
-  { p:name[zh] } AS a
+  {p.name[zh]} AS a
 FROM
   { HktvVariantProduct! }
 `

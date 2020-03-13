@@ -8,12 +8,12 @@ SELECT {p:PK}, {c:code} FROM
 }
 **
 SELECT
-  { p:PK },
-  { c:code }
+  {p.PK},
+  {c.code}
 FROM
   {
     Product AS p
-    JOIN CategoryProductRelation AS rel ON { p:PK } = { rel:target }
-    JOIN Category AS c ON { rel:source } = { c:PK }
+    JOIN CategoryProductRelation AS rel ON {p.PK} = {rel.target}
+    JOIN Category AS c ON {rel.source} = {c.PK}
   }
 `

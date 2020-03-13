@@ -18,13 +18,13 @@ SELECT
 FROM
   ({{
     SELECT
-      { p:PK } AS PK,
-      { c:code } AS CatCode
+      {p.PK} AS PK,
+      {c.code} AS CatCode
     FROM
       {
         Product AS p
-        JOIN CategoryProductRelation AS rel ON { p:PK } = { rel:target }
-        JOIN Category AS c ON { rel:source } = { c:PK }
+        JOIN CategoryProductRelation AS rel ON {p.PK} = {rel.target}
+        JOIN Category AS c ON {rel.source} = {c.PK}
       }
   }}) AS INNERTABLE
 `
