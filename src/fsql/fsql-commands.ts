@@ -66,22 +66,29 @@ export namespace FsqlCommands {
       VscodeUtils.getSelectedTextOrDocumentText(editor),
     )
 
-    if (
-      flexQueryExecResult.exception ||
-      flexQueryExecResult.exceptionStackTrace
-    ) {
-      console.log(flexQueryExecResult)
+    if (flexQueryExecResult.exception) {
+      if (flexQueryExecResult.exception.message) {
+        VscodeUtils.openTxtWindow(
+          flexQueryExecResult.exception.message,
+          `${new Date().getTime()}.exception.txt`,
+        )
+      } else {
+        VscodeUtils.openTxtWindow(
+          JSON.stringify(flexQueryExecResult.exception, null, 2),
+          `${new Date().getTime()}.exception.json`,
+        )
+      }
 
-      VscodeUtils.openTxtWindow(
-        JSON.stringify(flexQueryExecResult.exception, null, 2),
-        `${new Date().getTime()}.exception.json`,
-      )
+      return false
+    } else if (flexQueryExecResult.exceptionStackTrace) {
       VscodeUtils.openTxtWindow(
         flexQueryExecResult.exceptionStackTrace,
         `${new Date().getTime()}.exceptionStackTrace.txt`,
       )
 
       return false
+    } else {
+      console.log(flexQueryExecResult)
     }
 
     await VscodeUtils.openCsvWindow(
@@ -163,12 +170,34 @@ export namespace FsqlCommands {
       return false
     }
 
-    try {
-      let mySqlQuery = sqlQuery
+    const translatePkFsql = `
+      SELECT
+        {ct.pk},
+        {ct.code}
+      FROM
+        { ComposedType AS ct }
+      WHERE
+        {ct.pk} IN ($_PK_JOINED_STR)
+    `
+    const fsqlExecResult = await hacUtils.executeFlexibleSearch(
+      10000,
+      translatePkFsql.replace('$_PK_JOINED_STR', sqlQueryParameters.join(',')),
+    )
+    const pkSqls = fsqlExecResult.resultList.reduce((acc, result) => {
+      acc[
+        result[0]
+      ] = `SELECT pk FROM composedtypes WHERE InternalCode = '${result[1]}'`
+      return acc
+    }, {} as { [pk: string]: string })
 
-      for (const param of sqlQueryParameters) {
+    try {
+      let mySqlQuery = `${sqlQuery}`
+
+      for (const pk of sqlQueryParameters) {
+        const sqlOrPk = pk in pkSqls ? `(${pkSqls[pk]})` : pk
+
         if (mySqlQuery.includes('?')) {
-          mySqlQuery = mySqlQuery.replace('?', param)
+          mySqlQuery = mySqlQuery.replace('?', sqlOrPk)
         } else {
           throw new Error('No more values to replace parameters.')
         }

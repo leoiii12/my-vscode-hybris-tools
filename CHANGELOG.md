@@ -4,6 +4,11 @@ All notable changes to the "my-vscode-hybris-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.0.10
+
+- Sql  - Support formatting
+- Fsql - Enhanced fsql to sql translations
+
 ## 1.0.9
 
 - Fixed some bugs

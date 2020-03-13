@@ -15,6 +15,7 @@ import { ImpExCommands } from './imp-ex/imp-ex-commands'
 import { InternalCaches } from './internal-caches'
 import { MemFS } from './memfs'
 import { VscodeUtils } from './vscode-utils'
+import { SqlDocumentFormattingEditProvider } from './sql/sql-document-formatting-edit-provider'
 
 const fsqlGrammar = require('../syntaxes/flexibleSearchQuery.js')
 const fsqlMooRules = require('../syntaxes/flexibleSearchQuery.moo-rules.js')
@@ -43,6 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
     }),
   )
 
+  registerSqlFeatures()
   registerFsqlFeatures()
 
   /**
@@ -168,6 +170,17 @@ export function activate(context: vscode.ExtensionContext) {
   //
   // *********************
 
+  function registerSqlFeatures() {
+    context.subscriptions.push(
+      vscode.languages.registerDocumentFormattingEditProvider(
+        {
+          language: 'sql',
+        },
+        new SqlDocumentFormattingEditProvider(),
+      ),
+    )
+  }
+
   function registerFsqlFeatures() {
     let fsqlDiagnosticCollection: vscode.DiagnosticCollection
 
@@ -204,9 +217,6 @@ export function activate(context: vscode.ExtensionContext) {
     )
     context.subscriptions.push(fsqlDiagnosticCollection)
 
-    /**
-     * CompletionItemProvider
-     */
     context.subscriptions.push(
       vscode.languages.registerCompletionItemProvider(
         {
