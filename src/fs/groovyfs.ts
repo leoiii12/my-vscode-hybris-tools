@@ -29,21 +29,15 @@ export class GroovyFS implements vscode.FileSystemProvider {
   async stat(uri: vscode.Uri): Promise<vscode.FileStat> {
     console.log(`[stat] - ${uri}`)
 
-    const res = await this._stat(uri)
+    const isPartial = uri.path.includes('.mvht-partial')
+    const parts = uri.toString().split('.mvht-partial')
+
+    const res = await this._stat(vscode.Uri.parse(parts[0]))
     if (res.exists === false) {
       throw vscode.FileSystemError.FileNotFound()
     }
 
-    if (res.type === '1') {
-      const file = new File(res.name)
-
-      file.type = vscode.FileType.File
-      file.ctime = res.ctime
-      file.mtime = res.mtime
-      file.size = res.size
-
-      return file
-    } else if (res.type === '2') {
+    if (res.type === '2' || (isPartial && parts[1].length === 0)) {
       const directory = new Directory(res.name)
 
       directory.type = vscode.FileType.Directory
@@ -52,6 +46,15 @@ export class GroovyFS implements vscode.FileSystemProvider {
       directory.size = res.size
 
       return directory
+    } else if (res.type === '1') {
+      const file = new File(res.name)
+
+      file.type = vscode.FileType.File
+      file.ctime = res.ctime
+      file.mtime = res.mtime
+      file.size = res.size
+
+      return file
     }
 
     throw vscode.FileSystemError.FileNotFound()
@@ -60,31 +63,46 @@ export class GroovyFS implements vscode.FileSystemProvider {
   async readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
     console.log(`[readDirectory] - ${uri}`)
 
-    let res = await this._readDirectory(uri)
+    if (uri.path.endsWith('.mvht-partial')) {
+      const { exists, numOfLines } = await this._readTextFileLinesCount(
+        vscode.Uri.parse(uri.toString().replace(/\.mvht\-partial$/, '')),
+      )
+      const paths = [] as [string, vscode.FileType][]
 
-    let paths: [string, vscode.FileType][] = []
+      const numOfPartialFiles = Math.ceil(numOfLines / MAX_NUM_LINES_IN_FILE)
+      for (let i = 0; i < numOfPartialFiles; i++) {
+        paths.push([`${i}`, vscode.FileType.File])
+      }
+
+      return paths
+    }
+
+    const res = await this._readDirectory(uri)
+
+    const paths = [] as [string, vscode.FileType][]
     paths.push(
-      ...res.files.reduce((acc, f) => {
-        if (f[1] > MAX_NUM_LINES_IN_FILE) {
-          const path = f[0].replace(uri.path, '')
-          const numOfPartialFiles = Math.ceil(f[1] / MAX_NUM_LINES_IN_FILE)
-
-          for (let i = 0; i < numOfPartialFiles; i++) {
-            acc.push([`${path}.mvht-partial-${i}`, vscode.FileType.File])
+      ...res.files
+        .filter(p => p[0] !== uri.path)
+        .map(([path, isTextFile]) => {
+          if (isTextFile === true) {
+            return [
+              `${path.replace(uri.path, '')}.mvht-partial`,
+              vscode.FileType.Directory,
+            ] as [string, vscode.FileType]
           }
-        } else {
-          acc.push([f[0].replace(uri.path, ''), vscode.FileType.File])
-        }
 
-        return acc
-      }, [] as [string, vscode.FileType][]),
+          return [path.replace(uri.path, ''), vscode.FileType.File] as [
+            string,
+            vscode.FileType,
+          ]
+        }),
     )
     paths.push(
       ...res.directories
         .filter(p => p[0] !== uri.path)
         .map(
-          f =>
-            [f[0].replace(uri.path, ''), vscode.FileType.Directory] as [
+          ([path, _]) =>
+            [path.replace(uri.path, ''), vscode.FileType.Directory] as [
               string,
               vscode.FileType,
             ],
@@ -101,8 +119,8 @@ export class GroovyFS implements vscode.FileSystemProvider {
   async readFile(uri: vscode.Uri): Promise<Uint8Array> {
     console.log(`[readFile] - ${uri}`)
 
-    if (uri.path.includes('.mvht-partial-') === true) {
-      const parts = uri.toString().split('.mvht-partial-')
+    if (uri.path.includes('.mvht-partial/') === true) {
+      const parts = uri.toString().split('.mvht-partial/')
       const start = parseInt(parts[1]) * MAX_NUM_LINES_IN_FILE
       const end = start + MAX_NUM_LINES_IN_FILE
 
@@ -153,11 +171,16 @@ export class GroovyFS implements vscode.FileSystemProvider {
     throw new Error('Method not implemented.')
   }
 
+  /**
+   *
+   * @param uri
+   * @returns [path, isTextFile][]
+   */
   private async _readDirectory(
     uri: vscode.Uri,
   ): Promise<{
-    directories: [string, number][]
-    files: [string, number][]
+    directories: [string, boolean][]
+    files: [string, boolean][]
   }> {
     const script = `
       import com.google.gson.Gson
@@ -167,45 +190,40 @@ export class GroovyFS implements vscode.FileSystemProvider {
       import java.nio.file.Paths
       import java.util.stream.Collectors
       import java.util.stream.Stream
-      
+
       Path path = Paths.get("$_FS_PATH")
       Stream<Path> walk = Files.walk(path, 1)
-      
+
       class Response {
           List<List<Serializable>> directories
           List<List<Serializable>> files
       }
-      
+
       try {
           def paths = walk.collect(Collectors.toList())
-      
+
           List<List<Serializable>> directories = paths
                   .stream()
                   .filter { p -> Files.isDirectory(p) }
-                  .map { x -> [x.toString(), 0] }
+                  .map { x -> [x.toString(), false] }
                   .collect(Collectors.toList())
-      
+
           List<List<Serializable>> files = paths
                   .stream()
                   .filter { p -> Files.isRegularFile(p) }
                   .map { p ->
                       if (Files.size(p) > 20 * 1024 * 1024 && Files.probeContentType(p).startsWith("text/")) {
-                          def linesStream = Files.lines(p)
-                          def linesCount = linesStream.count()
-      
-                          linesStream.close()
-      
-                          return [p.toString(), linesCount]
+                          return [p.toString(), true]
                       }
-      
-                      return [p.toString(), 0]
+
+                      return [p.toString(), false]
                   }
                   .collect(Collectors.toList())
-      
+
           def response = new Response()
           response.directories = directories
           response.files = files
-      
+
           new Gson().toJson(response)
       } catch (IOException e) {
           e.printStackTrace()
@@ -219,8 +237,8 @@ export class GroovyFS implements vscode.FileSystemProvider {
       script.replace('$_FS_PATH', uri.path),
     )
     const res = JSON.parse(execResult.executionResult) as {
-      directories: [string, number][]
-      files: [string, number][]
+      directories: [string, boolean][]
+      files: [string, boolean][]
     }
 
     return res
@@ -267,6 +285,90 @@ export class GroovyFS implements vscode.FileSystemProvider {
     const res = JSON.parse(execResult.executionResult) as {
       exists: boolean
       base64: string
+    }
+
+    return res
+  }
+
+  private async _readTextFileLinesCount(uri: vscode.Uri) {
+    const script = `
+      import com.google.gson.Gson
+
+      import java.nio.file.Files
+      import java.nio.file.Paths
+      import java.nio.file.Path
+
+      class Response {
+          long numOfLines
+          boolean exists
+      }
+
+      def path = Paths.get("$_FS_PATH")
+      if (Files.notExists(path)) {
+          def response = new Response()
+          response.exists = false
+
+          return new Gson().toJson(response)
+      }
+
+      def response = new Response()
+      response.numOfLines = countLines(path)
+      response.exists = true
+
+      return new Gson().toJson(response)
+
+      static countLines(Path p) {
+          final char NEW_LINE = '\\n'
+          final int C_SIZE = 8192
+
+          def inputStream = Files.newInputStream(p)
+          def bufferedInputStream = new BufferedInputStream(inputStream)
+          try {
+              byte[] c = new byte[C_SIZE]
+
+              int readChars = bufferedInputStream.read(c)
+              if (readChars == -1) {
+                  // bail out if nothing to read
+                  return 0
+              }
+
+              // make it easy for the optimizer to tune this loop
+              int count = 0
+              while (readChars == C_SIZE) {
+                  for (int i = 0; i < C_SIZE;) {
+                      if (c[i++] == NEW_LINE) {
+                          ++count
+                      }
+                  }
+                  readChars = bufferedInputStream.read(c)
+              }
+
+              // count remaining characters
+              while (readChars != -1) {
+                  System.out.println(readChars)
+                  for (int i = 0; i < readChars; ++i) {
+                      if (c[i] == NEW_LINE) {
+                          ++count
+                      }
+                  }
+                  readChars = bufferedInputStream.read(c)
+              }
+
+              return count == 0 ? 1 : count
+          } finally {
+              bufferedInputStream.close()
+              inputStream.close()
+          }
+      }
+    `
+
+    const execResult = await this.getHacUtils().executeGroovy(
+      false,
+      script.replace('$_FS_PATH', uri.path),
+    )
+    const res = JSON.parse(execResult.executionResult) as {
+      exists: boolean
+      numOfLines: number
     }
 
     return res
@@ -372,12 +474,7 @@ export class GroovyFS implements vscode.FileSystemProvider {
 
     const execResult = await this.getHacUtils().executeGroovy(
       false,
-      script.replace(
-        '$_FS_PATH',
-        uri.path.includes('.mvht-partial-') === true
-          ? uri.path.split('.mvht-partial-')[0]
-          : uri.path,
-      ),
+      script.replace('$_FS_PATH', uri.path),
     )
     const res = JSON.parse(execResult.executionResult) as {
       type: '1' | '2'

@@ -55,12 +55,31 @@ export function activate(context: vscode.ExtensionContext) {
     }),
   )
   context.subscriptions.push(
-    vscode.commands.registerCommand('vscode-hybris-tools.groovyfs.init', _ => {
-      vscode.workspace.updateWorkspaceFolders(1, 0, {
-        uri: vscode.Uri.parse('groovyfs:/'),
-        name: 'GroovyFS',
-      })
-    }),
+    vscode.commands.registerCommand(
+      'vscode-hybris-tools.groovyfs.init',
+      async _ => {
+        const options: vscode.InputBoxOptions = {
+          prompt: 'Path',
+          value: '/',
+        }
+
+        const inputBoxValue = await vscode.window.showInputBox(options)
+        if (inputBoxValue === undefined) {
+          return
+        }
+
+        vscode.workspace.updateWorkspaceFolders(
+          vscode.workspace.workspaceFolders === undefined
+            ? 0
+            : vscode.workspace.workspaceFolders.length,
+          0,
+          {
+            uri: vscode.Uri.parse(`groovyfs:${inputBoxValue}`),
+            name: `GroovyFS - ${inputBoxValue}`,
+          },
+        )
+      },
+    ),
   )
 
   registerSqlFeatures()
