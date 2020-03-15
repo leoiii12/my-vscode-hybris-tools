@@ -4,12 +4,12 @@ All notable changes to the "my-vscode-hybris-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## 
+## 1.1.0
 
 - General - Init GroovyFS (Virtual File System)
 - General - Fixed the focus point after executions of Groovy, Fsql
 - General - Added the active HAC url and the active username as an status bar item
-- 
+- General - Added a confirmation box before the first execution of Groovy, Fsql
 
 ## 1.0.10
 
