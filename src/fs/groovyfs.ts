@@ -112,10 +112,6 @@ export class GroovyFS implements vscode.FileSystemProvider {
     return paths
   }
 
-  createDirectory(uri: vscode.Uri): void | Thenable<void> {
-    throw new Error('Method not implemented.')
-  }
-
   async readFile(uri: vscode.Uri): Promise<Uint8Array> {
     console.log(`[readFile] - ${uri}`)
 
@@ -133,8 +129,8 @@ export class GroovyFS implements vscode.FileSystemProvider {
         throw vscode.FileSystemError.FileNotFound()
       }
 
-      let buffer = Buffer.alloc(res.joinedLines.length, 'utf-8')
-      buffer.write(res.joinedLines, 'utf-8')
+      let buffer = Buffer.alloc(res.base64.length, 'base64')
+      buffer.write(res.base64, 'base64')
 
       return buffer
     }
@@ -144,8 +140,14 @@ export class GroovyFS implements vscode.FileSystemProvider {
       throw vscode.FileSystemError.FileNotFound()
     }
 
-    let buffer: Buffer = new Buffer(res.base64, 'base64')
+    let buffer = Buffer.alloc(res.base64.length, 'base64')
+    buffer.write(res.base64, 'base64')
+
     return buffer
+  }
+
+  createDirectory(uri: vscode.Uri): void | Thenable<void> {
+    throw new Error('Method not implemented.')
   }
 
   writeFile(
@@ -269,10 +271,8 @@ export class GroovyFS implements vscode.FileSystemProvider {
           return new Gson().toJson(response)
       }
       
-      def base64 = Base64.encodeBase64(Files.readAllBytes(path))
-      
       def response = new Response()
-      response.base64 = new String(base64, StandardCharsets.US_ASCII)
+      response.base64 = Base64.encodeBase64String(Files.readAllBytes(path))
       response.exists = true
       
       new Gson().toJson(response)
@@ -378,37 +378,38 @@ export class GroovyFS implements vscode.FileSystemProvider {
     const script = `
       import com.google.gson.Gson
       import org.apache.commons.codec.binary.Base64
-      import org.apache.commons.io.FileUtils
-
-      import java.nio.charset.StandardCharsets
+      
+      import java.nio.charset.Charset
       import java.nio.file.Files
       import java.nio.file.Paths
       import java.util.stream.Collectors
-
+      
       class Response {
-          String joinedLines
+          String base64
           boolean exists
       }
-
+      
       def start = $_START
       def end = $_END
-
+      
       def path = Paths.get("$_FS_PATH")
       if (Files.notExists(path)) {
           def response = new Response()
           response.exists = false
-
+      
           return new Gson().toJson(response)
       }
-
+      
       def response = new Response()
       def linesStream = Files.lines(path)
-
-      response.joinedLines = linesStream.skip(start).limit(end - start).collect(Collectors.joining("\\n"))
+      
+      response.base64 = Base64.encodeBase64String(
+              linesStream.skip(start).limit(end - start).collect(Collectors.joining("\\n")).getBytes(Charset.forName("UTF-8"))
+      )
       response.exists = true
-
+      
       linesStream.close()
-
+      
       new Gson().toJson(response)
     `
 
@@ -421,7 +422,7 @@ export class GroovyFS implements vscode.FileSystemProvider {
     )
     const res = JSON.parse(execResult.executionResult) as {
       exists: boolean
-      joinedLines: string
+      base64: string
     }
 
     return res
