@@ -11,19 +11,21 @@ https://docs.google.com/presentation/d/1dWoE6_gfGKV0wwEU5XDJmwHHoOJiO5BATnyd7NPP
 
 ## Features
 
-1. Validate fsql syntax
-2. Execute fsql (`F5`)
+### General
+
+1. Execute fsql (`F5`)
+2. Convert fsql to sql and fill in parameters
 3. Execute groovy (`F5`)
 4. Execute and Commit groovy (`Shift + F5`)
-5. Import ImpEx
-6. Autocompletion for hybris types
-7. Autocompletion for hybris type attributes
-8. Autocompletion for subqueries
-9. fsql Formatter
-10. See the definition of a hybris type
-11. See the definition of a alias
-12. Auto fix actions for `1` as conditions instead of `1 = 1`
-13. Convert fsql to sql and fill in parameters
+5. Import ImpEx (`F5`)
+
+### Fsql
+
+1. Validate fsql syntax
+2. Autocompletion for hybris types, hybris type attributes
+3. fsql Formatter
+4. See the definition of a hybris type, an alias
+5. Auto fix actions for `1` as conditions instead of `1 = 1`
 
 ### Beta
 
