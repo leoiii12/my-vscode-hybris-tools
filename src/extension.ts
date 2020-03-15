@@ -75,7 +75,10 @@ export function activate(context: vscode.ExtensionContext) {
           return
         }
 
-        const normalizedInputBoxValue = inputBoxValue.endsWith('/') && inputBoxValue.length > 1 ? inputBoxValue.replace(/\/$/, '') : inputBoxValue
+        const normalizedInputBoxValue =
+          inputBoxValue.endsWith('/') && inputBoxValue.length > 1
+            ? inputBoxValue.replace(/\/$/, '')
+            : inputBoxValue
 
         vscode.workspace.updateWorkspaceFolders(
           vscode.workspace.workspaceFolders === undefined
@@ -332,7 +335,7 @@ export function activate(context: vscode.ExtensionContext) {
     const promise = internalCaches.init(hacUtils).catch(() => {
       vscode.window.showErrorMessage(
         "Can't retrieve types from Hybris. Please make sure it is running. \n" +
-        'vscode-hybris-tools.offline.typeCodes is in use.',
+          'vscode-hybris-tools.offline.typeCodes is in use.',
       )
 
       internalCaches.fsqlComposedTypeCodes = Config.getOfflineTypeCodes()
@@ -348,4 +351,4 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() { }
+export function deactivate() {}
