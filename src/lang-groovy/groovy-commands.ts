@@ -10,25 +10,29 @@ export namespace GroovyCommands {
       return
     }
 
+    const activeDocument = editor.document
+    const activeViewColumn = editor.viewColumn
+
     const groovyScriptExecResult = await hacUtils.executeGroovy(
       false,
       VscodeUtils.getSelectedTextOrDocumentText(editor),
     )
 
-    VscodeUtils.openTxtWindow(
+    await VscodeUtils.openTxtWindow(
       groovyScriptExecResult.outputText,
       `${new Date().getTime()}.output.txt`,
     )
-    VscodeUtils.openTxtWindow(
+    await VscodeUtils.openTxtWindow(
       groovyScriptExecResult.executionResult,
       `${new Date().getTime()}.executionResult.txt`,
     )
     if (groovyScriptExecResult.stacktraceText !== '') {
-      VscodeUtils.openTxtWindow(
+      await VscodeUtils.openTxtWindow(
         groovyScriptExecResult.stacktraceText,
         `${new Date().getTime()}.stacktraceText.txt`,
       )
     }
+    await vscode.window.showTextDocument(activeDocument, activeViewColumn)
   }
 
   export async function executeAndCommit(hacUtils: HacUtils) {
@@ -37,24 +41,28 @@ export namespace GroovyCommands {
       return
     }
 
+    const activeDocument = editor.document
+    const activeViewColumn = editor.viewColumn
+
     const groovyScriptExecResult = await hacUtils.executeGroovy(
       true,
       VscodeUtils.getSelectedTextOrDocumentText(editor),
     )
 
-    VscodeUtils.openTxtWindow(
+    await VscodeUtils.openTxtWindow(
       groovyScriptExecResult.outputText,
       `${new Date().getTime()}.output.txt`,
     )
-    VscodeUtils.openTxtWindow(
+    await VscodeUtils.openTxtWindow(
       groovyScriptExecResult.executionResult,
       `${new Date().getTime()}.executionResult.txt`,
     )
     if (groovyScriptExecResult.stacktraceText !== '') {
-      VscodeUtils.openTxtWindow(
+      await VscodeUtils.openTxtWindow(
         groovyScriptExecResult.stacktraceText,
         `${new Date().getTime()}.stacktraceText.txt`,
       )
     }
+    await vscode.window.showTextDocument(activeDocument, activeViewColumn)
   }
 }

@@ -172,7 +172,9 @@ export class FsqlCompletionItemProvider
         afterText,
       )
       if (results.length === 0) {
-        console.log('The syntax of the fsql may be wrong. Not able to parse.')
+        console.log(
+          '[getPossibleTokensIncrementally] - The syntax of the fsql may be wrong. Not able to parse.',
+        )
         return []
       }
 

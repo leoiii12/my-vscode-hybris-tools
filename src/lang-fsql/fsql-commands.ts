@@ -16,6 +16,9 @@ export namespace FsqlCommands {
       return false
     }
 
+    const activeDocument = editor.document
+    const activeViewColumn = editor.viewColumn
+
     const flexQueryExecResult = await hacUtils.executeFlexibleSearch(
       100000,
       VscodeUtils.getSelectedTextOrDocumentText(editor),
@@ -23,12 +26,12 @@ export namespace FsqlCommands {
 
     if (flexQueryExecResult.exception) {
       if (flexQueryExecResult.exception.message) {
-        VscodeUtils.openTxtWindow(
+        await VscodeUtils.openTxtWindow(
           flexQueryExecResult.exception.message,
           `${new Date().getTime()}.exception.txt`,
         )
       } else {
-        VscodeUtils.openTxtWindow(
+        await VscodeUtils.openTxtWindow(
           JSON.stringify(flexQueryExecResult.exception, null, 2),
           `${new Date().getTime()}.exception.json`,
         )
@@ -36,20 +39,19 @@ export namespace FsqlCommands {
 
       return false
     } else if (flexQueryExecResult.exceptionStackTrace) {
-      VscodeUtils.openTxtWindow(
+      await VscodeUtils.openTxtWindow(
         flexQueryExecResult.exceptionStackTrace,
         `${new Date().getTime()}.exceptionStackTrace.txt`,
       )
 
       return false
-    } else {
-      console.log(flexQueryExecResult)
     }
 
     await VscodeUtils.openCsvWindow(
       flexQueryExecResult.headers,
       flexQueryExecResult.resultList,
     )
+    await vscode.window.showTextDocument(activeDocument, activeViewColumn)
 
     return true
   }
@@ -60,6 +62,9 @@ export namespace FsqlCommands {
       return false
     }
 
+    const activeDocument = editor.document
+    const activeViewColumn = editor.viewColumn
+
     const flexQueryExecResult = await hacUtils.executeFlexibleSearch(
       100000,
       undefined,
@@ -67,34 +72,30 @@ export namespace FsqlCommands {
     )
 
     if (flexQueryExecResult.exception) {
-      if (flexQueryExecResult.exception.message) {
-        VscodeUtils.openTxtWindow(
-          flexQueryExecResult.exception.message,
-          `${new Date().getTime()}.exception.txt`,
-        )
-      } else {
-        VscodeUtils.openTxtWindow(
-          JSON.stringify(flexQueryExecResult.exception, null, 2),
-          `${new Date().getTime()}.exception.json`,
-        )
-      }
+      await VscodeUtils.openTxtWindow(
+        flexQueryExecResult.exception.message
+          ? flexQueryExecResult.exception.message
+          : JSON.stringify(flexQueryExecResult.exception, null, 2),
+        `${new Date().getTime()}.exception.txt`,
+      )
+      await vscode.window.showTextDocument(activeDocument, activeViewColumn)
 
       return false
     } else if (flexQueryExecResult.exceptionStackTrace) {
-      VscodeUtils.openTxtWindow(
+      await VscodeUtils.openTxtWindow(
         flexQueryExecResult.exceptionStackTrace,
         `${new Date().getTime()}.exceptionStackTrace.txt`,
       )
+      await vscode.window.showTextDocument(activeDocument, activeViewColumn)
 
       return false
-    } else {
-      console.log(flexQueryExecResult)
     }
 
     await VscodeUtils.openCsvWindow(
       flexQueryExecResult.headers,
       flexQueryExecResult.resultList,
     )
+    await vscode.window.showTextDocument(activeDocument, activeViewColumn)
 
     return true
   }
@@ -106,6 +107,9 @@ export namespace FsqlCommands {
     if (editor === undefined) {
       return false
     }
+
+    const activeDocument = editor.document
+    const activeViewColumn = editor.viewColumn
 
     const translateGroovy = `
       import com.google.gson.Gson
@@ -194,7 +198,7 @@ export namespace FsqlCommands {
       let mySqlQuery = `${sqlQuery}`
 
       for (const pk of sqlQueryParameters) {
-        const sqlOrPk = pk in pkSqls ? `(${pkSqls[pk]})` : pk
+        const sqlOrPk = pk in pkSqls ? ` (${pkSqls[pk]})` : pk
 
         if (mySqlQuery.includes('?')) {
           mySqlQuery = mySqlQuery.replace('?', sqlOrPk)
@@ -208,17 +212,22 @@ export namespace FsqlCommands {
 
       const formattedSql = sqlFormatter.format(mySqlQuery, { language: 'sql' })
 
-      VscodeUtils.openTxtWindow(formattedSql, `${new Date().getTime()}.sql`)
+      await VscodeUtils.openTxtWindow(
+        formattedSql,
+        `${new Date().getTime()}.sql`,
+      )
+      await vscode.window.showTextDocument(activeDocument, activeViewColumn)
 
       return true
     } catch (e) {
       vscode.window.showErrorMessage("Can't match all parameters.")
 
-      VscodeUtils.openTxtWindow(sqlQuery, `${new Date().getTime()}.sql`)
-      VscodeUtils.openTxtWindow(
+      await VscodeUtils.openTxtWindow(sqlQuery, `${new Date().getTime()}.sql`)
+      await VscodeUtils.openTxtWindow(
         JSON.stringify(sqlQueryParameters),
         `${new Date().getTime()}.parameters.json`,
       )
+      await vscode.window.showTextDocument(activeDocument, activeViewColumn)
 
       return false
     }

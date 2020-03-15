@@ -152,7 +152,7 @@ export class HacUtils {
     }
 
     if (this.initTimestamp !== undefined) {
-      console.log('The session is expired. Now renewing.')
+      console.log('[initSession] - The session is expired. Now renewing.')
     }
 
     this.initTimestamp = new Date().getTime()
