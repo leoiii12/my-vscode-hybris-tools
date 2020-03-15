@@ -30,6 +30,12 @@ export function activate(context: vscode.ExtensionContext) {
     'Congratulations, your extension "my-vscode-hybris-tools" is now active!',
   )
 
+  const statusBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left,
+  )
+  statusBarItem.text = `${Config.getHacUrl()} (${Config.getHacUsername()})`
+  statusBarItem.show()
+
   const hacUtils = new HacUtils()
   const internalCaches = new InternalCaches()
 
