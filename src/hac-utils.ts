@@ -2,12 +2,12 @@ import axios, { AxiosInstance } from 'axios'
 import * as cheerio from 'cheerio'
 import { Agent } from 'https'
 import * as qs from 'querystring'
+import { Observable, Observer, Subject, zip } from 'rxjs'
 import { CookieJar } from 'tough-cookie'
 
 import { Config } from './config'
-import { Subject, zip, Observer, Observable } from 'rxjs'
-import { VscodeUtils } from './vscode-utils'
 import { InternalCaches } from './internal-caches'
+import { VscodeUtils } from './vscode-utils'
 
 const axiosCookiejarSupport = require('axios-cookiejar-support').default
 

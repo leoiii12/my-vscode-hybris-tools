@@ -1,6 +1,8 @@
+import { inflate } from 'pako'
 import * as vscode from 'vscode'
+
 import { HacUtils } from '../hac-utils'
-import { File, Directory } from './memfs'
+import { Directory, File } from './memfs'
 
 const MAX_NUM_LINES_IN_FILE = 100000
 
@@ -120,7 +122,7 @@ export class GroovyFS implements vscode.FileSystemProvider {
       const start = parseInt(parts[1]) * MAX_NUM_LINES_IN_FILE
       const end = start + MAX_NUM_LINES_IN_FILE
 
-      let res = await this._readPartialFile(
+      let res = await this._readTextFileOfRange(
         vscode.Uri.parse(parts[0]),
         start,
         end,
@@ -132,7 +134,7 @@ export class GroovyFS implements vscode.FileSystemProvider {
       let buffer = Buffer.alloc(res.base64.length, 'base64')
       buffer.write(res.base64, 'base64')
 
-      return buffer
+      return inflate(buffer)
     }
 
     let res = await this._readFile(uri)
@@ -297,6 +299,8 @@ export class GroovyFS implements vscode.FileSystemProvider {
       import java.nio.file.Files
       import java.nio.file.Paths
       import java.nio.file.Path
+      import java.time.Duration
+      import java.time.Instant
 
       class Response {
           long numOfLines
@@ -310,56 +314,15 @@ export class GroovyFS implements vscode.FileSystemProvider {
 
           return new Gson().toJson(response)
       }
+      def linesStream = Files.lines(path)
 
       def response = new Response()
-      response.numOfLines = countLines(path)
+      response.numOfLines = linesStream.count()
       response.exists = true
 
+      linesStream.close()
+
       return new Gson().toJson(response)
-
-      static countLines(Path p) {
-          final char NEW_LINE = '\\n'
-          final int C_SIZE = 8192
-
-          def inputStream = Files.newInputStream(p)
-          def bufferedInputStream = new BufferedInputStream(inputStream)
-          try {
-              byte[] c = new byte[C_SIZE]
-
-              int readChars = bufferedInputStream.read(c)
-              if (readChars == -1) {
-                  // bail out if nothing to read
-                  return 0
-              }
-
-              // make it easy for the optimizer to tune this loop
-              int count = 0
-              while (readChars == C_SIZE) {
-                  for (int i = 0; i < C_SIZE;) {
-                      if (c[i++] == NEW_LINE) {
-                          ++count
-                      }
-                  }
-                  readChars = bufferedInputStream.read(c)
-              }
-
-              // count remaining characters
-              while (readChars != -1) {
-                  System.out.println(readChars)
-                  for (int i = 0; i < readChars; ++i) {
-                      if (c[i] == NEW_LINE) {
-                          ++count
-                      }
-                  }
-                  readChars = bufferedInputStream.read(c)
-              }
-
-              return count == 0 ? 1 : count
-          } finally {
-              bufferedInputStream.close()
-              inputStream.close()
-          }
-      }
     `
 
     const execResult = await this.getHacUtils().executeGroovy(
@@ -374,15 +337,17 @@ export class GroovyFS implements vscode.FileSystemProvider {
     return res
   }
 
-  private async _readPartialFile(uri: vscode.Uri, start: number, end: number) {
+  private async _readTextFileOfRange(
+    uri: vscode.Uri,
+    start: number,
+    end: number,
+  ) {
     const script = `
-      import com.google.gson.Gson
-      import org.apache.commons.codec.binary.Base64
-      
       import java.nio.charset.Charset
       import java.nio.file.Files
       import java.nio.file.Paths
-      import java.util.stream.Collectors
+      import java.util.function.Consumer
+      import java.util.zip.GZIPOutputStream
       
       class Response {
           String base64
@@ -394,23 +359,50 @@ export class GroovyFS implements vscode.FileSystemProvider {
       
       def path = Paths.get("$_FS_PATH")
       if (Files.notExists(path)) {
-          def response = new Response()
-          response.exists = false
-      
-          return new Gson().toJson(response)
+          return "{\\"exists\\":false}"
       }
       
       def response = new Response()
       def linesStream = Files.lines(path)
+      def base64Encoder = Base64.getEncoder()
       
-      response.base64 = Base64.encodeBase64String(
-              linesStream.skip(start).limit(end - start).collect(Collectors.joining("\\n")).getBytes(Charset.forName("UTF-8"))
-      )
-      response.exists = true
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      def gzipOut = new GZIPOutputStream(out)
+      
+      linesStream
+              .skip(start)
+              .limit(end - start)
+              .forEach(new Consumer<String>() {
+                  final def BYTE = '\\n'.getBytes(Charset.forName("UTF-8"))
+      
+                  @Override
+                  void accept(String s) {
+                      try {
+                          gzipOut.write(s.getBytes(Charset.forName("UTF-8")))
+                          gzipOut.write(BYTE)
+                      } catch (IOException e1) {
+                          throw new RuntimeException(e1)
+                      }
+                  }
+              })
       
       linesStream.close()
+      gzipOut.flush()
+      gzipOut.close()
       
-      new Gson().toJson(response)
+      response.base64 = base64Encoder.encodeToString(out.toByteArray())
+      response.exists = true
+      
+      out.close()
+      
+      // To optimize the performance, we use the native StringBuilder
+      def sb = new StringBuilder()
+      sb.append("{")
+      sb.append("\\"base64\\":\\"").append(response.base64).append("\\",")
+      sb.append("\\"exists\\":").append(response.exists)
+      sb.append("}")
+      
+      sb.toString()
     `
 
     const execResult = await this.getHacUtils().executeGroovy(

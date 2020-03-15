@@ -1,7 +1,8 @@
+import { mkdirSync, writeFileSync } from 'fs'
+import { tmpdir } from 'os'
 import * as Papa from 'papaparse'
 import * as vscode from 'vscode'
-import { writeFileSync, mkdirSync } from 'fs'
-import { tmpdir } from 'os'
+
 import { Config } from './config'
 import { InternalCaches } from './internal-caches'
 

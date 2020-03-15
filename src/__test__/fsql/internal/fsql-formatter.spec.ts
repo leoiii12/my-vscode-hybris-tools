@@ -1,5 +1,6 @@
-import { FsqlFormatter } from '../../../lang-fsql/internal/fsql-formatter'
 import { Parser } from 'nearley'
+
+import { FsqlFormatter } from '../../../lang-fsql/internal/fsql-formatter'
 import { kases } from './assests'
 
 const fsqlGrammar = require('../../../../syntaxes/flexibleSearchQuery.js')
