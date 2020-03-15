@@ -36,10 +36,11 @@ export function activate(context: vscode.ExtensionContext) {
   statusBarItem.text = `${Config.getHacUrl()} (${Config.getHacUsername()})`
   statusBarItem.show()
 
-  const hacUtils = new HacUtils()
   const internalCaches = new InternalCaches()
+  const usrHacUtils = new HacUtils(internalCaches)
+  const sysHacUtils = new HacUtils()
 
-  initCachesWithProgress(hacUtils)
+  initCachesWithProgress(sysHacUtils)
 
   /**
    * MemFS
@@ -54,7 +55,7 @@ export function activate(context: vscode.ExtensionContext) {
   /**
    * GroovyFS
    */
-  const groovyFs = new GroovyFS([new HacUtils(), new HacUtils()])
+  const groovyFs = new GroovyFS([sysHacUtils])
   context.subscriptions.push(
     vscode.workspace.registerFileSystemProvider('groovyfs', groovyFs, {
       isCaseSensitive: true,
@@ -74,14 +75,16 @@ export function activate(context: vscode.ExtensionContext) {
           return
         }
 
+        const normalizedInputBoxValue = inputBoxValue.endsWith('/') && inputBoxValue.length > 1 ? inputBoxValue.replace(/\/$/, '') : inputBoxValue
+
         vscode.workspace.updateWorkspaceFolders(
           vscode.workspace.workspaceFolders === undefined
             ? 0
             : vscode.workspace.workspaceFolders.length,
           0,
           {
-            uri: vscode.Uri.parse(`groovyfs:${inputBoxValue}`),
-            name: `GroovyFS - ${inputBoxValue}`,
+            uri: vscode.Uri.parse(`groovyfs:${normalizedInputBoxValue}`),
+            name: `GroovyFS - ${normalizedInputBoxValue}`,
           },
         )
       },
@@ -99,7 +102,7 @@ export function activate(context: vscode.ExtensionContext) {
       'vscode-hybris-tools.flexibleSearchQuery.execute',
       () =>
         VscodeUtils.withProgress(
-          FsqlCommands.execute(hacUtils).catch(err => {
+          FsqlCommands.execute(usrHacUtils).catch(err => {
             vscode.window.showErrorMessage(
               err ? err.message : 'Timeout. Please check whether Hybris is on.',
             )
@@ -112,7 +115,7 @@ export function activate(context: vscode.ExtensionContext) {
       'vscode-hybris-tools.flexibleSearchQuery.executeRawSQL',
       () =>
         VscodeUtils.withProgress(
-          FsqlCommands.executeRawSql(hacUtils).catch(err => {
+          FsqlCommands.executeRawSql(usrHacUtils).catch(err => {
             vscode.window.showErrorMessage(
               err ? err.message : 'Timeout. Please check whether Hybris is on.',
             )
@@ -125,7 +128,7 @@ export function activate(context: vscode.ExtensionContext) {
       'vscode-hybris-tools.flexibleSearchQuery.translateToRawSQL',
       () =>
         VscodeUtils.withProgress(
-          FsqlCommands.translateFsqlToRawSql(hacUtils).catch(err => {
+          FsqlCommands.translateFsqlToRawSql(usrHacUtils).catch(err => {
             vscode.window.showErrorMessage(
               err ? err.message : 'Timeout. Please check whether Hybris is on.',
             )
@@ -136,7 +139,7 @@ export function activate(context: vscode.ExtensionContext) {
     ),
     vscode.commands.registerCommand('vscode-hybris-tools.groovy.execute', () =>
       VscodeUtils.withProgress(
-        GroovyCommands.execute(hacUtils).catch(err => {
+        GroovyCommands.execute(usrHacUtils).catch(err => {
           vscode.window.showErrorMessage(
             err ? err.message : 'Timeout. Please check whether Hybris is on.',
           )
@@ -149,7 +152,7 @@ export function activate(context: vscode.ExtensionContext) {
       'vscode-hybris-tools.groovy.executeAndCommit',
       () =>
         VscodeUtils.withProgress(
-          GroovyCommands.executeAndCommit(hacUtils).catch(err => {
+          GroovyCommands.executeAndCommit(usrHacUtils).catch(err => {
             vscode.window.showErrorMessage(
               err ? err.message : 'Timeout. Please check whether Hybris is on.',
             )
@@ -161,7 +164,7 @@ export function activate(context: vscode.ExtensionContext) {
     ),
     vscode.commands.registerCommand('vscode-hybris-tools.impEx.import', () =>
       VscodeUtils.withProgress(
-        ImpExCommands.importImpEx(hacUtils).catch((err: Error) => {
+        ImpExCommands.importImpEx(usrHacUtils).catch((err: Error) => {
           vscode.window.showErrorMessage(
             err ? err.message : 'Timeout. Please check whether Hybris is on.',
           )
@@ -172,7 +175,7 @@ export function activate(context: vscode.ExtensionContext) {
     ),
     vscode.commands.registerCommand('vscode-hybris-tools.impEx.validate', () =>
       VscodeUtils.withProgress(
-        ImpExCommands.validateImpEx(hacUtils).catch((err: Error) => {
+        ImpExCommands.validateImpEx(usrHacUtils).catch((err: Error) => {
           vscode.window.showErrorMessage(
             err ? err.message : 'Timeout. Please check whether Hybris is on.',
           )
@@ -185,7 +188,7 @@ export function activate(context: vscode.ExtensionContext) {
       'vscode-hybris-tools.hybris.clearCaches',
       () =>
         VscodeUtils.withProgress(
-          hacUtils.clearCaches().catch(err => {
+          usrHacUtils.clearCaches().catch(err => {
             vscode.window.showErrorMessage(
               err ? err.message : 'Timeout. Please check whether Hybris is on.',
             )
@@ -203,7 +206,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'vscode-hybris-tools.clearCaches',
       async () => {
-        initCachesWithProgress(hacUtils)
+        initCachesWithProgress(usrHacUtils)
       },
     ),
   )
@@ -281,7 +284,7 @@ export function activate(context: vscode.ExtensionContext) {
         },
         new FsqlCompletionAttributeItemProvider(
           Grammar.fromCompiled(fsqlGrammar),
-          new HacUtils(),
+          sysHacUtils,
           internalCaches,
           fsqlMooRules.rules,
         ),
@@ -304,7 +307,7 @@ export function activate(context: vscode.ExtensionContext) {
         new FsqlDefinitionProvider(
           fsqlGrammar,
           internalCaches,
-          hacUtils,
+          sysHacUtils,
           fsqlMooRules.rules,
         ),
       ),
@@ -329,7 +332,7 @@ export function activate(context: vscode.ExtensionContext) {
     const promise = internalCaches.init(hacUtils).catch(() => {
       vscode.window.showErrorMessage(
         "Can't retrieve types from Hybris. Please make sure it is running. \n" +
-          'vscode-hybris-tools.offline.typeCodes is in use.',
+        'vscode-hybris-tools.offline.typeCodes is in use.',
       )
 
       internalCaches.fsqlComposedTypeCodes = Config.getOfflineTypeCodes()
@@ -345,4 +348,4 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }

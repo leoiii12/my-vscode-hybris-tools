@@ -2,6 +2,8 @@ import * as Papa from 'papaparse'
 import * as vscode from 'vscode'
 import { writeFileSync, mkdirSync } from 'fs'
 import { tmpdir } from 'os'
+import { Config } from './config'
+import { InternalCaches } from './internal-caches'
 
 export namespace VscodeUtils {
   function ncrDecode(str: string) {
@@ -75,5 +77,22 @@ export namespace VscodeUtils {
     const document = await vscode.workspace.openTextDocument(uri)
 
     await vscode.window.showTextDocument(document, vscode.ViewColumn.Beside)
+  }
+
+  export async function askConfigConfirmation(caches: InternalCaches) {
+    if (caches.hasConfirmedConfigs === true) {
+      return true
+    }
+
+    const value = await vscode.window.showQuickPick(['Confirm', 'Cancel'], {
+      canPickMany: false,
+      placeHolder: `You are using ${Config.getHacUrl()}.`,
+    })
+    if (value !== 'Confirm') {
+      return false
+    }
+
+    caches.hasConfirmedConfigs = true
+    return true
   }
 }

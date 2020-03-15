@@ -6,10 +6,6 @@ import { VscodeUtils } from '../vscode-utils'
 const sqlFormatter = require('@leoiii12/sql-formatter')
 
 export namespace FsqlCommands {
-  /**
-   * vscode-hybris-tools.flexibleSearchQuery.execute
-   * @param hacUtils
-   */
   export async function execute(hacUtils: HacUtils): Promise<boolean> {
     const editor = vscode.window.activeTextEditor
     if (editor === undefined) {

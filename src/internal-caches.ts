@@ -1,6 +1,8 @@
 import { HacUtils } from './hac-utils'
 
 export class InternalCaches {
+  public hasConfirmedConfigs = false
+
   public fsqlComposedTypeCodes: string[] = []
   public fsqlComposedTypeAttributes: {
     [type: string]: { qualifier: string; typeCode: string }[]

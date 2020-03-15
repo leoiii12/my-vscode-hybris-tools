@@ -6,6 +6,8 @@ import { CookieJar } from 'tough-cookie'
 
 import { Config } from './config'
 import { Subject, zip, Observer, Observable } from 'rxjs'
+import { VscodeUtils } from './vscode-utils'
+import { InternalCaches } from './internal-caches'
 
 const axiosCookiejarSupport = require('axios-cookiejar-support').default
 
@@ -97,7 +99,11 @@ export class HacUtils {
     this.credentials.sessionId = sessionId
   }
 
-  constructor() {}
+  /**
+   * If caches is undefined, it is in sys mode.
+   * @param caches
+   */
+  constructor(private caches?: InternalCaches) {}
 
   public async executeFlexibleSearch(
     maxCount: number,
@@ -144,6 +150,13 @@ export class HacUtils {
   }
 
   private async initSession() {
+    if (this.caches !== undefined) {
+      const hasConfirmed = await VscodeUtils.askConfigConfirmation(this.caches)
+      if (hasConfirmed === false) {
+        throw new Error('The configs is not confirmed.')
+      }
+    }
+
     if (
       this.initTimestamp !== undefined &&
       new Date().getTime() - this.initTimestamp < 1000 * 60 * 5
