@@ -16,17 +16,18 @@ https://docs.google.com/presentation/d/1dWoE6_gfGKV0wwEU5XDJmwHHoOJiO5BATnyd7NPP
 3. Execute groovy (`F5`)
 4. Execute and Commit groovy (`Shift + F5`)
 5. Import ImpEx
+6. Autocompletion for hybris types
+7. Autocompletion for hybris type attributes
+8. Autocompletion for subqueries
+9. fsql Formatter
+10. See the definition of a hybris type
+11. See the definition of a alias
+12. Auto fix actions for `1` as conditions instead of `1 = 1`
+13. Convert fsql to sql and fill in parameters
 
 ### Beta
 
-1. Autocompletion for hybris types
-2. Autocompletion for hybris type attributes
-3. Autocompletion for subqueries
-4. fsql Formatter
-5. See the definition of a hybris type
-6. See the definition of a alias
-7. Auto fix actions for `1` as conditions instead of `1 = 1`
-8. Convert fsql to sql and fill in parameters
+1. GroovyFS
 
 ## Requirements
 
