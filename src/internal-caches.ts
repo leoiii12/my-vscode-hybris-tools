@@ -1,4 +1,4 @@
-import { HacUtils } from './hac-utils'
+import { Hac } from './hac'
 
 export class InternalCaches {
   public hasConfirmedConfigs = false
@@ -8,11 +8,11 @@ export class InternalCaches {
     [type: string]: { qualifier: string; typeCode: string }[]
   } = {}
 
-  public async init(hacUtils: HacUtils) {
+  public async init(hac: Hac) {
     this.fsqlComposedTypeCodes = []
     this.fsqlComposedTypeAttributes = {}
 
-    return hacUtils
+    return hac
       .executeFlexibleSearch(
         3000,
         `SELECT DISTINCT { code } AS InternalCode FROM { composedtype }`,

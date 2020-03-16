@@ -2,7 +2,7 @@ import { Rules } from 'moo'
 import { Grammar, Parser } from 'nearley'
 import * as vscode from 'vscode'
 
-import { HacUtils } from '../hac-utils'
+import { Hac } from '../hac'
 import { InternalCaches } from '../internal-caches'
 import { FsqlGrammarUtils } from './internal/fsql-grammar-utils'
 import { FsqlUtils } from './internal/fsql-utils'
@@ -11,7 +11,7 @@ export class FsqlDefinitionProvider implements vscode.DefinitionProvider {
   constructor(
     private grammar: Grammar,
     private caches: InternalCaches,
-    private hacUtils: HacUtils,
+    private hac: Hac,
     private lexerRules: Rules,
   ) {}
 
@@ -144,7 +144,7 @@ export class FsqlDefinitionProvider implements vscode.DefinitionProvider {
       '$_COMPOSED_TYPE',
       composedTypeCode,
     )
-    const execResult = await this.hacUtils.executeGroovy(false, groovy)
+    const execResult = await this.hac.executeGroovy(false, groovy)
     const attributes = JSON.parse(execResult.executionResult)
 
     this.caches.fsqlComposedTypeAttributes[composedTypeCode] = attributes

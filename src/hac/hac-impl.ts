@@ -2,72 +2,23 @@ import axios, { AxiosInstance } from 'axios'
 import * as cheerio from 'cheerio'
 import { Agent } from 'https'
 import * as qs from 'querystring'
-import { Observable, Observer, Subject, zip } from 'rxjs'
 import { CookieJar } from 'tough-cookie'
 
-import { Config } from './config'
-import { InternalCaches } from './internal-caches'
-import { VscodeUtils } from './vscode-utils'
+import { Config } from '../config'
+import { InternalCaches } from '../internal-caches'
+import { VscodeUtils } from '../vscode-utils'
+import { FlexQueryExecResult } from './flex-query-exec-result'
+import { GroovyExecResult } from './groovy-exec-result'
+import { Hac } from './hac'
+import { Lock } from './lock'
 
 const axiosCookiejarSupport = require('axios-cookiejar-support').default
 
-export interface Exception {
-  cause?: Exception
-  stackTrace: any[]
-  localizedMessage: string
-  message: string
-  suppressed: any[]
-
-  throwable?: any
-  errorCode?: any
-}
-
-export interface FlexQueryExecResult {
-  query: string
-  executionTime: number
-  resultCount: number
-  exception: Exception
-  resultList: string[][]
-  headers: string[]
-  rawExecution: boolean
-  exceptionStackTrace: string
-  catalogVersionsAsString: string
-  parametersAsString: string
-}
-
-export interface GroovyExecResult {
-  stacktraceText: string
-  executionResult: string
-  outputText: string
-}
-
-class Lock {
-  private lockAcquire = new Subject<Observer<void>>()
-  private lockRelease = new Subject()
-
-  constructor() {
-    zip(this.lockAcquire, this.lockRelease.asObservable()).subscribe(
-      ([acquirer, released]) => {
-        acquirer.next()
-        acquirer.complete()
-      },
-    )
-
-    this.release()
-  }
-
-  public acquire(): Observable<void> {
-    return Observable.create((observer: Observer<void>) => {
-      this.lockAcquire.next(observer)
-    })
-  }
-
-  public release() {
-    this.lockRelease.next()
-  }
-}
-
-export class HacUtils {
+/**
+ * This is the core hac impl.
+ * Only one concurrent request is allowed. More will be blocked.
+ */
+export class HacImpl implements Hac {
   private axiosInstance: AxiosInstance | undefined
   private initTimestamp: number | undefined
 
@@ -100,7 +51,7 @@ export class HacUtils {
   }
 
   /**
-   * If caches is undefined, it is in sys mode.
+   * If caches is undefined, it is in `sys` mode.
    * @param caches
    */
   constructor(private caches?: InternalCaches) {}
@@ -109,7 +60,7 @@ export class HacUtils {
     maxCount: number,
     fsql?: string,
     sql?: string,
-  ) {
+  ): Promise<FlexQueryExecResult> {
     await this.lock.acquire().toPromise()
 
     return this._executeFlexibleSearch(maxCount, fsql, sql).finally(() => {
@@ -117,7 +68,10 @@ export class HacUtils {
     })
   }
 
-  public async executeGroovy(commit: boolean, script: string) {
+  public async executeGroovy(
+    commit: boolean,
+    script: string,
+  ): Promise<GroovyExecResult> {
     await this.lock.acquire().toPromise()
 
     return this._executeGroovy(commit, script).finally(() => {
@@ -125,7 +79,7 @@ export class HacUtils {
     })
   }
 
-  public async validateImpEx(impEx: string) {
+  public async validateImpEx(impEx: string): Promise<void> {
     await this.lock.acquire().toPromise()
 
     return this._validateImpEx(impEx).finally(() => {
@@ -133,7 +87,7 @@ export class HacUtils {
     })
   }
 
-  public async importImpEx(impEx: string) {
+  public async importImpEx(impEx: string): Promise<void> {
     await this.lock.acquire().toPromise()
 
     return this._importImpEx(impEx).finally(() => {
@@ -141,7 +95,7 @@ export class HacUtils {
     })
   }
 
-  public async clearCaches() {
+  public async clearCaches(): Promise<void> {
     await this.lock.acquire().toPromise()
 
     return this._clearCaches().finally(() => {
@@ -349,7 +303,7 @@ export class HacUtils {
     }
   }
 
-  public async _importImpEx(impEx: string): Promise<void> {
+  private async _importImpEx(impEx: string): Promise<void> {
     await this.logIn()
 
     const csrf = this.csrf
@@ -394,7 +348,7 @@ export class HacUtils {
     }
   }
 
-  public async _clearCaches(): Promise<any> {
+  private async _clearCaches(): Promise<any> {
     await this.logIn()
 
     const csrf = this.csrf

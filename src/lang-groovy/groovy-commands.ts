@@ -1,10 +1,10 @@
 import * as vscode from 'vscode'
 
-import { HacUtils } from '../hac-utils'
+import { Hac } from '../hac'
 import { VscodeUtils } from '../vscode-utils'
 
 export namespace GroovyCommands {
-  export async function execute(hacUtils: HacUtils) {
+  export async function execute(hac: Hac) {
     const editor = vscode.window.activeTextEditor
     if (editor === undefined) {
       return
@@ -13,7 +13,7 @@ export namespace GroovyCommands {
     const activeDocument = editor.document
     const activeViewColumn = editor.viewColumn
 
-    const groovyScriptExecResult = await hacUtils.executeGroovy(
+    const groovyScriptExecResult = await hac.executeGroovy(
       false,
       VscodeUtils.getSelectedTextOrDocumentText(editor),
     )
@@ -35,7 +35,7 @@ export namespace GroovyCommands {
     await vscode.window.showTextDocument(activeDocument, activeViewColumn)
   }
 
-  export async function executeAndCommit(hacUtils: HacUtils) {
+  export async function executeAndCommit(hac: Hac) {
     const editor = vscode.window.activeTextEditor
     if (editor === undefined) {
       return
@@ -44,7 +44,7 @@ export namespace GroovyCommands {
     const activeDocument = editor.document
     const activeViewColumn = editor.viewColumn
 
-    const groovyScriptExecResult = await hacUtils.executeGroovy(
+    const groovyScriptExecResult = await hac.executeGroovy(
       true,
       VscodeUtils.getSelectedTextOrDocumentText(editor),
     )

@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## 1.1.1
 
+- General - Optimized performance to HAC
+
+- ## 1.1.1
+
 - GroovyFS - Optimized
 
 ## 1.1.0

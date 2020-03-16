@@ -1,12 +1,12 @@
 import * as vscode from 'vscode'
 
-import { HacUtils } from '../hac-utils'
+import { Hac } from '../hac'
 import { VscodeUtils } from '../vscode-utils'
 
 const sqlFormatter = require('@leoiii12/sql-formatter')
 
 export namespace FsqlCommands {
-  export async function execute(hacUtils: HacUtils): Promise<boolean> {
+  export async function execute(hac: Hac): Promise<boolean> {
     const editor = vscode.window.activeTextEditor
     if (editor === undefined) {
       return false
@@ -15,7 +15,7 @@ export namespace FsqlCommands {
     const activeDocument = editor.document
     const activeViewColumn = editor.viewColumn
 
-    const flexQueryExecResult = await hacUtils.executeFlexibleSearch(
+    const flexQueryExecResult = await hac.executeFlexibleSearch(
       100000,
       VscodeUtils.getSelectedTextOrDocumentText(editor),
     )
@@ -52,7 +52,7 @@ export namespace FsqlCommands {
     return true
   }
 
-  export async function executeRawSql(hacUtils: HacUtils): Promise<boolean> {
+  export async function executeRawSql(hac: Hac): Promise<boolean> {
     const editor = vscode.window.activeTextEditor
     if (editor === undefined) {
       return false
@@ -61,7 +61,7 @@ export namespace FsqlCommands {
     const activeDocument = editor.document
     const activeViewColumn = editor.viewColumn
 
-    const flexQueryExecResult = await hacUtils.executeFlexibleSearch(
+    const flexQueryExecResult = await hac.executeFlexibleSearch(
       100000,
       undefined,
       VscodeUtils.getSelectedTextOrDocumentText(editor),
@@ -96,9 +96,7 @@ export namespace FsqlCommands {
     return true
   }
 
-  export async function translateFsqlToRawSql(
-    hacUtils: HacUtils,
-  ): Promise<boolean> {
+  export async function translateFsqlToRawSql(hac: Hac): Promise<boolean> {
     const editor = vscode.window.activeTextEditor
     if (editor === undefined) {
       return false
@@ -146,7 +144,7 @@ export namespace FsqlCommands {
       '$_FSQL',
       VscodeUtils.getSelectedTextOrDocumentText(editor),
     )
-    const execResult = await hacUtils.executeGroovy(false, groovy)
+    const execResult = await hac.executeGroovy(false, groovy)
 
     const obj = JSON.parse(execResult.executionResult)
     if (
@@ -179,7 +177,7 @@ export namespace FsqlCommands {
       WHERE
         {ct.pk} IN ($_PK_JOINED_STR)
     `
-    const fsqlExecResult = await hacUtils.executeFlexibleSearch(
+    const fsqlExecResult = await hac.executeFlexibleSearch(
       10000,
       translatePkFsql.replace('$_PK_JOINED_STR', sqlQueryParameters.join(',')),
     )

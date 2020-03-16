@@ -1,7 +1,7 @@
 import { inflate } from 'pako'
 import * as vscode from 'vscode'
 
-import { HacUtils } from '../hac-utils'
+import { Hac } from '../hac'
 import { Directory, File } from './memfs'
 
 const MAX_NUM_LINES_IN_FILE = 100000
@@ -11,15 +11,7 @@ export class GroovyFS implements vscode.FileSystemProvider {
     vscode.FileChangeEvent[]
   > = new vscode.EventEmitter<vscode.FileChangeEvent[]>().event
 
-  private hacUtilsIdx = 0
-  private getHacUtils() {
-    this.hacUtilsIdx += 1
-    this.hacUtilsIdx =
-      this.hacUtilsIdx >= this.hacUtilsInstances.length ? 0 : this.hacUtilsIdx
-    return this.hacUtilsInstances[this.hacUtilsIdx]
-  }
-
-  constructor(private hacUtilsInstances: HacUtils[]) {}
+  constructor(private hac: Hac) {}
 
   watch(
     uri: vscode.Uri,
@@ -236,7 +228,7 @@ export class GroovyFS implements vscode.FileSystemProvider {
       }
     `
 
-    const execResult = await this.getHacUtils().executeGroovy(
+    const execResult = await this.hac.executeGroovy(
       false,
       script.replace('$_FS_PATH', uri.path),
     )
@@ -280,7 +272,7 @@ export class GroovyFS implements vscode.FileSystemProvider {
       new Gson().toJson(response)
     `
 
-    const execResult = await this.getHacUtils().executeGroovy(
+    const execResult = await this.hac.executeGroovy(
       false,
       script.replace('$_FS_PATH', uri.path),
     )
@@ -325,7 +317,7 @@ export class GroovyFS implements vscode.FileSystemProvider {
       return new Gson().toJson(response)
     `
 
-    const execResult = await this.getHacUtils().executeGroovy(
+    const execResult = await this.hac.executeGroovy(
       false,
       script.replace('$_FS_PATH', uri.path),
     )
@@ -405,7 +397,7 @@ export class GroovyFS implements vscode.FileSystemProvider {
       sb.toString()
     `
 
-    const execResult = await this.getHacUtils().executeGroovy(
+    const execResult = await this.hac.executeGroovy(
       false,
       script
         .replace('$_FS_PATH', uri.path)
@@ -465,7 +457,7 @@ export class GroovyFS implements vscode.FileSystemProvider {
       new Gson().toJson(response)
     `
 
-    const execResult = await this.getHacUtils().executeGroovy(
+    const execResult = await this.hac.executeGroovy(
       false,
       script.replace('$_FS_PATH', uri.path),
     )
