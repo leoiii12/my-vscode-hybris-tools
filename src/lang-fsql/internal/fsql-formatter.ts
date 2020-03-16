@@ -331,6 +331,26 @@ export class FsqlFormatter {
 
             return str
           }
+          if (func.toString() === 'GROUP_CONCAT') {
+            let str = ''
+            str += `${this.ao(func)}`
+            str += `(`
+            str += obj['args'].length === 1 ? 
+              `${this.ao(obj['args'][0])}`:
+              `${this.ao(obj['args'][0])} SEPARATOR ${this.ao(obj['args'][1])}`
+            str += `)`
+
+            return str
+          }
+          if (func.toString() === 'CAST') {
+            let str = ''
+            str += `${this.ao(func)}`
+            str += `(`
+            str += `${this.ao(obj['args'][0])} AS ${this.ao(obj['args'][1])}`
+            str += `)`
+
+            return str
+          }
 
           return `${this.ao(func)}(${this.aa(args)})`
         case 'case': {

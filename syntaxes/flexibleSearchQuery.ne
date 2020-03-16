@@ -11,7 +11,7 @@ main ->
   query _ {% (elems) => (elems[0]) %}
 
 query ->
-  %select __ select_expression ( _ %comma _ select_expression ):* _
+  %select __ select_expression ( _ %comma _ select_expression ):* __
   %from __ from
   ( __ %where __ expression ):?
   ( __ %group_by __ ( column_ref ( _ %comma _ column_ref ):* ) ( __ %having __ expression):? ):?
@@ -354,8 +354,15 @@ function ->
       type: 'function',
       function: 'GROUP_CONCAT',
       args: elems[2][3] === null ?
-        [elems[2][2]]:
+        [elems[2][2]] :
         [elems[2][2], elems[2][3][3]]
+    })
+  %}
+  | %cast _ ( %lparen _ operand __ %as __ type_mysql _ %rparen ) {%
+    (elems) => ({
+      type: 'function',
+      function: 'CAST',
+      args: [elems[2][2], elems[2][6]]
     })
   %}
   | %identifier _ ( %lparen ( _ operand ):? ( _ %comma _ operand ):* _ %rparen ) {%
@@ -413,6 +420,17 @@ identifier ->
 # ####################
 # Type
 # ####################
+
+type_mysql -> %identifier ( %lparen _ type_int _ %rparen ):? ( __ %character __ %set __ %identifier ):? {%
+  (elems) => {
+    let str = `${elems[0]}`
+
+    if (elems[1]) { str += `(${elems[1][2]})` }
+    if (elems[2]) { str += ` CHARACTER SET ${elems[2][5]}` }
+
+    return str
+  }
+%}
 
 type_null -> %null                          {% (elems) => (elems[0]) %}
 

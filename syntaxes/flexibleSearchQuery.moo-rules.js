@@ -80,6 +80,9 @@ const mooRules = {
 
       group_concat: ci('group_concat'),
       separator: ci('separator'),
+      cast: ci('cast'),
+      character: ci('character'),
+      set: ci('set'),
       distinct: ci('distinct'),
       interval: ci('interval'),
 

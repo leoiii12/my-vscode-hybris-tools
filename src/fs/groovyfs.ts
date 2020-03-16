@@ -170,7 +170,7 @@ export class GroovyFS implements vscode.FileSystemProvider {
   /**
    *
    * @param uri
-   * @returns [path, isTextFile][]
+   * @returns [path, isLongTextFile][]
    */
   private async _readDirectory(
     uri: vscode.Uri,

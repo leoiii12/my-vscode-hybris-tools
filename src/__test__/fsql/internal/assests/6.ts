@@ -27,7 +27,7 @@ SELECT
   END,
   {{
     select
-      group_concat(distinct { cat :code })
+      group_concat(distinct { cat :code } SEPARATOR ' ')
     from
       { HktvProduct as p
       join CategoryProductRelation as cpr on { cpr :target } = { p :pk }
@@ -94,7 +94,7 @@ SELECT
   END,
   ({{
     SELECT
-      GROUP_CONCAT(DISTINCT {cat.code})
+      GROUP_CONCAT(DISTINCT {cat.code} SEPARATOR ' ')
     FROM
       {
         HktvProduct AS p

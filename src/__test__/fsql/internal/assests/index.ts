@@ -8,6 +8,7 @@ import { kase as kase_6 } from './6'
 import { kase as kase_7 } from './7'
 import { kase as kase_8 } from './8'
 import { kase as kase_9 } from './9'
+import { kase as kase_10 } from './10'
 
 export const kases = [
   kase_0,
@@ -20,4 +21,5 @@ export const kases = [
   kase_7,
   kase_8,
   kase_9,
+  kase_10,
 ]
