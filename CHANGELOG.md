@@ -4,9 +4,10 @@ All notable changes to the "my-vscode-hybris-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## 
+## 1.1.3
 
-- Fsql - Support CAST
+- General - Fixed the displaying problem of binary characters 
+- Fsql    - Support CAST
 
 ## 1.1.2
 

@@ -335,9 +335,12 @@ export class FsqlFormatter {
             let str = ''
             str += `${this.ao(func)}`
             str += `(`
-            str += obj['args'].length === 1 ? 
-              `${this.ao(obj['args'][0])}`:
-              `${this.ao(obj['args'][0])} SEPARATOR ${this.ao(obj['args'][1])}`
+            str +=
+              obj['args'].length === 1
+                ? `${this.ao(obj['args'][0])}`
+                : `${this.ao(obj['args'][0])} SEPARATOR ${this.ao(
+                    obj['args'][1],
+                  )}`
             str += `)`
 
             return str
