@@ -4,11 +4,11 @@ All notable changes to the "my-vscode-hybris-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## 1.1.1
+## 1.1.2
 
 - General - Optimized performance to HAC
 
-- ## 1.1.1
+## 1.1.1
 
 - GroovyFS - Optimized
 
