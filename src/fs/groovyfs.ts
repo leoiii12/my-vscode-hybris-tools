@@ -123,8 +123,7 @@ export class GroovyFS implements vscode.FileSystemProvider {
         throw vscode.FileSystemError.FileNotFound()
       }
 
-      let buffer = Buffer.alloc(res.base64.length, 'base64')
-      buffer.write(res.base64, 'base64')
+      let buffer = Buffer.from(res.base64, 'base64')
 
       return inflate(buffer)
     }
@@ -134,10 +133,7 @@ export class GroovyFS implements vscode.FileSystemProvider {
       throw vscode.FileSystemError.FileNotFound()
     }
 
-    let buffer = Buffer.alloc(res.base64.length, 'base64')
-    buffer.write(res.base64, 'base64')
-
-    return buffer
+    return Buffer.from(res.base64, 'base64')
   }
 
   createDirectory(uri: vscode.Uri): void | Thenable<void> {
@@ -265,8 +261,10 @@ export class GroovyFS implements vscode.FileSystemProvider {
           return new Gson().toJson(response)
       }
       
+      def base64Encoder = java.util.Base64.getEncoder()
+      
       def response = new Response()
-      response.base64 = Base64.encodeBase64String(Files.readAllBytes(path))
+      response.base64 = base64Encoder.encodeToString(Files.readAllBytes(path))
       response.exists = true
       
       new Gson().toJson(response)

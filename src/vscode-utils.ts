@@ -21,16 +21,6 @@ export namespace VscodeUtils {
     return str
   }
 
-  function ncrDecode_2(str: string) {
-    str = str.replace(/(&#)(\d{1,6});/gi, function($0) {
-      return ''
-    })
-    str = str.replace(/(&#x)(\w{1,4});/gi, function($0) {
-      return ''
-    })
-    return str
-  }
-
   export function getSelectedTextOrDocumentText(editor: vscode.TextEditor) {
     let selection = editor.selection
     if (selection.isEmpty) {
@@ -63,7 +53,7 @@ export namespace VscodeUtils {
     fileName?: string,
   ) {
     const csv = Papa.unparse([headers, ...resultList])
-    const decodedCsv = ncrDecode(csv)
+    const decodedCsv = ncrDecode(csv).replace(/\0/g, ' ')
 
     const dir = `${tmpdir}/my-vscode-hybris-tools/csv`
     const path = `${dir}/${fileName ? fileName : new Date().getTime() + '.csv'}`
@@ -72,24 +62,9 @@ export namespace VscodeUtils {
     writeFileSync(path, Buffer.from(decodedCsv, 'utf-8'))
 
     const uri = vscode.Uri.file(path)
+    const document = await vscode.workspace.openTextDocument(uri)
 
-    try {
-      const document = await vscode.workspace.openTextDocument(uri)
-
-      await vscode.window.showTextDocument(document, vscode.ViewColumn.Beside)
-    } catch (e) {
-      if (e.message && e.message.includes('File seems to be binary')) {
-        writeFileSync(
-          path,
-          Buffer.from(ncrDecode(csv).replace(/\0/g, ' '), 'utf-8'),
-        )
-
-        const uri = vscode.Uri.file(path)
-        const document = await vscode.workspace.openTextDocument(uri)
-
-        await vscode.window.showTextDocument(document, vscode.ViewColumn.Beside)
-      }
-    }
+    await vscode.window.showTextDocument(document, vscode.ViewColumn.Beside)
   }
 
   export async function openTxtWindow(txt: string, fileName?: string) {
@@ -112,7 +87,7 @@ export namespace VscodeUtils {
 
     const value = await vscode.window.showQuickPick(['Confirm', 'Cancel'], {
       canPickMany: false,
-      placeHolder: `You are using ${Config.getHacUrl()}.`,
+      placeHolder: `Please confirm you are using ${Config.getHacUrl()}.`,
     })
     if (value !== 'Confirm') {
       return false
