@@ -42,9 +42,11 @@ export function activate(context: vscode.ExtensionContext) {
 
   initCachesWithProgress(sysHac)
 
-  /**
-   * MemFS
-   */
+  // *********************
+  //
+  // MemFS
+  //
+  // *********************
   const memFs = new MemFS()
   context.subscriptions.push(
     vscode.workspace.registerFileSystemProvider('memfs', memFs, {
@@ -52,9 +54,11 @@ export function activate(context: vscode.ExtensionContext) {
     }),
   )
 
-  /**
-   * GroovyFS
-   */
+  // *********************
+  //
+  // GroovyFS
+  //
+  // *********************
   const groovyFs = new GroovyFS(sysHac)
   context.subscriptions.push(
     vscode.workspace.registerFileSystemProvider('groovyfs', groovyFs, {
@@ -93,6 +97,12 @@ export function activate(context: vscode.ExtensionContext) {
       },
     ),
   )
+
+  // *********************
+  //
+  // Features
+  //
+  // *********************
 
   registerSqlFeatures()
   registerFsqlFeatures()
