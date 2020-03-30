@@ -173,9 +173,9 @@ condition ->
   | operand __ ( %not __ ):? %between __ operand __ %and __ operand {%
     (elems) => {
       if (elems[2] == null) {
-        return { type: 'condition', operand_1: elems[0], comparator: 'BETWEEN', operand_2: elems[6], operand_3: elems[10] }
+        return { type: 'condition', operand_1: elems[0], comparator: 'BETWEEN', operand_2: elems[5], operand_3: elems[9] }
       }
-      return { type: 'condition', operand_1: elems[0], comparator: 'NOT BETWEEN', operand_2: elems[6], operand_3: elems[10] }
+      return { type: 'condition', operand_1: elems[0], comparator: 'NOT BETWEEN', operand_2: elems[5], operand_3: elems[9] }
     }
   %}
   | operand __ %is __ (%not __):? ( type_null | type_boolean ) {%

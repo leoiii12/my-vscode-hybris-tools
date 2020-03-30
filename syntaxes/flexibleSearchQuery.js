@@ -243,9 +243,9 @@ var grammar = {
     {"name": "condition", "symbols": ["operand", "__", "condition$ebnf$4", (lexer.has("between") ? {type: "between"} : between), "__", "operand", "__", (lexer.has("and") ? {type: "and"} : and), "__", "operand"], "postprocess": 
         (elems) => {
           if (elems[2] == null) {
-            return { type: 'condition', operand_1: elems[0], comparator: 'BETWEEN', operand_2: elems[6], operand_3: elems[10] }
+            return { type: 'condition', operand_1: elems[0], comparator: 'BETWEEN', operand_2: elems[5], operand_3: elems[9] }
           }
-          return { type: 'condition', operand_1: elems[0], comparator: 'NOT BETWEEN', operand_2: elems[6], operand_3: elems[10] }
+          return { type: 'condition', operand_1: elems[0], comparator: 'NOT BETWEEN', operand_2: elems[5], operand_3: elems[9] }
         }
           },
     {"name": "condition$ebnf$5$subexpression$1", "symbols": [(lexer.has("not") ? {type: "not"} : not), "__"]},

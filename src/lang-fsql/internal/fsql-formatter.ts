@@ -251,6 +251,16 @@ export class FsqlFormatter {
             str += `NOT (${this.ao(obj['expression'])})`
           } else if ('expression' in obj) {
             str += `${this.ao(obj['expression'])}`
+          } else if (
+            'operand_1' in obj &&
+            'operand_2' in obj &&
+            'operand_3' in obj
+          ) {
+            str += `${this.ao(obj['operand_1'])} `
+            str += `${obj['comparator']} `
+            str += `${this.ao(obj['operand_2'])}`
+            str += ` AND `
+            str += `${this.ao(obj['operand_3'])}`
           } else if ('operand_1' in obj && 'operand_2' in obj) {
             str += `${this.ao(obj['operand_1'])} `
             str += `${obj['comparator']} `

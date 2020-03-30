@@ -4,6 +4,11 @@ All notable changes to the "my-vscode-hybris-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.1.5
+
+- Fsql    - Fixed the between condition
+- General - Bumped packages
+
 ## 1.1.4
 
 - General - Fixed the base64 buffer problem
