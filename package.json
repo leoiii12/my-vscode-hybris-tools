@@ -1,0 +1,273 @@
+{
+  "name": "my-vscode-hybris-tools",
+  "displayName": "my-vscode-hybris-tools",
+  "publisher": "leochoi",
+  "description": "My Hybris Tools",
+  "version": "1.1.6",
+  "engines": {
+    "vscode": "^1.42.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/leoiii12/my-vscode-hybris-tools.git"
+  },
+  "activationEvents": [
+    "onFileSystem:groovyfs",
+    "onCommand:vscode-hybris-tools.groovyfs.init",
+    "onCommand:vscode-hybris-tools.flexibleSearchQuery.execute",
+    "onCommand:vscode-hybris-tools.flexibleSearchQuery.executeRawSQL",
+    "onCommand:vscode-hybris-tools.flexibleSearchQuery.translateToRawSQL",
+    "onCommand:vscode-hybris-tools.groovy.execute",
+    "onCommand:vscode-hybris-tools.groovy.executeAndCommit",
+    "onCommand:vscode-hybris-tools.impEx.import",
+    "onCommand:vscode-hybris-tools.impEx.validate",
+    "onCommand:vscode-hybris-tools.hybris.clearCaches",
+    "onCommand:vscode-hybris-tools.displayCaches",
+    "onCommand:vscode-hybris-tools.clearCaches",
+    "onLanguage:flexibleSearchQuery",
+    "onLanguage:groovy",
+    "onLanguage:impEx"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": [
+      {
+        "title": "Hybris Tools",
+        "properties": {
+          "vscode-hybris-tools.hac.url": {
+            "type": "string",
+            "default": "https://localhost:9012/hac",
+            "description": "The URL to the hybris HAC extension."
+          },
+          "vscode-hybris-tools.hac.username": {
+            "type": "string",
+            "default": "admin",
+            "description": "The username used for logging in the HAC."
+          },
+          "vscode-hybris-tools.hac.password": {
+            "type": "string",
+            "default": "nimda",
+            "description": "The password used for logging in the HAC."
+          },
+          "vscode-hybris-tools.http.timeout": {
+            "type": "integer",
+            "default": 10000,
+            "description": "The HTTP socket timeout."
+          },
+          "vscode-hybris-tools.http.useStrictSSL": {
+            "type": "boolean",
+            "default": false,
+            "description": "Use strict SSL."
+          },
+          "vscode-hybris-tools.offline.typeCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [],
+            "description": "The type codes for offline types autocompletion."
+          }
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "vscode-hybris-tools.groovyfs.init",
+        "title": "Hybris: Init GroovyFS"
+      },
+      {
+        "command": "vscode-hybris-tools.flexibleSearchQuery.execute",
+        "title": "Hybris: Execute FSQL"
+      },
+      {
+        "command": "vscode-hybris-tools.flexibleSearchQuery.executeRawSQL",
+        "title": "Hybris: Execute Raw SQL"
+      },
+      {
+        "command": "vscode-hybris-tools.flexibleSearchQuery.translateToRawSQL",
+        "title": "Hybris: Translate to Raw SQL"
+      },
+      {
+        "command": "vscode-hybris-tools.groovy.execute",
+        "title": "Hybris: Execute Groovy"
+      },
+      {
+        "command": "vscode-hybris-tools.groovy.executeAndCommit",
+        "title": "Hybris: Execute Groovy And Commit"
+      },
+      {
+        "command": "vscode-hybris-tools.impEx.import",
+        "title": "Hybris: Import ImpEx"
+      },
+      {
+        "command": "vscode-hybris-tools.impEx.validate",
+        "title": "Hybris: Validate ImpEx"
+      },
+      {
+        "command": "vscode-hybris-tools.hybris.clearCaches",
+        "title": "Hybris: Clear Caches"
+      },
+      {
+        "command": "vscode-hybris-tools.displayCaches",
+        "title": "Hybris: Display Caches"
+      },
+      {
+        "command": "vscode-hybris-tools.clearCaches",
+        "title": "Hybris: Clear Extension Caches"
+      }
+    ],
+    "languages": [
+      {
+        "id": "flexibleSearchQuery",
+        "aliases": [
+          "fsql",
+          "flexQuery"
+        ],
+        "extensions": [
+          ".fsql",
+          ".fxs"
+        ],
+        "configuration": "./syntaxes/flexibleSearchQuery.language-configuration.json"
+      },
+      {
+        "id": "groovy",
+        "aliases": [
+          "Groovy"
+        ],
+        "extensions": [
+          ".grovvy"
+        ]
+      },
+      {
+        "id": "impEx",
+        "aliases": [
+          "ImpEx",
+          "impex"
+        ],
+        "extensions": [
+          ".impex"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "flexibleSearchQuery",
+        "scopeName": "source.sql",
+        "path": "./syntaxes/flexibleSearchQuery.tmLanguage.json"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "vscode-hybris-tools.flexibleSearchQuery.execute",
+        "key": "f5",
+        "mac": "f5",
+        "when": "editorTextFocus && resourceExtname == .fsql"
+      },
+      {
+        "command": "vscode-hybris-tools.flexibleSearchQuery.execute",
+        "key": "f5",
+        "mac": "f5",
+        "when": "editorTextFocus && resourceExtname == .fxs"
+      },
+      {
+        "command": "vscode-hybris-tools.flexibleSearchQuery.executeRawSQL",
+        "key": "f5",
+        "mac": "f5",
+        "when": "editorTextFocus && resourceExtname == .sql"
+      },
+      {
+        "command": "vscode-hybris-tools.groovy.execute",
+        "key": "f5",
+        "mac": "f5",
+        "when": "editorTextFocus && resourceExtname == .groovy"
+      },
+      {
+        "command": "vscode-hybris-tools.groovy.executeAndCommit",
+        "key": "shift+f5",
+        "mac": "shift+f5",
+        "when": "editorTextFocus && resourceExtname == .groovy"
+      },
+      {
+        "command": "vscode-hybris-tools.impEx.import",
+        "key": "f5",
+        "mac": "f5",
+        "when": "editorTextFocus && resourceExtname == .impex"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile && npm run compile:fsql",
+    "format": "prettier --write \"src/**/*.{js,css,json,md,ts}\"",
+    "compile": "tsc -p ./",
+    "compile:fsql": "nearleyc ./syntaxes/flexibleSearchQuery.ne -o ./syntaxes/flexibleSearchQuery.js",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "pretest": "npm run compile && npm run compile:fsql && npm run lint",
+    "test": "jest",
+    "test-install": "vsce package && code --install-extension my-vscode-hybris-tools-1.1.6.vsix --force"
+  },
+  "devDependencies": {
+    "@types/cheerio": "^0.22.17",
+    "@types/glob": "^7.1.1",
+    "@types/jest": "^25.1.4",
+    "@types/moo": "^0.5.2",
+    "@types/nearley": "^2.11.1",
+    "@types/node": "^12.12.32",
+    "@types/pako": "^1.0.1",
+    "@types/papaparse": "^5.0.3",
+    "@types/qs": "^6.9.1",
+    "@types/tough-cookie": "^2.3.6",
+    "@types/traverse": "^0.6.32",
+    "@types/vscode": "^1.42.0",
+    "@typescript-eslint/eslint-plugin": "^2.25.0",
+    "@typescript-eslint/parser": "^2.25.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.1",
+    "glob": "^7.1.6",
+    "jest": "^25.2.4",
+    "prettier": "^1.19.1",
+    "ts-jest": "^25.3.0",
+    "typescript": "^3.8.3",
+    "vscode-test": "^1.3.0"
+  },
+  "dependencies": {
+    "@leoiii12/sql-formatter": "^2.4.0",
+    "axios": "^0.19.2",
+    "axios-cookiejar-support": "^0.5.1",
+    "cheerio": "^1.0.0-rc.3",
+    "moo": "^0.5.1",
+    "nearley": "^2.19.1",
+    "pako": "^1.0.11",
+    "papaparse": "^5.1.1",
+    "qs": "^6.9.3",
+    "rxjs": "^6.5.4",
+    "tough-cookie": "^3.0.1",
+    "traverse": "^0.6.6"
+  },
+  "extensionDependencies": [
+    "mechatroner.rainbow-csv",
+    "marlon407.code-groovy"
+  ],
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    },
+    "globals": {
+      "ts-jest": {
+        "tsConfig": "tsconfig.json"
+      }
+    },
+    "testMatch": [
+      "**/src/__test__/**/*.spec.+(ts|tsx|js)"
+    ],
+    "testEnvironment": "node"
+  }
+}
