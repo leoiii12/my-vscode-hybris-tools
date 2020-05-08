@@ -189,7 +189,7 @@ export namespace FsqlCommands {
     }, {} as { [pk: string]: string })
 
     try {
-      let mySqlQuery = `${sqlQuery}`
+      let mySqlQuery = `${sqlQuery};`
 
       for (const pk of sqlQueryParameters) {
         const sqlOrPk = pk in pkSqls ? ` (${pkSqls[pk]})` : pk
