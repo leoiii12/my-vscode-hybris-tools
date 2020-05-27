@@ -64,9 +64,28 @@ from ->
   %}
 
 table_expression ->
-  subquery {% (elems) => { return { type: 'table_expression', subquery: elems[0] } } %}
-  | %lparen _ subquery _ %rparen ( __ %as ):? __ identifier {% (elems) => { return { type: 'table_expression', subquery: elems[2], as: elems[7] } } %}
+  subqueries {% (elems) => { return { type: 'subquery_expression', subqueries: elems[0] } } %}
   | types {% (elems) => { return { type: 'table_expression', types: elems[0] } } %}
+
+subqueries ->
+  single_subquery_clause ( ( _ %left ):? __ %join __ single_subquery_clause ( __ %on __ expression ):? ):* {%
+    (elems) => ({ 
+      type: 'subquery', 
+      subquery: elems[0],
+      subqueryJoin: elems[1].map((joinElems) => {
+        return {
+          type: 'subquery_join',
+          isLeft: joinElems[0] != null,
+          subquery: joinElems[4],
+          on: joinElems[5] == null ? null : joinElems[5][3]
+        }
+      })
+    })
+  %}
+
+single_subquery_clause -> 
+  %lparen _ subquery _ %rparen ( __ %as ):? __ identifier {% (elems) => ({ type: 'single_subquery_clause', query: elems[2], as: elems[7] }) %}
+  | subquery {% (elems) => ({ type: 'single_subquery_clause', query: elems[0], as: null }) %}
 
 order_expression ->
   column_ref ( __ ( %asc | %desc ) ):? ( __ %nulls __ ( %first | %last ) ):? {%
@@ -400,8 +419,8 @@ row_value_constructor ->
   %}
 
 subquery ->
-  ( %lcbrac _ %lcbrac ) _ query _ ( %rcbrac _ %rcbrac ) {%
-    (elems) => ({ type: 'subquery', query: elems[2]})
+  ( %lcbrac %lcbrac ) _ query _ ( %rcbrac %rcbrac ) {%
+    (elems) => ({type: 'real_subquery', query: elems[2]})
   %}
 
 interval ->

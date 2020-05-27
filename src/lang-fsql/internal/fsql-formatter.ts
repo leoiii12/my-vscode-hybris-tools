@@ -116,7 +116,7 @@ export class FsqlFormatter {
           } else if ('typeAlias' in obj) {
             str += `{${obj['typeAlias']}.${obj['column']}}`
           } else if ('term' in obj) {
-            if (obj['term'].type === 'subquery') {
+            if (obj['term'].type === 'real_subquery') {
               str += `(${this.ao(obj['term'])})`
             } else {
               str += `${this.ao(obj['term'])}`
@@ -136,17 +136,59 @@ export class FsqlFormatter {
 
         case 'table_expression': {
           let str = ''
-          if ('subquery' in obj && 'as' in obj) {
-            str = `(${this.ao(obj['subquery'])}) AS ${this.ao(obj['as'])}`
-          } else if ('subquery' in obj) {
-            str = `(${this.ao(obj['subquery'])})`
-          } else if ('types' in obj) {
+          if ('types' in obj) {
             str = `${this.ao(obj['types'])}`
           } else {
             console.log('Uncaught table_expression')
           }
 
           return this.gs(this.noi) + `${str}`
+        }
+
+        case 'subquery_expression': {
+          let str = ''
+          if ('subqueries' in obj) {
+            str = `${this.ao(obj['subqueries'])}`
+          } else {
+            console.log('Uncaught subquery_expression')
+          }
+
+          return `${str}`
+        }
+        case 'subquery': {
+          let str = ''
+          if ('subquery' in obj) {
+            str += `${this.ao(obj['subquery'])}`
+
+            if ('subqueryJoin' in obj && obj['subqueryJoin'].length > 0) {
+              str += FsqlFormatter.NL
+              str += `${this.aa(obj['subqueryJoin'], FsqlFormatter.NL)}`
+            }
+          } else {
+            console.log('Uncaught subquery_expression')
+          }
+
+          return this.gs(this.noi) + `${str}`
+        }
+        case 'subquery_join': {
+          return (
+            '' +
+            this.gs(this.noi) +
+            (obj['isLeft'] ? 'LEFT ' : '') +
+            `JOIN ${this.ao(obj['subquery'])} ON ${this.ao(obj['on'])}`
+          )
+        }
+        case 'single_subquery_clause': {
+          let str = ''
+          if ('query' in obj && 'as' in obj) {
+            str += `(${this.ao(obj['query'])}) AS ${this.ao(obj['as'])}`
+          } else if ('query' in obj) {
+            str += `(${this.ao(obj['query'])})`
+          } else {
+            console.log('Uncaught subquery_expression')
+          }
+
+          return `${str}`
         }
 
         case 'group_by':
@@ -421,7 +463,7 @@ export class FsqlFormatter {
         case 'row_value_constructor': {
           return `${this.aa(obj['terms'])}`
         }
-        case 'subquery': {
+        case 'real_subquery': {
           let str = ''
 
           str += `{{` + FsqlFormatter.NL

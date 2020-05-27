@@ -97,12 +97,36 @@ var grammar = {
     {"name": "from", "symbols": ["table_expression", "from$ebnf$1"], "postprocess": 
         (elems) => ([elems[0], ...elems[1].map((elem) => elem[3])])
           },
-    {"name": "table_expression", "symbols": ["subquery"], "postprocess": (elems) => { return { type: 'table_expression', subquery: elems[0] } }},
-    {"name": "table_expression$ebnf$1$subexpression$1", "symbols": ["__", (lexer.has("as") ? {type: "as"} : as)]},
-    {"name": "table_expression$ebnf$1", "symbols": ["table_expression$ebnf$1$subexpression$1"], "postprocess": id},
-    {"name": "table_expression$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "table_expression", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "_", "subquery", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen), "table_expression$ebnf$1", "__", "identifier"], "postprocess": (elems) => { return { type: 'table_expression', subquery: elems[2], as: elems[7] } }},
+    {"name": "table_expression", "symbols": ["subqueries"], "postprocess": (elems) => { return { type: 'subquery_expression', subqueries: elems[0] } }},
     {"name": "table_expression", "symbols": ["types"], "postprocess": (elems) => { return { type: 'table_expression', types: elems[0] } }},
+    {"name": "subqueries$ebnf$1", "symbols": []},
+    {"name": "subqueries$ebnf$1$subexpression$1$ebnf$1$subexpression$1", "symbols": ["_", (lexer.has("left") ? {type: "left"} : left)]},
+    {"name": "subqueries$ebnf$1$subexpression$1$ebnf$1", "symbols": ["subqueries$ebnf$1$subexpression$1$ebnf$1$subexpression$1"], "postprocess": id},
+    {"name": "subqueries$ebnf$1$subexpression$1$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "subqueries$ebnf$1$subexpression$1$ebnf$2$subexpression$1", "symbols": ["__", (lexer.has("on") ? {type: "on"} : on), "__", "expression"]},
+    {"name": "subqueries$ebnf$1$subexpression$1$ebnf$2", "symbols": ["subqueries$ebnf$1$subexpression$1$ebnf$2$subexpression$1"], "postprocess": id},
+    {"name": "subqueries$ebnf$1$subexpression$1$ebnf$2", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "subqueries$ebnf$1$subexpression$1", "symbols": ["subqueries$ebnf$1$subexpression$1$ebnf$1", "__", (lexer.has("join") ? {type: "join"} : join), "__", "single_subquery_clause", "subqueries$ebnf$1$subexpression$1$ebnf$2"]},
+    {"name": "subqueries$ebnf$1", "symbols": ["subqueries$ebnf$1", "subqueries$ebnf$1$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "subqueries", "symbols": ["single_subquery_clause", "subqueries$ebnf$1"], "postprocess": 
+        (elems) => ({ 
+          type: 'subquery', 
+          subquery: elems[0],
+          subqueryJoin: elems[1].map((joinElems) => {
+            return {
+              type: 'subquery_join',
+              isLeft: joinElems[0] != null,
+              subquery: joinElems[4],
+              on: joinElems[5] == null ? null : joinElems[5][3]
+            }
+          })
+        })
+          },
+    {"name": "single_subquery_clause$ebnf$1$subexpression$1", "symbols": ["__", (lexer.has("as") ? {type: "as"} : as)]},
+    {"name": "single_subquery_clause$ebnf$1", "symbols": ["single_subquery_clause$ebnf$1$subexpression$1"], "postprocess": id},
+    {"name": "single_subquery_clause$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "single_subquery_clause", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "_", "subquery", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen), "single_subquery_clause$ebnf$1", "__", "identifier"], "postprocess": (elems) => ({ type: 'single_subquery_clause', query: elems[2], as: elems[7] })},
+    {"name": "single_subquery_clause", "symbols": ["subquery"], "postprocess": (elems) => ({ type: 'single_subquery_clause', query: elems[0], as: null })},
     {"name": "order_expression$ebnf$1$subexpression$1$subexpression$1", "symbols": [(lexer.has("asc") ? {type: "asc"} : asc)]},
     {"name": "order_expression$ebnf$1$subexpression$1$subexpression$1", "symbols": [(lexer.has("desc") ? {type: "desc"} : desc)]},
     {"name": "order_expression$ebnf$1$subexpression$1", "symbols": ["__", "order_expression$ebnf$1$subexpression$1$subexpression$1"]},
@@ -519,10 +543,10 @@ var grammar = {
     {"name": "row_value_constructor", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "row_value_constructor$subexpression$1", "row_value_constructor$ebnf$1", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)], "postprocess": 
         (elems) => ({ type: 'row_value_constructor', terms: [elems[1][1], ...elems[2].map((elem) => elem[3])] })
           },
-    {"name": "subquery$subexpression$1", "symbols": [(lexer.has("lcbrac") ? {type: "lcbrac"} : lcbrac), "_", (lexer.has("lcbrac") ? {type: "lcbrac"} : lcbrac)]},
-    {"name": "subquery$subexpression$2", "symbols": [(lexer.has("rcbrac") ? {type: "rcbrac"} : rcbrac), "_", (lexer.has("rcbrac") ? {type: "rcbrac"} : rcbrac)]},
+    {"name": "subquery$subexpression$1", "symbols": [(lexer.has("lcbrac") ? {type: "lcbrac"} : lcbrac), (lexer.has("lcbrac") ? {type: "lcbrac"} : lcbrac)]},
+    {"name": "subquery$subexpression$2", "symbols": [(lexer.has("rcbrac") ? {type: "rcbrac"} : rcbrac), (lexer.has("rcbrac") ? {type: "rcbrac"} : rcbrac)]},
     {"name": "subquery", "symbols": ["subquery$subexpression$1", "_", "query", "_", "subquery$subexpression$2"], "postprocess": 
-        (elems) => ({ type: 'subquery', query: elems[2]})
+        (elems) => ({type: 'real_subquery', query: elems[2]})
           },
     {"name": "interval", "symbols": [(lexer.has("interval") ? {type: "interval"} : interval), "__", "term", "__", (lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": 
         (elems) => ({ type: 'interval', interval: elems[0], term: elems[2], unit: elems[4] })
