@@ -85,6 +85,7 @@ const mooRules = {
       set: ci('set'),
       distinct: ci('distinct'),
       interval: ci('interval'),
+      iff: ci('if'),
 
       case_: ci('case'),
       when: ci('when'),

@@ -490,14 +490,22 @@ var grammar = {
           args: [elems[2][2], elems[2][6]]
         })
           },
-    {"name": "function$subexpression$3$ebnf$1$subexpression$1", "symbols": ["_", "operand"]},
-    {"name": "function$subexpression$3$ebnf$1", "symbols": ["function$subexpression$3$ebnf$1$subexpression$1"], "postprocess": id},
-    {"name": "function$subexpression$3$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "function$subexpression$3$ebnf$2", "symbols": []},
-    {"name": "function$subexpression$3$ebnf$2$subexpression$1", "symbols": ["_", (lexer.has("comma") ? {type: "comma"} : comma), "_", "operand"]},
-    {"name": "function$subexpression$3$ebnf$2", "symbols": ["function$subexpression$3$ebnf$2", "function$subexpression$3$ebnf$2$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
-    {"name": "function$subexpression$3", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "function$subexpression$3$ebnf$1", "function$subexpression$3$ebnf$2", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)]},
-    {"name": "function", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "function$subexpression$3"], "postprocess": 
+    {"name": "function$subexpression$3", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "_", "expression", "_", (lexer.has("comma") ? {type: "comma"} : comma), "_", "term", "_", (lexer.has("comma") ? {type: "comma"} : comma), "_", "term", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)]},
+    {"name": "function", "symbols": [(lexer.has("iff") ? {type: "iff"} : iff), "_", "function$subexpression$3"], "postprocess": 
+        (elems) => ({
+          type: 'function',
+          function: 'if',
+          args: [elems[2][2], elems[2][6], elems[2][10]]
+        })
+          },
+    {"name": "function$subexpression$4$ebnf$1$subexpression$1", "symbols": ["_", "operand"]},
+    {"name": "function$subexpression$4$ebnf$1", "symbols": ["function$subexpression$4$ebnf$1$subexpression$1"], "postprocess": id},
+    {"name": "function$subexpression$4$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "function$subexpression$4$ebnf$2", "symbols": []},
+    {"name": "function$subexpression$4$ebnf$2$subexpression$1", "symbols": ["_", (lexer.has("comma") ? {type: "comma"} : comma), "_", "operand"]},
+    {"name": "function$subexpression$4$ebnf$2", "symbols": ["function$subexpression$4$ebnf$2", "function$subexpression$4$ebnf$2$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "function$subexpression$4", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "function$subexpression$4$ebnf$1", "function$subexpression$4$ebnf$2", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)]},
+    {"name": "function", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "function$subexpression$4"], "postprocess": 
         (elems) => {
           if (elems[2][1] === null) {
             return ({ type: 'function', function: elems[0], args: [] })

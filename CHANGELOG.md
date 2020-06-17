@@ -4,6 +4,14 @@ All notable changes to the "my-vscode-hybris-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.1.10
+
+- General - Fixed the util to get the editor content
+
+## 1.1.9
+
+- Fsql    - Added the syntax support to if function
+
 ## 1.1.8
 
 - Fsql    - Added the syntax support to subquery joining

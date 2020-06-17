@@ -384,6 +384,13 @@ function ->
       args: [elems[2][2], elems[2][6]]
     })
   %}
+  | %iff _ ( %lparen _ expression _ %comma _ term _ %comma _ term _ %rparen ) {%
+    (elems) => ({
+      type: 'function',
+      function: 'if',
+      args: [elems[2][2], elems[2][6], elems[2][10]]
+    })
+  %}
   | %identifier _ ( %lparen ( _ operand ):? ( _ %comma _ operand ):* _ %rparen ) {%
     (elems) => {
       if (elems[2][1] === null) {
