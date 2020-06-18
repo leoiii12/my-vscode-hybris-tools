@@ -181,7 +181,14 @@ export namespace FsqlCommands {
       10000,
       translatePkFsql.replace('$_PK_JOINED_STR', sqlQueryParameters.join(',')),
     )
-    const pkSqls = fsqlExecResult.resultList.reduce((acc, result) => {
+    const pkToInternalCodeMap = fsqlExecResult.resultList.reduce(
+      (acc, result) => {
+        acc[result[0]] = result[1]
+        return acc
+      },
+      {} as { [pk: string]: string },
+    )
+    const pkToSqlMap = fsqlExecResult.resultList.reduce((acc, result) => {
       acc[
         result[0]
       ] = `SELECT pk FROM composedtypes WHERE InternalCode = '${result[1]}'`
@@ -189,17 +196,60 @@ export namespace FsqlCommands {
     }, {} as { [pk: string]: string })
 
     try {
-      let mySqlQuery = `${sqlQuery};`
+      // arr contains either the numOfCommas, or the part of the sqlQuery
+      const sqlQueryElems = sqlQuery
+        .split('?')
+        .reduce((pv: any[], cv: string) => {
+          if (cv.trim() === ',') {
+            if (typeof pv[pv.length - 1] === 'number') {
+              pv[pv.length - 1] += 1
+              return pv
+            } else {
+              return pv.concat(1)
+            }
+          }
 
-      for (const pk of sqlQueryParameters) {
-        const sqlOrPk = pk in pkSqls ? ` (${pkSqls[pk]})` : pk
+          return pv.concat(cv).concat(1)
+        }, [] as any[])
+        .slice(0, -1)
 
-        if (mySqlQuery.includes('?')) {
-          mySqlQuery = mySqlQuery.replace('?', sqlOrPk)
-        } else {
-          throw new Error('No more values to replace parameters.')
-        }
-      }
+      const { sql: mySqlQuery } = sqlQueryElems.reduce(
+        (pv, elem) => {
+          if (typeof elem === 'number') {
+            if (elem === 1) {
+              const pk = sqlQueryParameters[pv.numOfReplaced]
+
+              return {
+                sql: pv.sql + (pk in pkToSqlMap ? ` (${pkToSqlMap[pk]})` : pk),
+                numOfReplaced: pv.numOfReplaced + 1,
+              }
+            } else {
+              const pks = sqlQueryParameters.slice(
+                pv.numOfReplaced,
+                pv.numOfReplaced + elem,
+              )
+              const internalCodes = pks
+                .map(pk =>
+                  pk in pkToInternalCodeMap
+                    ? `'${pkToInternalCodeMap[pk]}'`
+                    : pk,
+                )
+                .join(',')
+
+              return {
+                sql:
+                  pv.sql +
+                  `SELECT pk FROM composedtypes WHERE InternalCode IN (${internalCodes})`,
+                numOfReplaced: pv.numOfReplaced + pks.length,
+              }
+            }
+          }
+
+          return { sql: pv.sql + `${elem}`, numOfReplaced: pv.numOfReplaced }
+        },
+        { sql: '', numOfReplaced: 0 },
+      )
+
       if (mySqlQuery.includes('?')) {
         throw new Error('Still have parameters.')
       }

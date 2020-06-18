@@ -4,6 +4,10 @@ All notable changes to the "my-vscode-hybris-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 1.1.11
+
+- Fsql    - Improved the translation function, to avoid too many sub-queries
+
 ## 1.1.10
 
 - General - Fixed the util to get the editor content
